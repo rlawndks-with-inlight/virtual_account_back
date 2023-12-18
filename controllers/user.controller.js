@@ -1,8 +1,8 @@
 'use strict';
-import { pool } from "../config/db.js";
+import db, { pool } from "../config/db.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
-import { checkDns, checkLevel, createHashedPassword, isItemBrandIdSameDnsId, lowLevelException, makeObjByList, makeUserChildrenList, makeUserTree, response, settingFiles } from "../utils.js/util.js";
+import { checkDns, checkLevel, createHashedPassword, isItemBrandIdSameDnsId, lowLevelException, makeObjByList, makeUserChildrenList, makeUserTree, operatorLevelList, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 
 const table_name = 'users';
@@ -24,8 +24,9 @@ const userCtrl = {
             if (level) {
                 sql += ` AND ${table_name}.level = ${level} `;
             }
+            console.log(level_list)
             if (level_list.length > 0) {
-                sql += ` AND ${table_name}.level IN (${level_list.join()}) `;
+                sql += ` AND ${table_name}.level IN (${level_list}) `;
             }
             let data = await getSelectQuery(sql, columns, req.query);
 
@@ -113,11 +114,18 @@ const userCtrl = {
                 settle_bank_code, settle_acct_num, settle_acct_name, withdraw_fee, min_withdraw_price, min_withdraw_remain_price,
             };
             obj = { ...obj, ...files };
+            await db.beginTransaction();
             let result = await insertQuery(`${table_name}`, obj);
 
+            if (level == 10) {//가맹점
+
+            }
+
+            await db.commit();
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
+            await db.rollback();
             return response(req, res, -200, "서버 에러 발생", false)
         } finally {
 
@@ -139,10 +147,19 @@ const userCtrl = {
                 settle_bank_code, settle_acct_num, settle_acct_name, withdraw_fee, min_withdraw_price, min_withdraw_remain_price,
             };
             obj = { ...obj, ...files };
+            await db.beginTransaction();
+
             let result = await updateQuery(`${table_name}`, obj, id);
+            if (level == 10) {//가맹점
+                for (var i = 0; i < operatorLevelList.length; i++) {
+
+                }
+            }
+            await db.commit();
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
+            await db.rollback();
             return response(req, res, -200, "서버 에러 발생", false)
         } finally {
 

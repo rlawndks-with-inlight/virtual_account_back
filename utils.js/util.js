@@ -284,3 +284,12 @@ export const getReqIp = (req) => {
     requestIp = requestIp.replaceAll('::ffff:', '');
     return requestIp;
 }
+
+export const operatorLevelList = [
+    { level: 30, num: '5' },
+    { level: 25, num: '4' },
+    { level: 20, num: '3' },
+    { level: 17, num: '2' },
+    { level: 15, num: '1' },
+    { level: 13, num: '0' },
+]
