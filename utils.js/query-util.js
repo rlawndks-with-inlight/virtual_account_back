@@ -39,7 +39,7 @@ export const deleteQuery = async (table, where_obj) => {
     let result = await pool.query(`UPDATE ${table} SET is_delete=1 WHERE ${where_list.join('AND')} `);
     return result;
 }
-export const updateQuery = async (table, obj, id) => {
+export const updateQuery = async (table, obj, id, id_column) => {
     let keys = Object.keys(obj);
     if (keys.length == 0) {
         return false;
@@ -50,7 +50,7 @@ export const updateQuery = async (table, obj, id) => {
     let values = keys.map(key => {
         return obj[key]
     });
-    let result = await pool.query(`UPDATE ${table} SET ${question_list.join()} WHERE id=${id}`, values);
+    let result = await pool.query(`UPDATE ${table} SET ${question_list.join()} WHERE ${id_column || 'id'}=${id}`, values);
     return result;
 }
 export const selectQuerySimple = async (table, id) => {

@@ -18,13 +18,23 @@ const userCtrl = {
                 `${table_name}.*`,
             ]
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
-            sql += ` WHERE brand_id=${decode_dns?.id} `;
-            sql += ` AND level <= ${decode_user?.level} `;
+            sql += ` LEFT JOIN merchandise_columns ON merchandise_columns.mcht_id=${table_name}.id `;
+
+            for (var i = 0; i < decode_dns?.operator_list.length; i++) {
+                columns.push(`merchandise_columns.sales${decode_dns?.operator_list[i]?.num}_id`);
+                columns.push(`merchandise_columns.sales${decode_dns?.operator_list[i]?.num}_fee`);
+                columns.push(`sales${decode_dns?.operator_list[i]?.num}.user_name AS sales${decode_dns?.operator_list[i]?.num}_user_name`);
+                columns.push(`sales${decode_dns?.operator_list[i]?.num}.nickname AS sales${decode_dns?.operator_list[i]?.num}_nickname`);
+                sql += ` LEFT JOIN users AS sales${decode_dns?.operator_list[i]?.num} ON sales${decode_dns?.operator_list[i]?.num}.id=merchandise_columns.sales${decode_dns?.operator_list[i]?.num}_id `;
+            }
+            sql += ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
+            sql += ` AND ${table_name}.level <= ${decode_user?.level} `;
+
+
 
             if (level) {
                 sql += ` AND ${table_name}.level = ${level} `;
             }
-            console.log(level_list)
             if (level_list.length > 0) {
                 sql += ` AND ${table_name}.level IN (${level_list}) `;
             }
@@ -61,7 +71,17 @@ const userCtrl = {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
             const { id } = req.params;
-            let data = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id}`)
+            let columns = [
+                `${table_name}.*`,
+            ]
+            for (var i = 0; i < decode_dns?.operator_list.length; i++) {
+                columns.push(`merchandise_columns.sales${decode_dns?.operator_list[i]?.num}_id`);
+                columns.push(`merchandise_columns.sales${decode_dns?.operator_list[i]?.num}_fee`);
+            }
+            let sql = `SELECT ${columns.join()} FROM ${table_name} `
+            sql += ` LEFT JOIN merchandise_columns ON merchandise_columns.mcht_id=${table_name}.id `;
+            sql += ` WHERE ${table_name}.id=${id} `;
+            let data = await pool.query(sql)
             data = data?.result[0];
             if (!isItemBrandIdSameDnsId(decode_dns, data)) {
                 return lowLevelException(req, res);
@@ -118,7 +138,16 @@ const userCtrl = {
             let result = await insertQuery(`${table_name}`, obj);
 
             if (level == 10) {//가맹점
-
+                let mcht_obj = {
+                    mcht_id: result?.result?.insertId,
+                };
+                for (var i = 0; i < decode_dns?.operator_list.length; i++) {
+                    if (req.body[`sales${decode_dns?.operator_list[i]?.num}_id`]) {
+                        mcht_obj[`sales${decode_dns?.operator_list[i]?.num}_id`] = req.body[`sales${decode_dns?.operator_list[i]?.num}_id`];
+                        mcht_obj[`sales${decode_dns?.operator_list[i]?.num}_fee`] = req.body[`sales${decode_dns?.operator_list[i]?.num}_fee`];
+                    }
+                }
+                let mcht_result = await insertQuery(`merchandise_columns`, mcht_obj);
             }
 
             await db.commit();
@@ -151,9 +180,13 @@ const userCtrl = {
 
             let result = await updateQuery(`${table_name}`, obj, id);
             if (level == 10) {//가맹점
-                for (var i = 0; i < operatorLevelList.length; i++) {
+                let mcht_obj = {};
 
+                for (var i = 0; i < decode_dns?.operator_list.length; i++) {
+                    mcht_obj[`sales${decode_dns?.operator_list[i]?.num}_id`] = req.body[`sales${decode_dns?.operator_list[i]?.num}_id`] || 0;
+                    mcht_obj[`sales${decode_dns?.operator_list[i]?.num}_fee`] = req.body[`sales${decode_dns?.operator_list[i]?.num}_fee`] || 0;
                 }
+                let mcht_result = await updateQuery(`merchandise_columns`, mcht_obj, id, 'mcht_id');
             }
             await db.commit();
             return response(req, res, 100, "success", {})

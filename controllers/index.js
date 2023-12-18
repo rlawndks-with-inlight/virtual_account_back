@@ -6,6 +6,7 @@ import domainCtrl from './domain.controller.js';
 import uploadCtrl from './upload.controller.js';
 import logCtrl from './log.controller.js';
 import userCtrl from './user.controller.js';
+import virtualAccountCtrl from './virtual_account.controller.js';
 
 export {
     brandCtrl,
@@ -14,4 +15,5 @@ export {
     uploadCtrl,
     logCtrl,
     userCtrl,
+    virtualAccountCtrl,
 };
