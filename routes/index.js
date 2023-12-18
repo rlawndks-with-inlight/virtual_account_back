@@ -6,6 +6,8 @@ import uploadRoutes from './upload.route.js';
 import logRoutes from './log.route.js';
 import userRoutes from './user.route.js';
 import virtualAccountRoutes from './virtual_account.route.js';
+import depositRoutes from './deposit.route.js';
+import withdrawRoutes from './withdraw.route.js';
 
 const router = express.Router(); // eslint-disable-line new-cap
 
@@ -15,6 +17,8 @@ const router = express.Router(); // eslint-disable-line new-cap
 router.use('/brands', brandRoutes);
 router.use('/logs', logRoutes);
 router.use('/users', userRoutes);
+router.use('/deposits', depositRoutes);
+router.use('/withdraws', withdrawRoutes);
 router.use('/virtual-account', virtualAccountRoutes);
 
 //auth
