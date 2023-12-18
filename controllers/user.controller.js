@@ -97,6 +97,7 @@ const userCtrl = {
             const decode_dns = checkDns(req.cookies.dns);
             let {
                 brand_id, user_name, user_pw, name, nickname, level, phone_num, profile_img, note,
+                settle_bank_code = "", settle_acct_num = "", settle_acct_name = "", withdraw_fee = 0, min_withdraw_price = 0, min_withdraw_remain_price = 0,
             } = req.body;
             let is_exist_user = await pool.query(`SELECT * FROM ${table_name} WHERE user_name=? AND brand_id=${brand_id}`, [user_name]);
             if (is_exist_user?.result.length > 0) {
@@ -108,7 +109,8 @@ const userCtrl = {
             let user_salt = pw_data.salt;
             let files = settingFiles(req.files);
             let obj = {
-                brand_id, user_name, user_pw, user_salt, name, nickname, level, phone_num, profile_img, note
+                brand_id, user_name, user_pw, user_salt, name, nickname, level, phone_num, profile_img, note,
+                settle_bank_code, settle_acct_num, settle_acct_name, withdraw_fee, min_withdraw_price, min_withdraw_remain_price,
             };
             obj = { ...obj, ...files };
             let result = await insertQuery(`${table_name}`, obj);
@@ -127,11 +129,14 @@ const userCtrl = {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
             const {
-                brand_id, user_name, name, nickname, level, phone_num, profile_img, note, id
+                brand_id, user_name, name, nickname, level, phone_num, profile_img, note,
+                settle_bank_code = "", settle_acct_num = "", settle_acct_name = "", withdraw_fee = 0, min_withdraw_price = 0, min_withdraw_remain_price = 0,
+                id
             } = req.body;
             let files = settingFiles(req.files);
             let obj = {
-                brand_id, user_name, name, nickname, level, phone_num, profile_img, note
+                brand_id, user_name, name, nickname, level, phone_num, profile_img, note,
+                settle_bank_code, settle_acct_num, settle_acct_name, withdraw_fee, min_withdraw_price, min_withdraw_remain_price,
             };
             obj = { ...obj, ...files };
             let result = await updateQuery(`${table_name}`, obj, id);
