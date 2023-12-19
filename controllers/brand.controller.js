@@ -5,6 +5,7 @@ import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, createHashedPassword, lowLevelException, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
+import corpApi from "../utils.js/corp-util/index.js";
 
 const table_name = 'brands';
 
@@ -43,6 +44,9 @@ const brandCtrl = {
             data['theme_css'] = JSON.parse(data?.theme_css ?? '{}');
             data['setting_obj'] = JSON.parse(data?.setting_obj ?? '{}');
             data['level_obj'] = JSON.parse(data?.level_obj ?? '{}');
+            data['bizppurio_obj'] = JSON.parse(data?.bizppurio_obj ?? '{}');
+
+            let deposit_user_info = await corpApi.user.info(data, 'deposit', decode_user);
 
             return response(req, res, 100, "success", data)
         } catch (err) {
@@ -61,16 +65,21 @@ const brandCtrl = {
             }
             const decode_dns = checkDns(req.cookies.dns);
             const {
-                name, dns, og_description, company_name, business_num, pvcy_rep_name, ceo_name, addr, addr_detail, resident_num, phone_num, fax_num, note, theme_css = {}, setting_obj = {}, level_obj = {},
-                user_name, user_pw
+                name, dns, og_description, company_name, business_num, pvcy_rep_name, ceo_name, addr, addr_detail, resident_num, phone_num, fax_num, note, theme_css = {}, setting_obj = {}, level_obj = {}, bizppurio_obj = {},
+                user_name, user_pw,
+                mother_deposit_bank_code, mother_deposit_acct_num, mother_deposit_acct_name, deposit_corp_type, deposit_guid, deposit_api_id, deposit_sign_key, deposit_encr_key, deposit_iv,
+                mother_withdraw_bank_code, mother_withdraw_acct_num, mother_withdraw_acct_name, withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv,
             } = req.body;
             let files = settingFiles(req.files);
             let obj = {
-                name, dns, og_description, company_name, business_num, pvcy_rep_name, ceo_name, addr, addr_detail, resident_num, phone_num, fax_num, note, theme_css, setting_obj, level_obj,
+                name, dns, og_description, company_name, business_num, pvcy_rep_name, ceo_name, addr, addr_detail, resident_num, phone_num, fax_num, note, theme_css, setting_obj, level_obj, bizppurio_obj,
+                mother_deposit_bank_code, mother_deposit_acct_num, mother_deposit_acct_name, deposit_corp_type, deposit_guid, deposit_api_id, deposit_sign_key, deposit_encr_key, deposit_iv,
+                mother_withdraw_bank_code, mother_withdraw_acct_num, mother_withdraw_acct_name, withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv,
             };
             obj['theme_css'] = JSON.stringify(obj.theme_css);
             obj['setting_obj'] = JSON.stringify(obj.setting_obj);
             obj['level_obj'] = JSON.stringify(obj.level_obj);
+            obj['bizppurio_obj'] = JSON.stringify(obj.bizppurio_obj);
             obj = { ...obj, ...files };
             await db.beginTransaction();
 
@@ -103,7 +112,9 @@ const brandCtrl = {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
             const {
-                name, dns, og_description, company_name, business_num, pvcy_rep_name, ceo_name, addr, addr_detail, resident_num, phone_num, fax_num, note, theme_css = {}, setting_obj = {}, level_obj = {},
+                name, dns, og_description, company_name, business_num, pvcy_rep_name, ceo_name, addr, addr_detail, resident_num, phone_num, fax_num, note, theme_css = {}, setting_obj = {}, level_obj = {}, bizppurio_obj = {},
+                mother_deposit_bank_code, mother_deposit_acct_num, mother_deposit_acct_name, deposit_corp_type, deposit_guid, deposit_api_id, deposit_sign_key, deposit_encr_key, deposit_iv,
+                mother_withdraw_bank_code, mother_withdraw_acct_num, mother_withdraw_acct_name, withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv,
             } = req.body;
             const { id } = req.params;
             if ((decode_user?.level < 50 && decode_user?.brand_id != id) || decode_user?.level < 40) {
@@ -112,11 +123,14 @@ const brandCtrl = {
             let files = settingFiles(req.files);
 
             let obj = {
-                name, dns, og_description, company_name, business_num, pvcy_rep_name, ceo_name, addr, addr_detail, resident_num, phone_num, fax_num, note, theme_css, setting_obj, level_obj,
+                name, dns, og_description, company_name, business_num, pvcy_rep_name, ceo_name, addr, addr_detail, resident_num, phone_num, fax_num, note, theme_css, setting_obj, level_obj, bizppurio_obj,
+                mother_deposit_bank_code, mother_deposit_acct_num, mother_deposit_acct_name, deposit_corp_type, deposit_guid, deposit_api_id, deposit_sign_key, deposit_encr_key, deposit_iv,
+                mother_withdraw_bank_code, mother_withdraw_acct_num, mother_withdraw_acct_name, withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv,
             };
             obj['theme_css'] = JSON.stringify(obj.theme_css);
             obj['setting_obj'] = JSON.stringify(obj.setting_obj);
             obj['level_obj'] = JSON.stringify(obj.level_obj);
+            obj['bizppurio_obj'] = JSON.stringify(obj.bizppurio_obj);
             obj = { ...obj, ...files };
 
             let result = await updateQuery(`${table_name}`, obj, id);

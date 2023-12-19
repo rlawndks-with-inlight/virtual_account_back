@@ -20,6 +20,7 @@ const domainCtrl = {
                 'theme_css',
                 'setting_obj',
                 'level_obj',
+                'bizppurio_obj',
                 'is_main_dns',
                 'company_name',
                 'business_num',
@@ -38,6 +39,7 @@ const domainCtrl = {
             brand['theme_css'] = JSON.parse(brand?.theme_css ?? '{}');
             brand['setting_obj'] = JSON.parse(brand?.setting_obj ?? '{}');
             brand['level_obj'] = JSON.parse(brand?.level_obj ?? '{}');
+            brand['bizppurio_obj'] = JSON.parse(brand?.bizppurio_obj ?? '{}');
 
             let operator_list = [];
             for (var i = 0; i < operatorLevelList.length; i++) {

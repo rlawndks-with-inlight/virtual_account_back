@@ -6,7 +6,6 @@ import domainCtrl from './domain.controller.js';
 import uploadCtrl from './upload.controller.js';
 import logCtrl from './log.controller.js';
 import userCtrl from './user.controller.js';
-import virtualAccountCtrl from './virtual_account.controller.js';
 import withdrawCtrl from './withdraw.controller.js';
 import depositCtrl from './deposit.controller.js';
 
@@ -18,7 +17,6 @@ export {
     uploadCtrl,
     logCtrl,
     userCtrl,
-    virtualAccountCtrl,
     withdrawCtrl,
     depositCtrl,
 };
