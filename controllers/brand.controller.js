@@ -5,7 +5,6 @@ import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, createHashedPassword, lowLevelException, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
-import corpApi from "../utils.js/corp-util/index.js";
 
 const table_name = 'brands';
 
@@ -45,8 +44,6 @@ const brandCtrl = {
             data['setting_obj'] = JSON.parse(data?.setting_obj ?? '{}');
             data['level_obj'] = JSON.parse(data?.level_obj ?? '{}');
             data['bizppurio_obj'] = JSON.parse(data?.bizppurio_obj ?? '{}');
-
-            let deposit_user_info = await corpApi.user.info(data, 'deposit', decode_user);
 
             return response(req, res, 100, "success", data)
         } catch (err) {

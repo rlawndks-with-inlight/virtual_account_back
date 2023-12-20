@@ -32,6 +32,24 @@ export const banknersApi = {
                 console.log(err);
                 return {};
             }
+        },
+        create: async () => {
+            let query = {
+                mem_nm: '',
+                mem_email: '',
+                sms_recv_cp: '',
+                birth_ymd: '',
+                ci: '',
+                user_tp: '',
+                mem_nm: '',
+                mem_nm: '',
+            }
+            if (user_tp == 'CORP_BIZ' || user_tp == 'PERSONAL_BIZ') {
+                query[`biz_no`]
+                query[`biz_nm`]
+                query[`ceo_nm`]
+                query[`tel`]
+            }
         }
     }
 }

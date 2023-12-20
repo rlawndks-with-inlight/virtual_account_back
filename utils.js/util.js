@@ -293,3 +293,6 @@ export const operatorLevelList = [
     { level: 15, num: '1' },
     { level: 13, num: '0' },
 ]
+export const getNumberByPercent = (num = 0, percent = 0) => {
+    return Math.round(num * (percent).toFixed(2) / 100);
+}

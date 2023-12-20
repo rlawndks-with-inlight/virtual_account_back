@@ -1,4 +1,5 @@
 'use strict';
+import _ from "lodash";
 import db, { pool } from "../config/db.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
@@ -16,6 +17,7 @@ const userCtrl = {
             const { level, level_list = [] } = req.query;
             let columns = [
                 `${table_name}.*`,
+                `merchandise_columns.mcht_fee`,
             ]
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
             sql += ` LEFT JOIN merchandise_columns ON merchandise_columns.mcht_id=${table_name}.id `;
@@ -33,8 +35,16 @@ const userCtrl = {
 
 
             if (level) {
+                let find_mcht_level = _.find(operatorLevelList, { level: parseInt(level) });
+                if (level == 10) {
+                    columns.push(`(SELECT SUM(mcht_amount) FROM deposits WHERE mcht_id=${table_name}.id) AS settle_amount`)
+                } else if (find_mcht_level) {
+                    columns.push(`(SELECT SUM(sales${find_mcht_level.num}_amount) FROM deposits WHERE sales${find_mcht_level.num}_id=${table_name}.id) AS settle_amount`)
+                }
                 sql += ` AND ${table_name}.level = ${level} `;
+
             }
+
             if (level_list.length > 0) {
                 sql += ` AND ${table_name}.level IN (${level_list}) `;
             }
@@ -73,6 +83,7 @@ const userCtrl = {
             const { id } = req.params;
             let columns = [
                 `${table_name}.*`,
+                `merchandise_columns.mcht_fee`,
             ]
             for (var i = 0; i < decode_dns?.operator_list.length; i++) {
                 columns.push(`merchandise_columns.sales${decode_dns?.operator_list[i]?.num}_id`);
@@ -118,7 +129,8 @@ const userCtrl = {
             const decode_dns = checkDns(req.cookies.dns);
             let {
                 brand_id, user_name, user_pw, name, nickname, level, phone_num, profile_img, note,
-                settle_bank_code = "", settle_acct_num = "", settle_acct_name = "", withdraw_fee = 0, min_withdraw_price = 0, min_withdraw_remain_price = 0,
+                mcht_fee = 0,
+                settle_bank_code = "", settle_acct_num = "", settle_acct_name = "", settle_fee = 0, min_settle_price = 0, min_settle_remain_price = 0,
             } = req.body;
             let is_exist_user = await pool.query(`SELECT * FROM ${table_name} WHERE user_name=? AND brand_id=${brand_id}`, [user_name]);
             if (is_exist_user?.result.length > 0) {
@@ -131,7 +143,7 @@ const userCtrl = {
             let files = settingFiles(req.files);
             let obj = {
                 brand_id, user_name, user_pw, user_salt, name, nickname, level, phone_num, profile_img, note,
-                settle_bank_code, settle_acct_num, settle_acct_name, withdraw_fee, min_withdraw_price, min_withdraw_remain_price,
+                settle_bank_code, settle_acct_num, settle_acct_name, settle_fee, min_settle_price, min_settle_remain_price,
             };
             obj = { ...obj, ...files };
             await db.beginTransaction();
@@ -140,6 +152,7 @@ const userCtrl = {
             if (level == 10) {//가맹점
                 let mcht_obj = {
                     mcht_id: result?.result?.insertId,
+                    mcht_fee,
                 };
                 for (var i = 0; i < decode_dns?.operator_list.length; i++) {
                     if (req.body[`sales${decode_dns?.operator_list[i]?.num}_id`]) {
@@ -167,21 +180,23 @@ const userCtrl = {
             const decode_dns = checkDns(req.cookies.dns);
             const {
                 brand_id, user_name, name, nickname, level, phone_num, profile_img, note,
-                settle_bank_code = "", settle_acct_num = "", settle_acct_name = "", withdraw_fee = 0, min_withdraw_price = 0, min_withdraw_remain_price = 0,
+                mcht_fee = 0,
+                settle_bank_code = "", settle_acct_num = "", settle_acct_name = "", settle_fee = 0, min_settle_price = 0, min_settle_remain_price = 0,
                 id
             } = req.body;
             let files = settingFiles(req.files);
             let obj = {
                 brand_id, user_name, name, nickname, level, phone_num, profile_img, note,
-                settle_bank_code, settle_acct_num, settle_acct_name, withdraw_fee, min_withdraw_price, min_withdraw_remain_price,
+                settle_bank_code, settle_acct_num, settle_acct_name, settle_fee, min_settle_price, min_settle_remain_price,
             };
             obj = { ...obj, ...files };
             await db.beginTransaction();
 
             let result = await updateQuery(`${table_name}`, obj, id);
             if (level == 10) {//가맹점
-                let mcht_obj = {};
-
+                let mcht_obj = {
+                    mcht_fee,
+                };
                 for (var i = 0; i < decode_dns?.operator_list.length; i++) {
                     mcht_obj[`sales${decode_dns?.operator_list[i]?.num}_id`] = req.body[`sales${decode_dns?.operator_list[i]?.num}_id`] || 0;
                     mcht_obj[`sales${decode_dns?.operator_list[i]?.num}_fee`] = req.body[`sales${decode_dns?.operator_list[i]?.num}_fee`] || 0;
