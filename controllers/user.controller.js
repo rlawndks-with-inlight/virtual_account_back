@@ -32,17 +32,14 @@ const userCtrl = {
             sql += ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
             sql += ` AND ${table_name}.level <= ${decode_user?.level} `;
 
-
-
             if (level) {
-                let find_mcht_level = _.find(operatorLevelList, { level: parseInt(level) });
+                let find_oper_level = _.find(operatorLevelList, { level: parseInt(level) });
                 if (level == 10) {
                     columns.push(`(SELECT SUM(mcht_amount) FROM deposits WHERE mcht_id=${table_name}.id) AS settle_amount`)
-                } else if (find_mcht_level) {
-                    columns.push(`(SELECT SUM(sales${find_mcht_level.num}_amount) FROM deposits WHERE sales${find_mcht_level.num}_id=${table_name}.id) AS settle_amount`)
+                } else if (find_oper_level) {
+                    columns.push(`(SELECT SUM(sales${find_oper_level.num}_amount) FROM deposits WHERE sales${find_oper_level.num}_id=${table_name}.id) AS settle_amount`)
                 }
                 sql += ` AND ${table_name}.level = ${level} `;
-
             }
 
             if (level_list.length > 0) {
@@ -130,7 +127,7 @@ const userCtrl = {
             let {
                 brand_id, user_name, user_pw, name, nickname, level, phone_num, profile_img, note,
                 mcht_fee = 0,
-                settle_bank_code = "", settle_acct_num = "", settle_acct_name = "", settle_fee = 0, min_settle_price = 0, min_settle_remain_price = 0,
+                settle_bank_code = "", settle_acct_num = "", settle_acct_name = "", withdraw_fee = 0, min_withdraw_price = 0, min_withdraw_remain_price = 0,
             } = req.body;
             let is_exist_user = await pool.query(`SELECT * FROM ${table_name} WHERE user_name=? AND brand_id=${brand_id}`, [user_name]);
             if (is_exist_user?.result.length > 0) {
@@ -143,7 +140,7 @@ const userCtrl = {
             let files = settingFiles(req.files);
             let obj = {
                 brand_id, user_name, user_pw, user_salt, name, nickname, level, phone_num, profile_img, note,
-                settle_bank_code, settle_acct_num, settle_acct_name, settle_fee, min_settle_price, min_settle_remain_price,
+                settle_bank_code, settle_acct_num, settle_acct_name, withdraw_fee, min_withdraw_price, min_withdraw_remain_price,
             };
             obj = { ...obj, ...files };
             await db.beginTransaction();
@@ -181,13 +178,13 @@ const userCtrl = {
             const {
                 brand_id, user_name, name, nickname, level, phone_num, profile_img, note,
                 mcht_fee = 0,
-                settle_bank_code = "", settle_acct_num = "", settle_acct_name = "", settle_fee = 0, min_settle_price = 0, min_settle_remain_price = 0,
+                settle_bank_code = "", settle_acct_num = "", settle_acct_name = "", withdraw_fee = 0, min_withdraw_price = 0, min_withdraw_remain_price = 0,
                 id
             } = req.body;
             let files = settingFiles(req.files);
             let obj = {
                 brand_id, user_name, name, nickname, level, phone_num, profile_img, note,
-                settle_bank_code, settle_acct_num, settle_acct_name, settle_fee, min_settle_price, min_settle_remain_price,
+                settle_bank_code, settle_acct_num, settle_acct_name, withdraw_fee, min_withdraw_price, min_withdraw_remain_price,
             };
             obj = { ...obj, ...files };
             await db.beginTransaction();

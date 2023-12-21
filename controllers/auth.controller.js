@@ -1,8 +1,9 @@
 'use strict';
+import _ from "lodash";
 import { pool } from "../config/db.js";
 import { checkIsManagerUrl, returnMoment } from "../utils.js/function.js";
 import { insertQuery, updateQuery } from "../utils.js/query-util.js";
-import { createHashedPassword, checkLevel, makeUserToken, response, checkDns, lowLevelException } from "../utils.js/util.js";
+import { createHashedPassword, checkLevel, makeUserToken, response, checkDns, lowLevelException, operatorLevelList } from "../utils.js/util.js";
 import 'dotenv/config';
 
 const authCtrl = {
@@ -126,6 +127,37 @@ const authCtrl = {
             const decode_dns = checkDns(req.cookies.dns);
 
             return response(req, res, 100, "success", decode_user)
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
+    deposit: async (req, res, next) => {//보유정산금
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = checkLevel(req.cookies.token, is_manager ? 1 : 0);
+            const decode_dns = checkDns(req.cookies.dns);
+
+            let deposit_column = [
+                `users.*`
+            ];
+            if (decode_user?.level >= 40) {
+                return response(req, res, 100, "success", {})
+            } else {
+                if (decode_user?.level == 10) {
+                    deposit_column.push(`(SELECT SUM(mcht_amount) FROM deposits WHERE mcht_id=${decode_user?.id}) AS settle_amount`);
+                } else {
+                    let find_oper_level = _.find(operatorLevelList, { level: parseInt(decode_user?.level) });
+                    deposit_column.push(`(SELECT SUM(sales${find_oper_level.num}_amount) FROM deposits WHERE sales${find_oper_level.num}_id=${decode_user?.id}) AS settle_amount`);
+                }
+            }
+            let deposit_sql = ` SELECT ${deposit_column.join()} FROM users WHERE users.id=${decode_user?.id}`;
+            let deposit = await pool.query(deposit_sql);
+            deposit = deposit?.result[0];
+
+            return response(req, res, 100, "success", deposit)
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)

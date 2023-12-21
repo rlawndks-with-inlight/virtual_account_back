@@ -2,7 +2,8 @@
 import { pool } from "../config/db.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
-import { checkDns, checkLevel, getNumberByPercent, isItemBrandIdSameDnsId, response, settingFiles } from "../utils.js/util.js";
+import { checkDns, checkLevel, getNumberByPercent, isItemBrandIdSameDnsId, response, settingFiles, operatorLevelList } from "../utils.js/util.js";
+import _ from 'lodash';
 import 'dotenv/config';
 
 const table_name = 'deposits';
@@ -31,7 +32,16 @@ const depositCtrl = {
                 columns.push(`sales${decode_dns?.operator_list[i]?.num}.nickname AS sales${decode_dns?.operator_list[i]?.num}_nickname`);
                 sql += ` LEFT JOIN users AS sales${decode_dns?.operator_list[i]?.num} ON sales${decode_dns?.operator_list[i]?.num}.id=${table_name}.sales${decode_dns?.operator_list[i]?.num}_id `;
             }
-            sql += ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
+            sql += ` WHERE ${table_name}.brand_id=${decode_dns?.id} AND pay_type=0 `;
+
+            if (decode_user?.level < 40) {
+                if (decode_user?.level == 10) {
+                    sql += ` AND ${table_name}.mcht_id=${decode_user?.id} `;
+                } else {
+                    let sales_num = _.find(operatorLevelList, { level: decode_user?.level })?.num;
+                    sql += ` AND ${table_name}.sales${sales_num}_id=${decode_user?.id} `;
+                }
+            }
 
             let data = await getSelectQuery(sql, columns, req.query);
 
@@ -68,7 +78,7 @@ const depositCtrl = {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
             const {
-                virtual_acct_num, amount, deposit_bank_code, deposit_acct_num, deposit_acct_name
+                virtual_acct_num, amount, deposit_bank_code, deposit_acct_num, deposit_acct_name, pay_type = 0,
             } = req.body;
             let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE virtual_acct_num=? `, [virtual_acct_num]);
             virtual_account = virtual_account?.result[0];
@@ -97,7 +107,7 @@ const depositCtrl = {
                 brand_id: mcht?.brand_id,
                 mcht_id: mcht?.id,
                 virtual_account_id: virtual_account?.id,
-                amount, deposit_bank_code, deposit_acct_num, deposit_acct_name,
+                amount, deposit_bank_code, deposit_acct_num, deposit_acct_name, pay_type
             };
 
             let is_use_sales = false;

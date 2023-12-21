@@ -16,5 +16,8 @@ router
 router
     .route('/sign-out')
     .post(authCtrl.signOut);
+router
+    .route('/deposit')
+    .get(authCtrl.deposit);
 
 export default router;
