@@ -14,26 +14,32 @@ const depositCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
-            const { } = req.query;
+            const { is_mother } = req.query;
 
             let columns = [
                 `${table_name}.*`,
                 `virtual_accounts.virtual_bank_code`,
                 `virtual_accounts.virtual_acct_num`,
                 `virtual_accounts.virtual_acct_name`,
-                `mchts.user_name`,
-                `mchts.nickname`,
+                `mchts.user_name AS mcht_user_name`,
+                `mchts.nickname AS mcht_nickname`,
+                `users.user_name`,
+                `users.nickname`,
+                `users.level`,
             ]
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
             sql += ` LEFT JOIN virtual_accounts ON ${table_name}.virtual_account_id=virtual_accounts.id `;
+            sql += ` LEFT JOIN users ON ${table_name}.mcht_id=users.id `;
             sql += ` LEFT JOIN users AS mchts ON ${table_name}.mcht_id=mchts.id `;
             for (var i = 0; i < decode_dns?.operator_list.length; i++) {
                 columns.push(`sales${decode_dns?.operator_list[i]?.num}.user_name AS sales${decode_dns?.operator_list[i]?.num}_user_name`);
                 columns.push(`sales${decode_dns?.operator_list[i]?.num}.nickname AS sales${decode_dns?.operator_list[i]?.num}_nickname`);
                 sql += ` LEFT JOIN users AS sales${decode_dns?.operator_list[i]?.num} ON sales${decode_dns?.operator_list[i]?.num}.id=${table_name}.sales${decode_dns?.operator_list[i]?.num}_id `;
             }
-            sql += ` WHERE ${table_name}.brand_id=${decode_dns?.id} AND pay_type=0 `;
-
+            sql += ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
+            if (!is_mother) {
+                sql += ` AND pay_type=0 `
+            }
             if (decode_user?.level < 40) {
                 if (decode_user?.level == 10) {
                     sql += ` AND ${table_name}.mcht_id=${decode_user?.id} `;
@@ -102,12 +108,13 @@ const depositCtrl = {
             if (!mcht) {
                 return response(req, res, -100, "존재하지 않는 가맹점 입니다.", false)
             }
-
+            let trx_id = `${new Date().getTime()}${decode_dns?.id}${mcht?.id}0`;
             let obj = {
                 brand_id: mcht?.brand_id,
                 mcht_id: mcht?.id,
                 virtual_account_id: virtual_account?.id,
-                amount, deposit_bank_code, deposit_acct_num, deposit_acct_name, pay_type
+                amount, deposit_bank_code, deposit_acct_num, deposit_acct_name, pay_type,
+                trx_id: trx_id,
             };
 
             let is_use_sales = false;
