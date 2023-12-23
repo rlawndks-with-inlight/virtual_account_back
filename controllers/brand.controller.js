@@ -66,12 +66,14 @@ const brandCtrl = {
                 user_name, user_pw,
                 mother_deposit_bank_code, mother_deposit_acct_num, mother_deposit_acct_name, deposit_corp_type, deposit_guid, deposit_api_id, deposit_sign_key, deposit_encr_key, deposit_iv,
                 mother_withdraw_bank_code, mother_withdraw_acct_num, mother_withdraw_acct_name, withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv,
+                default_deposit_fee, default_withdraw_fee, head_office_fee,
             } = req.body;
             let files = settingFiles(req.files);
             let obj = {
                 name, dns, og_description, company_name, business_num, pvcy_rep_name, ceo_name, addr, addr_detail, resident_num, phone_num, fax_num, note, theme_css, setting_obj, level_obj, bizppurio_obj,
                 mother_deposit_bank_code, mother_deposit_acct_num, mother_deposit_acct_name, deposit_corp_type, deposit_guid, deposit_api_id, deposit_sign_key, deposit_encr_key, deposit_iv,
                 mother_withdraw_bank_code, mother_withdraw_acct_num, mother_withdraw_acct_name, withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv,
+                default_deposit_fee, default_withdraw_fee, head_office_fee,
             };
             obj['theme_css'] = JSON.stringify(obj.theme_css);
             obj['setting_obj'] = JSON.stringify(obj.setting_obj);
@@ -112,6 +114,7 @@ const brandCtrl = {
                 name, dns, og_description, company_name, business_num, pvcy_rep_name, ceo_name, addr, addr_detail, resident_num, phone_num, fax_num, note, theme_css = {}, setting_obj = {}, level_obj = {}, bizppurio_obj = {},
                 mother_deposit_bank_code, mother_deposit_acct_num, mother_deposit_acct_name, deposit_corp_type, deposit_guid, deposit_api_id, deposit_sign_key, deposit_encr_key, deposit_iv,
                 mother_withdraw_bank_code, mother_withdraw_acct_num, mother_withdraw_acct_name, withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv,
+                default_deposit_fee, default_withdraw_fee, head_office_fee,
             } = req.body;
             const { id } = req.params;
             if ((decode_user?.level < 50 && decode_user?.brand_id != id) || decode_user?.level < 40) {
@@ -123,6 +126,7 @@ const brandCtrl = {
                 name, dns, og_description, company_name, business_num, pvcy_rep_name, ceo_name, addr, addr_detail, resident_num, phone_num, fax_num, note, theme_css, setting_obj, level_obj, bizppurio_obj,
                 mother_deposit_bank_code, mother_deposit_acct_num, mother_deposit_acct_name, deposit_corp_type, deposit_guid, deposit_api_id, deposit_sign_key, deposit_encr_key, deposit_iv,
                 mother_withdraw_bank_code, mother_withdraw_acct_num, mother_withdraw_acct_name, withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv,
+                default_deposit_fee, default_withdraw_fee, head_office_fee,
             };
             obj['theme_css'] = JSON.stringify(obj.theme_css);
             obj['setting_obj'] = JSON.stringify(obj.setting_obj);

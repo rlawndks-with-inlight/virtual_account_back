@@ -332,3 +332,21 @@ export const commarNumber = (num) => {
     }
     return result + decimal;
 }
+
+export const getOperatorList = (brand_) => {
+    let operator_list = [];
+    let brand = brand_;
+    if (typeof brand['level_obj'] == 'string') {
+        brand['level_obj'] = JSON.parse(brand?.level_obj ?? '{}');
+    }
+    for (var i = 0; i < operatorLevelList.length; i++) {
+        if (brand['level_obj'][`is_use_sales${operatorLevelList[i].num}`] == 1) {
+            operator_list.push({
+                value: operatorLevelList[i].level,
+                label: brand['level_obj'][`sales${operatorLevelList[i].num}_name`],
+                num: operatorLevelList[i].num
+            })
+        }
+    }
+    return operator_list;
+}

@@ -1,7 +1,7 @@
 'use strict';
 import { pool } from "../config/db.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
-import { checkLevel, makeUserToken, operatorLevelList, response } from "../utils.js/util.js";
+import { checkLevel, getOperatorList, makeUserToken, operatorLevelList, response } from "../utils.js/util.js";
 import 'dotenv/config';
 
 const domainCtrl = {
@@ -30,6 +30,9 @@ const domainCtrl = {
                 'addr',
                 'phone_num',
                 'fax_num',
+                'default_deposit_fee',
+                'default_withdraw_fee',
+                'head_office_fee',
             ]
             let brand = await pool.query(`SELECT ${columns.join()} FROM brands WHERE dns='${dns}'`);
             if (brand?.result.length == 0) {
@@ -41,17 +44,7 @@ const domainCtrl = {
             brand['level_obj'] = JSON.parse(brand?.level_obj ?? '{}');
             brand['bizppurio_obj'] = JSON.parse(brand?.bizppurio_obj ?? '{}');
 
-            let operator_list = [];
-            for (var i = 0; i < operatorLevelList.length; i++) {
-                if (brand['level_obj'][`is_use_sales${operatorLevelList[i].num}`] == 1) {
-                    operator_list.push({
-                        value: operatorLevelList[i].level,
-                        label: brand['level_obj'][`sales${operatorLevelList[i].num}_name`],
-                        num: operatorLevelList[i].num
-                    })
-                }
-            }
-            brand['operator_list'] = operator_list;
+            brand['operator_list'] = getOperatorList(brand);
 
             const token = await makeUserToken(brand);
             res.cookie("dns", token, {
