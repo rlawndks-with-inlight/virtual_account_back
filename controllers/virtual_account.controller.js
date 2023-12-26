@@ -1,5 +1,6 @@
 'use strict';
-import { pool } from "../config/db.js";
+import db, { pool } from "../config/db.js";
+import corpApi from "../utils.js/corp-util/index.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, isItemBrandIdSameDnsId, response, settingFiles } from "../utils.js/util.js";
@@ -59,7 +60,7 @@ const virtualAccountCtrl = {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
             const {
-                mcht_user_name, deposit_bank_code, deposit_acct_num, deposit_acct_name, birth, phone_num, type = 0,
+                mcht_user_name, virtual_bank_code, type = 0,
             } = req.body;
             let mcht = await pool.query(`SELECT * FROM users WHERE brand_id=${decode_dns?.id} AND user_name=? AND level=10 `, [mcht_user_name]);
             mcht = mcht?.result[0];
@@ -68,17 +69,27 @@ const virtualAccountCtrl = {
             }
             let files = settingFiles(req.files);
             let obj = {
-                deposit_bank_code, deposit_acct_num, deposit_acct_name, birth, phone_num, brand_id: decode_dns?.id, type,
+                brand_id: decode_dns?.id, type,
                 mcht_id: mcht?.id,
-                virtual_acct_num: `${new Date().getTime()}${decode_user?.id}테스트`
             };
             obj = { ...obj, ...files };
-
+            await db.beginTransaction();
             let result = await insertQuery(`${table_name}`, obj);
-
+            let api_result = await corpApi.vaccount({
+                pay_type: 'deposit',
+                dns_data: decode_dns,
+                decode_user,
+                guid: mcht?.guid,
+                virtual_bank_code: virtual_bank_code,
+            })
+            if (api_result.code != 100) {
+                return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
+            }
+            await db.commit();
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
+            await db.rollback();
             return response(req, res, -200, "서버 에러 발생", false)
         } finally {
 

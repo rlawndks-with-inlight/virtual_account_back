@@ -9,6 +9,7 @@ import userCtrl from './user.controller.js';
 import withdrawCtrl from './withdraw.controller.js';
 import depositCtrl from './deposit.controller.js';
 import virtualAccountCtrl from './virtual_account.controller.js';
+import utilCtrl from './util.controller.js';
 
 export {
     brandCtrl,
@@ -20,4 +21,5 @@ export {
     withdrawCtrl,
     depositCtrl,
     virtualAccountCtrl,
+    utilCtrl,
 };

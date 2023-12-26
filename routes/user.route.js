@@ -12,6 +12,12 @@ router
     .route('/organizational-chart')
     .get(userCtrl.organizationalChart)
 router
+    .route('/one-won-certification')//1원인증
+    .post(userCtrl.oneWonCertification)
+router
+    .route('/one-won-certification/check')//1원인증체크
+    .post(userCtrl.oneWonCertificationCheck)
+router
     .route('/:id')
     .get(userCtrl.get)
     .put(userCtrl.update)

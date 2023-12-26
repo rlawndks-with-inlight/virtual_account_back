@@ -5,6 +5,7 @@ import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, createHashedPassword, isItemBrandIdSameDnsId, lowLevelException, makeObjByList, makeUserChildrenList, makeUserTree, operatorLevelList, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
+import corpApi from "../utils.js/corp-util/index.js";
 
 const table_name = 'users';
 
@@ -91,6 +92,12 @@ const userCtrl = {
             sql += ` WHERE ${table_name}.id=${id} `;
             let data = await pool.query(sql)
             data = data?.result[0];
+            let api_result = await corpApi.user.info({
+                pay_type: 'deposit',
+                dns_data: decode_dns,
+                decode_user,
+                guid: data?.guid
+            })
             if (!isItemBrandIdSameDnsId(decode_dns, data)) {
                 return lowLevelException(req, res);
             }
@@ -125,7 +132,7 @@ const userCtrl = {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
             let {
-                brand_id, user_name, user_pw, name, nickname, level, phone_num, profile_img, note,
+                brand_id, user_name, user_pw, name, nickname, level, phone_num, profile_img, note, email, birth,
                 mcht_fee = 0,
                 settle_bank_code = "", settle_acct_num = "", settle_acct_name = "", deposit_fee = 0, withdraw_fee = 0, min_withdraw_price = 0, min_withdraw_remain_price = 0,
             } = req.body;
@@ -139,13 +146,26 @@ const userCtrl = {
             let user_salt = pw_data.salt;
             let files = settingFiles(req.files);
             let obj = {
-                brand_id, user_name, user_pw, user_salt, name, nickname, level, phone_num, profile_img, note,
+                brand_id, user_name, user_pw, user_salt, name, nickname, level, phone_num, profile_img, note, email, birth,
                 settle_bank_code, settle_acct_num, settle_acct_name, deposit_fee, withdraw_fee, min_withdraw_price, min_withdraw_remain_price,
             };
             obj = { ...obj, ...files };
             await db.beginTransaction();
-            let result = await insertQuery(`${table_name}`, obj);
 
+            let api_result = await corpApi.user.create({
+                pay_type: 'deposit',
+                dns_data: decode_dns,
+                decode_user,
+                ...req.body,
+            })
+            if (api_result.code != 100) {
+                return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
+            }
+            let result = await insertQuery(`${table_name}`, {
+                ...obj,
+                guid: api_result?.data?.guid,
+                uniq_no: api_result?.data?.uniq_no,
+            });
             if (level == 10) {//가맹점
                 let mcht_obj = {
                     mcht_id: result?.result?.insertId,
@@ -176,19 +196,37 @@ const userCtrl = {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
             const {
-                brand_id, user_name, name, nickname, level, phone_num, profile_img, note,
+                brand_id, user_name, name, nickname, level, phone_num, profile_img, note, email, birth,
                 mcht_fee = 0,
                 settle_bank_code = "", settle_acct_num = "", settle_acct_name = "", deposit_fee = 0, withdraw_fee = 0, min_withdraw_price = 0, min_withdraw_remain_price = 0,
+                vrf_bank_code = "", tid,
                 id
             } = req.body;
             let files = settingFiles(req.files);
             let obj = {
-                brand_id, user_name, name, nickname, level, phone_num, profile_img, note,
+                brand_id, user_name, name, nickname, level, phone_num, profile_img, note, email, birth,
                 settle_bank_code, settle_acct_num, settle_acct_name, deposit_fee, withdraw_fee, min_withdraw_price, min_withdraw_remain_price,
             };
             obj = { ...obj, ...files };
             await db.beginTransaction();
+            let ago_user = await pool.query(`SELECT * FROM users WHERE id=${id}`);
+            ago_user = ago_user?.result[0];
 
+            let is_change_settle_bank = settle_bank_code != ago_user?.settle_bank_code || settle_acct_num != ago_user?.settle_acct_num || settle_acct_name != ago_user?.settle_acct_name;
+            if (is_change_settle_bank && !vrf_bank_code) {
+                return response(req, res, -200, "정산계좌 변경시 1원인증을 진행해주세요.", false)
+            }
+            if (is_change_settle_bank && vrf_bank_code) {
+                let api_result = await corpApi.user.account_verify({
+                    pay_type: 'deposit',
+                    dns_data: decode_dns,
+                    decode_user,
+                    ...req.body,
+                })
+                if (api_result.code != 100) {
+                    return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
+                }
+            }
             let result = await updateQuery(`${table_name}`, obj, id);
             if (level == 10) {//가맹점
                 let mcht_obj = {
@@ -239,6 +277,55 @@ const userCtrl = {
         }
     },
     changeStatus: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_dns = checkDns(req.cookies.dns);
+            const { id } = req.params
+            let { status } = req.body;
+            let user = await selectQuerySimple(table_name, id);
+            console.log(status)
+            user = user?.result[0];
+            if (!user || decode_user?.level < user?.level) {
+                return response(req, res, -100, "잘못된 접근입니다.", false)
+            }
+            let obj = {
+                status
+            }
+            let result = await updateQuery(`${table_name}`, obj, id);
+            return response(req, res, 100, "success", {})
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
+    oneWonCertification: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_dns = checkDns(req.cookies.dns);
+            let { id, settle_bank_code = "", settle_acct_num = "", settle_acct_name = "", } = req.body;
+
+            let api_result = await corpApi.user.account({
+                pay_type: 'deposit',
+                dns_data: decode_dns,
+                decode_user,
+                ...req.body,
+            })
+            if (api_result.code != 100) {
+                return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
+            }
+            return response(req, res, 100, "success", api_result?.data)
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
+    oneWonCertificationCheck: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = checkLevel(req.cookies.token, 0);
