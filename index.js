@@ -42,7 +42,7 @@ app.use((req, res, next) => {
 });
 let server = undefined
 const HTTP_PORT = 8001;
-const HTTPS_PORT = 8443;
+const HTTPS_PORT = 443;
 if (process.env.NODE_ENV == 'development') {
   server = http.createServer(app).listen(HTTP_PORT, function () {
     console.log("**-------------------------------------**");
