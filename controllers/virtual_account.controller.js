@@ -71,10 +71,10 @@ const virtualAccountCtrl = {
             let obj = {
                 brand_id: decode_dns?.id, type,
                 mcht_id: mcht?.id,
+                virtual_bank_code,
             };
             obj = { ...obj, ...files };
             await db.beginTransaction();
-            let result = await insertQuery(`${table_name}`, obj);
             let api_result = await corpApi.vaccount({
                 pay_type: 'deposit',
                 dns_data: decode_dns,
@@ -83,8 +83,15 @@ const virtualAccountCtrl = {
                 virtual_bank_code: virtual_bank_code,
             })
             if (api_result.code != 100) {
+                await db.rollback();
                 return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
             }
+            let result = await insertQuery(`${table_name}`, {
+                ...obj,
+                tid: api_result?.data?.tid,
+                virtual_acct_num: api_result?.data?.virtual_acct_num,
+            });
+
             await db.commit();
             return response(req, res, 100, "success", {})
         } catch (err) {

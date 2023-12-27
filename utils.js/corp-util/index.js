@@ -81,6 +81,28 @@ const corpApi = {
         }
         return result;
     },
+    push: {
+        create: async (data_) => {//푸시 url등록
+            let data = data_;
+            let { dns_data } = data;
+            data = await getDnsData(data, dns_data);
+            let result = default_result;
+            if (dns_data?.deposit_corp_type == 1) {
+                result = await banknersApi.push.create(data);
+            }
+            return result;
+        },
+        update: async (data_) => {//푸시 url등록
+            let data = data_;
+            let { dns_data } = data;
+            data = await getDnsData(data, dns_data);
+            let result = default_result;
+            if (dns_data?.deposit_corp_type == 1) {
+                result = await banknersApi.push.update(data);
+            }
+            return result;
+        },
+    },
 }
 
 export default corpApi;

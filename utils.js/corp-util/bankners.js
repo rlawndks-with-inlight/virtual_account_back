@@ -39,12 +39,12 @@ const makeBody = (query_, dns_data, pay_type) => {
     return encryptedRequestBody;
 }
 
-const postRequest = async (uri, query, headers_data) => {
+const postRequest = async (uri, query, headers_data, method = 'POST') => {
     const options = {
         hostname: API_URL,
         port: 443, // SSL 포트 443
         path: uri,
-        method: 'POST',
+        method: method,
         headers: {
             ...headers_data,
             'Content-Length': Buffer.byteLength(query)
@@ -208,10 +208,6 @@ export const banknersApi = {
                 }
                 query = makeBody(query, dns_data, pay_type)
                 let result = await postRequest('/api/user/account/verify', query, makeHeaderData(dns_data, pay_type, decode_user));
-                console.log('################')
-                console.log(result);
-                console.log('################')
-
                 if (result?.code != '0000') {
                     return {
                         code: -100,
@@ -283,14 +279,11 @@ export const banknersApi = {
                 guid, virtual_bank_code
             } = data;
             let query = {
-                guid, virtual_bank_code
+                guid,
+                bank_id: virtual_bank_code
             }
             query = makeBody(query, dns_data, pay_type)
             let result = await postRequest('/api/vaccount', query, makeHeaderData(dns_data, pay_type, decode_user));
-            console.log('################')
-            console.log(result);
-            console.log('################')
-
             if (result?.code != '0000') {
                 return {
                     code: -100,
@@ -302,8 +295,8 @@ export const banknersApi = {
                 code: 100,
                 message: '',
                 data: {
+                    virtual_acct_num: result?.data?.vacnt_no,
                     tid: result?.data?.tid,
-                    uniq_no: result?.data?.req_uniq_no,
                 },
             };
         } catch (err) {
@@ -316,5 +309,81 @@ export const banknersApi = {
             };
 
         }
+    },
+    push: {
+        create: async (data) => {//푸시 url등록
+            try {
+                let {
+                    dns_data, pay_type, decode_user,
+                    push_kind, push_tp, push_url, encr_yn
+                } = data;
+                let query = {
+                    push_kind,
+                    push_tp,
+                    push_url,
+                    encr_yn,
+                }
+                query = makeBody(query, dns_data, pay_type)
+                let result = await postRequest('/api/merchant/push', query, makeHeaderData(dns_data, pay_type, decode_user));
+                if (result?.code != '0000') {
+                    return {
+                        code: -100,
+                        message: result?.message,
+                        data: {},
+                    };
+                }
+                return {
+                    code: 100,
+                    message: '',
+                    data: {},
+                };
+            } catch (err) {
+                console.log(err)
+                console.log(err?.response?.data)
+                return {
+                    code: -100,
+                    message: '',
+                    data: {},
+                };
+
+            }
+        },
+        update: async (data) => {//푸시 url등록
+            try {
+                let {
+                    dns_data, pay_type, decode_user,
+                    push_kind, push_tp, push_url, encr_yn
+                } = data;
+                let query = {
+                    push_kind,
+                    push_tp,
+                    push_url,
+                    encr_yn,
+                }
+                query = makeBody(query, dns_data, pay_type)
+                let result = await postRequest('/api/merchant/push', query, makeHeaderData(dns_data, pay_type, decode_user), 'PUT');
+                if (result?.code != '0000') {
+                    return {
+                        code: -100,
+                        message: result?.message,
+                        data: {},
+                    };
+                }
+                return {
+                    code: 100,
+                    message: '',
+                    data: {},
+                };
+            } catch (err) {
+                console.log(err)
+                console.log(err?.response?.data)
+                return {
+                    code: -100,
+                    message: '',
+                    data: {},
+                };
+
+            }
+        },
     }
 }

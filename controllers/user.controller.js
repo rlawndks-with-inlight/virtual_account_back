@@ -92,12 +92,12 @@ const userCtrl = {
             sql += ` WHERE ${table_name}.id=${id} `;
             let data = await pool.query(sql)
             data = data?.result[0];
-            let api_result = await corpApi.user.info({
-                pay_type: 'deposit',
-                dns_data: decode_dns,
-                decode_user,
-                guid: data?.guid
-            })
+            // let api_result = await corpApi.user.info({
+            //     pay_type: 'deposit',
+            //     dns_data: decode_dns,
+            //     decode_user,
+            //     guid: data?.guid
+            // })
             if (!isItemBrandIdSameDnsId(decode_dns, data)) {
                 return lowLevelException(req, res);
             }
@@ -212,7 +212,7 @@ const userCtrl = {
             let ago_user = await pool.query(`SELECT * FROM users WHERE id=${id}`);
             ago_user = ago_user?.result[0];
 
-            let is_change_settle_bank = settle_bank_code != ago_user?.settle_bank_code || settle_acct_num != ago_user?.settle_acct_num || settle_acct_name != ago_user?.settle_acct_name;
+            let is_change_settle_bank = (settle_bank_code != ago_user?.settle_bank_code || settle_acct_num != ago_user?.settle_acct_num || settle_acct_name != ago_user?.settle_acct_name) && (settle_bank_code || settle_acct_num || settle_acct_name);
             if (is_change_settle_bank && !vrf_bank_code) {
                 return response(req, res, -200, "정산계좌 변경시 1원인증을 진행해주세요.", false)
             }

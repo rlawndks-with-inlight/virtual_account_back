@@ -5,6 +5,7 @@ import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, createHashedPassword, lowLevelException, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
+import corpApi from "../utils.js/corp-util/index.js";
 
 const table_name = 'brands';
 
@@ -115,6 +116,7 @@ const brandCtrl = {
                 mother_deposit_bank_code, mother_deposit_acct_num, mother_deposit_acct_name, deposit_corp_type, deposit_guid, deposit_api_id, deposit_sign_key, deposit_encr_key, deposit_iv,
                 mother_withdraw_bank_code, mother_withdraw_acct_num, mother_withdraw_acct_name, withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv,
                 default_deposit_fee, default_withdraw_fee, head_office_fee,
+                deposit_noti_url, withdraw_noti_url, withdraw_fail_noti_url, api_url,
             } = req.body;
             const { id } = req.params;
             if ((decode_user?.level < 50 && decode_user?.brand_id != id) || decode_user?.level < 40) {
@@ -126,7 +128,7 @@ const brandCtrl = {
                 name, dns, og_description, company_name, business_num, pvcy_rep_name, ceo_name, addr, addr_detail, resident_num, phone_num, fax_num, note, theme_css, setting_obj, level_obj, bizppurio_obj,
                 mother_deposit_bank_code, mother_deposit_acct_num, mother_deposit_acct_name, deposit_corp_type, deposit_guid, deposit_api_id, deposit_sign_key, deposit_encr_key, deposit_iv,
                 mother_withdraw_bank_code, mother_withdraw_acct_num, mother_withdraw_acct_name, withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv,
-                default_deposit_fee, default_withdraw_fee, head_office_fee,
+                default_deposit_fee, default_withdraw_fee, head_office_fee, api_url
             };
             obj['theme_css'] = JSON.stringify(obj.theme_css);
             obj['setting_obj'] = JSON.stringify(obj.setting_obj);
@@ -134,10 +136,64 @@ const brandCtrl = {
             obj['bizppurio_obj'] = JSON.stringify(obj.bizppurio_obj);
             obj = { ...obj, ...files };
 
+            await db.beginTransaction();
+            let ago_brand = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id}`);
+            ago_brand = ago_brand?.result[0];
+
+            if (deposit_noti_url != ago_brand?.deposit_noti_url && deposit_noti_url) {
+                let api_result = await corpApi.push[(ago_brand?.deposit_noti_url) ? 'update' : 'create']({
+                    pay_type: 'deposit',
+                    dns_data: decode_dns,
+                    decode_user,
+                    push_kind: 'DEPOSIT',
+                    push_tp: 'JSON',
+                    push_url: deposit_noti_url,
+                    encr_yn: 'N',
+                })
+                console.log(api_result);
+
+                if (api_result.code == 100) {
+                    obj['deposit_noti_url'] = deposit_noti_url;
+                }
+            }
+            if (withdraw_noti_url != ago_brand?.withdraw_noti_url && withdraw_noti_url) {
+                let api_result = await corpApi.push[(ago_brand?.withdraw_noti_url) ? 'update' : 'create']({
+                    pay_type: 'deposit',
+                    dns_data: decode_dns,
+                    decode_user,
+                    push_kind: 'WITHDRAW',
+                    push_tp: 'JSON',
+                    push_url: withdraw_noti_url,
+                    encr_yn: 'N',
+                })
+                console.log(api_result);
+                if (api_result.code == 100) {
+                    obj['withdraw_noti_url'] = withdraw_noti_url;
+                }
+            }
+            if (withdraw_fail_noti_url != ago_brand?.withdraw_fail_noti_url && withdraw_fail_noti_url) {
+                let api_result = await corpApi.push[(ago_brand?.withdraw_fail_noti_url) ? 'update' : 'create']({
+                    pay_type: 'deposit',
+                    dns_data: decode_dns,
+                    decode_user,
+                    push_kind: 'WITHDRAW_FAIL',
+                    push_tp: 'JSON',
+                    push_url: withdraw_fail_noti_url,
+                    encr_yn: 'N',
+                })
+                console.log(api_result);
+
+                if (api_result.code == 100) {
+                    obj['withdraw_fail_noti_url'] = withdraw_fail_noti_url;
+                }
+            }
             let result = await updateQuery(`${table_name}`, obj, id);
+
+            await db.commit();
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
+            await db.rollback();
             return response(req, res, -200, "서버 에러 발생", false)
         } finally {
 
