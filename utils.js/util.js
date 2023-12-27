@@ -116,16 +116,23 @@ const logRequestResponse = async (req, res, decode_user, decode_dns) => {//로�
     )
 }
 export const response = async (req, res, code, message, data) => { //응답 포맷
-    var resDict = {
+    let resDict = {
         'result': code,
         'message': message,
         'data': data,
     }
-    const decode_user = checkLevel(req.cookies.token, 0)
-    const decode_dns = checkLevel(req.cookies.dns, 0)
-    let save_log = await logRequestResponse(req, resDict, decode_user, decode_dns);
-
-    res.send(resDict);
+    const decode_user = checkLevel(req.cookies.token, 0, res)
+    const decode_dns = checkDns(req.cookies.dns, 0)
+    //let save_log = await logRequestResponse(req, resDict, decode_user, decode_dns);
+    if (req?.IS_RETURN) {
+        return resDict;
+    } else {
+        if (code < 0) {
+            res.status(500).send(resDict)
+        } else {
+            res.status(200).send(resDict)
+        }
+    }
 }
 export const lowLevelException = (req, res) => {
     return response(req, res, -150, "권한이 없습니다.", false);
