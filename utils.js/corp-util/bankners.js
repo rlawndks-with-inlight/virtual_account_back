@@ -266,7 +266,7 @@ export const banknersApi = {
                 console.log(err);
                 return {
                     code: -100,
-                    message: result?.message,
+                    message: '',
                     data: {},
                 };
             }
