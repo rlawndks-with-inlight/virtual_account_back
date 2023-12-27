@@ -41,9 +41,9 @@ app.use((req, res, next) => {
   return next(err);
 });
 let server = undefined
-const HTTP_PORT = 8443;
+const HTTP_PORT = 8001;
 const HTTPS_PORT = 8443;
-if (process.env.NODE_ENV == 'development') {
+if (process.env.NODE_ENV == 'asd') {
   server = http.createServer(app).listen(HTTP_PORT, function () {
     console.log("**-------------------------------------**");
     console.log(`====      Server is On ${HTTP_PORT}...!!!    ====`);
