@@ -122,6 +122,7 @@ export const banknersApi = {
                     birth_ymd: birth,
                     ci: phone_num + birth,
                     user_tp: 'PERSON',
+                    auth_tp: 'PASS',
                 }
                 query = makeBody(query, dns_data, pay_type)
                 let result = await postRequest('/api/user', query, makeHeaderData(dns_data, pay_type, decode_user));
@@ -233,6 +234,40 @@ export const banknersApi = {
 
             }
         }
+    },
+    balance: {
+        info: async (data) => {
+            try {
+                let { dns_data, pay_type, decode_user, guid, curr } = data;
+                let query = {
+                    guid: guid,
+                    curr: 'KRW',
+                }
+                query = new URLSearchParams(query).toString();
+                let { data: result } = await axios.get(`https://${API_URL}/api/balance/info?${query}`, {
+                    headers: makeHeaderData(dns_data, pay_type, decode_user)
+                })
+                if (result?.code != '0000') {
+                    return {
+                        code: -100,
+                        message: result?.message,
+                        data: {},
+                    };
+                }
+                return {
+                    code: 100,
+                    message: result?.message,
+                    data: result.data,
+                };
+            } catch (err) {
+                console.log(err);
+                return {
+                    code: -100,
+                    message: '',
+                    data: {},
+                };
+            }
+        },
     },
     bank: {
         list: async (data) => {

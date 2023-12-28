@@ -88,17 +88,11 @@ const userCtrl = {
                 columns.push(`merchandise_columns.sales${decode_dns?.operator_list[i]?.num}_id`);
                 columns.push(`merchandise_columns.sales${decode_dns?.operator_list[i]?.num}_fee`);
             }
-            let sql = `SELECT ${columns.join()} FROM ${table_name} `
+            let sql = `SELECT ${columns.join()} FROM ${table_name} `;
             sql += ` LEFT JOIN merchandise_columns ON merchandise_columns.mcht_id=${table_name}.id `;
             sql += ` WHERE ${table_name}.id=${id} `;
             let data = await pool.query(sql)
             data = data?.result[0];
-            // let api_result = await corpApi.user.info({
-            //     pay_type: 'deposit',
-            //     dns_data: decode_dns,
-            //     decode_user,
-            //     guid: data?.guid
-            // })
             if (!isItemBrandIdSameDnsId(decode_dns, data)) {
                 return lowLevelException(req, res);
             }
@@ -152,7 +146,20 @@ const userCtrl = {
             };
             obj = { ...obj, ...files };
             await db.beginTransaction();
-
+            let api_result = await corpApi.user.create({
+                pay_type: 'deposit',
+                dns_data: decode_dns,
+                decode_user,
+                email,
+                name,
+                phone_num,
+                birth
+            })
+            if (api_result.code != 100) {
+                return response(req, res, -100, (api_result?.message || "서버 에러 발생"), api_result?.data)
+            }
+            obj['guid'] = api_result.data?.guid
+            console.log(api_result)
             let result = await insertQuery(`${table_name}`, obj);
             let user_id = result?.result?.insertId;
             let result2 = await updateQuery(table_name, {
@@ -191,6 +198,7 @@ const userCtrl = {
                 brand_id, user_name, name, nickname, level, phone_num, profile_img, note, email, birth,
                 mcht_fee = 0,
                 settle_bank_code = "", settle_acct_num = "", settle_acct_name = "", deposit_fee = 0, withdraw_fee = 0, min_withdraw_price = 0, min_withdraw_remain_price = 0,
+                vrf_word,
                 id
             } = req.body;
             let files = settingFiles(req.files);
@@ -203,21 +211,21 @@ const userCtrl = {
             let ago_user = await pool.query(`SELECT * FROM users WHERE id=${id}`);
             ago_user = ago_user?.result[0];
 
-            // let is_change_settle_bank = (settle_bank_code != ago_user?.settle_bank_code || settle_acct_num != ago_user?.settle_acct_num || settle_acct_name != ago_user?.settle_acct_name) && (settle_bank_code || settle_acct_num || settle_acct_name);
-            // if (is_change_settle_bank && !vrf_bank_code) {
-            //     return response(req, res, -200, "정산계좌 변경시 1원인증을 진행해주세요.", false)
-            // }
-            // if (is_change_settle_bank && vrf_bank_code) {
-            //     let api_result = await corpApi.user.account_verify({
-            //         pay_type: 'deposit',
-            //         dns_data: decode_dns,
-            //         decode_user,
-            //         ...req.body,
-            //     })
-            //     if (api_result.code != 100) {
-            //         return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
-            //     }
-            // }
+            let is_change_settle_bank = (settle_bank_code != ago_user?.settle_bank_code || settle_acct_num != ago_user?.settle_acct_num || settle_acct_name != ago_user?.settle_acct_name) && (settle_bank_code || settle_acct_num || settle_acct_name);
+            if (is_change_settle_bank && !vrf_word) {
+                return response(req, res, -200, "정산계좌 변경시 1원인증을 진행해주세요.", false)
+            }
+            if (is_change_settle_bank && vrf_word) {
+                let api_result = await corpApi.user.account_verify({
+                    pay_type: 'deposit',
+                    dns_data: decode_dns,
+                    decode_user,
+                    ...req.body,
+                })
+                if (api_result.code != 100) {
+                    return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
+                }
+            }
             let result = await updateQuery(`${table_name}`, obj, id);
             if (level == 10) {//가맹점
                 let mcht_obj = {
@@ -297,22 +305,25 @@ const userCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
-            let { mid, deposit_bank_code, deposit_acct_num, deposit_acct_name, birth, phone_num } = req.body;
+            let { birth, settle_bank_code, settle_acct_num, settle_acct_name, guid } = req.body;
 
-            let { data: result } = await axios.post(`${process.env.API_URL}/api/virtual-account`, {
-                mid: mid,
-                bankCd: deposit_bank_code,
-                account: deposit_acct_num,
-                holder: deposit_acct_name,
-                birth: birth,
-                phoneNo: phone_num,
+            let result = await corpApi.user.account({
+                pay_type: 'deposit',
+                dns_data: decode_dns,
+                decode_user: decode_user,
+                settle_bank_code,
+                settle_acct_num,
+                settle_acct_name,
+                guid,
+                birth,
             })
-            console.log(result)
-            if (result?.result > 0) {
-                return response(req, res, 100, "success", result?.data)
-            } else {
-                return response(req, res, result?.result, result?.message, {})
+            if (result.code != 100) {
+                return response(req, res, -100, (result?.message || "서버 에러 발생"), result?.data)
             }
+
+            return response(req, res, 100, "success", result?.data)
+
+
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)
