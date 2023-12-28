@@ -6,6 +6,7 @@ import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuer
 import { checkDns, checkLevel, createHashedPassword, isItemBrandIdSameDnsId, lowLevelException, makeObjByList, makeUserChildrenList, makeUserTree, operatorLevelList, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 import corpApi from "../utils.js/corp-util/index.js";
+import axios from "axios";
 
 const table_name = 'users';
 
@@ -152,20 +153,11 @@ const userCtrl = {
             obj = { ...obj, ...files };
             await db.beginTransaction();
 
-            let api_result = await corpApi.user.create({
-                pay_type: 'deposit',
-                dns_data: decode_dns,
-                decode_user,
-                ...req.body,
-            })
-            if (api_result.code != 100) {
-                return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
-            }
-            let result = await insertQuery(`${table_name}`, {
-                ...obj,
-                guid: api_result?.data?.guid,
-                uniq_no: api_result?.data?.uniq_no,
-            });
+            let result = await insertQuery(`${table_name}`, obj);
+            let user_id = result?.result?.insertId;
+            let result2 = await updateQuery(table_name, {
+                mid: `${new Date().getTime()}${decode_dns?.id}${user_id}`,
+            }, user_id)
             if (level == 10) {//가맹점
                 let mcht_obj = {
                     mcht_id: result?.result?.insertId,
@@ -199,7 +191,6 @@ const userCtrl = {
                 brand_id, user_name, name, nickname, level, phone_num, profile_img, note, email, birth,
                 mcht_fee = 0,
                 settle_bank_code = "", settle_acct_num = "", settle_acct_name = "", deposit_fee = 0, withdraw_fee = 0, min_withdraw_price = 0, min_withdraw_remain_price = 0,
-                vrf_bank_code = "", tid,
                 id
             } = req.body;
             let files = settingFiles(req.files);
@@ -212,21 +203,21 @@ const userCtrl = {
             let ago_user = await pool.query(`SELECT * FROM users WHERE id=${id}`);
             ago_user = ago_user?.result[0];
 
-            let is_change_settle_bank = (settle_bank_code != ago_user?.settle_bank_code || settle_acct_num != ago_user?.settle_acct_num || settle_acct_name != ago_user?.settle_acct_name) && (settle_bank_code || settle_acct_num || settle_acct_name);
-            if (is_change_settle_bank && !vrf_bank_code) {
-                return response(req, res, -200, "정산계좌 변경시 1원인증을 진행해주세요.", false)
-            }
-            if (is_change_settle_bank && vrf_bank_code) {
-                let api_result = await corpApi.user.account_verify({
-                    pay_type: 'deposit',
-                    dns_data: decode_dns,
-                    decode_user,
-                    ...req.body,
-                })
-                if (api_result.code != 100) {
-                    return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
-                }
-            }
+            // let is_change_settle_bank = (settle_bank_code != ago_user?.settle_bank_code || settle_acct_num != ago_user?.settle_acct_num || settle_acct_name != ago_user?.settle_acct_name) && (settle_bank_code || settle_acct_num || settle_acct_name);
+            // if (is_change_settle_bank && !vrf_bank_code) {
+            //     return response(req, res, -200, "정산계좌 변경시 1원인증을 진행해주세요.", false)
+            // }
+            // if (is_change_settle_bank && vrf_bank_code) {
+            //     let api_result = await corpApi.user.account_verify({
+            //         pay_type: 'deposit',
+            //         dns_data: decode_dns,
+            //         decode_user,
+            //         ...req.body,
+            //     })
+            //     if (api_result.code != 100) {
+            //         return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
+            //     }
+            // }
             let result = await updateQuery(`${table_name}`, obj, id);
             if (level == 10) {//가맹점
                 let mcht_obj = {
@@ -306,18 +297,22 @@ const userCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
-            let { id, settle_bank_code = "", settle_acct_num = "", settle_acct_name = "", } = req.body;
+            let { mid, deposit_bank_code, deposit_acct_num, deposit_acct_name, birth, phone_num } = req.body;
 
-            let api_result = await corpApi.user.account({
-                pay_type: 'deposit',
-                dns_data: decode_dns,
-                decode_user,
-                ...req.body,
+            let { data: result } = await axios.post(`${process.env.API_URL}/api/virtual-account`, {
+                mid: mid,
+                bankCd: deposit_bank_code,
+                account: deposit_acct_num,
+                holder: deposit_acct_name,
+                birth: birth,
+                phoneNo: phone_num,
             })
-            if (api_result.code != 100) {
-                return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
+            console.log(result)
+            if (result?.result > 0) {
+                return response(req, res, 100, "success", result?.data)
+            } else {
+                return response(req, res, result?.result, result?.message, {})
             }
-            return response(req, res, 100, "success", api_result?.data)
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)

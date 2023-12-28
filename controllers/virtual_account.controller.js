@@ -1,4 +1,5 @@
 'use strict';
+import axios from "axios";
 import db, { pool } from "../config/db.js";
 import corpApi from "../utils.js/corp-util/index.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
@@ -60,43 +61,24 @@ const virtualAccountCtrl = {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
             const {
-                mcht_user_name, virtual_bank_code, type = 0,
+                mid, tid, guid,
+                vrf_word
             } = req.body;
-            let mcht = await pool.query(`SELECT * FROM users WHERE brand_id=${decode_dns?.id} AND user_name=? AND level=10 `, [mcht_user_name]);
-            mcht = mcht?.result[0];
-            if (!mcht) {
-                return response(req, res, -100, "가맹점을 찾을 수 없습니다.", false)
-            }
             let files = settingFiles(req.files);
-            let obj = {
-                brand_id: decode_dns?.id, type,
-                mcht_id: mcht?.id,
-                virtual_bank_code,
-            };
-            obj = { ...obj, ...files };
-            await db.beginTransaction();
-            let api_result = await corpApi.vaccount({
-                pay_type: 'deposit',
-                dns_data: decode_dns,
-                decode_user,
-                guid: mcht?.guid,
-                virtual_bank_code: virtual_bank_code,
-            })
-            if (api_result.code != 100) {
-                await db.rollback();
-                return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
-            }
-            let result = await insertQuery(`${table_name}`, {
-                ...obj,
-                tid: api_result?.data?.tid,
-                virtual_acct_num: api_result?.data?.virtual_acct_num,
-            });
 
-            await db.commit();
-            return response(req, res, 100, "success", {})
+            let { data: result } = await axios.post(`${process.env.API_URL}/api/virtual-account/check`, {
+                mid,
+                tid,
+                vrf_word,
+                guid
+            })
+            if (result?.result > 0) {
+                return response(req, res, 100, "success", result?.data)
+            } else {
+                return response(req, res, result?.result, result?.message, {})
+            }
         } catch (err) {
             console.log(err)
-            await db.rollback();
             return response(req, res, -200, "서버 에러 발생", false)
         } finally {
 
@@ -142,6 +124,7 @@ const virtualAccountCtrl = {
 
         }
     },
+
 };
 
 export default virtualAccountCtrl;
