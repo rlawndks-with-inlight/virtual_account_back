@@ -336,19 +336,18 @@ const userCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
-            const { id } = req.params
-            let { status } = req.body;
-            let user = await selectQuerySimple(table_name, id);
-            console.log(status)
-            user = user?.result[0];
-            if (!user || decode_user?.level < user?.level) {
-                return response(req, res, -100, "잘못된 접근입니다.", false)
+            let { tid, vrf_word } = req.body;
+            let result = await corpApi.user.account_verify({
+                pay_type: 'deposit',
+                dns_data: decode_dns,
+                decode_user: decode_user,
+                tid,
+                vrf_word
+            })
+            if (result.code != 100) {
+                return response(req, res, -100, (result?.message || "서버 에러 발생"), {})
             }
-            let obj = {
-                status
-            }
-            let result = await updateQuery(`${table_name}`, obj, id);
-            return response(req, res, 100, "success", {})
+            return response(req, res, 100, "success", result.data)
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)

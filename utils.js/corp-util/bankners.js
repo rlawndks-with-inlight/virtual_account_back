@@ -200,11 +200,11 @@ export const banknersApi = {
             try {
                 let {
                     dns_data, pay_type, decode_user,
-                    tid, vrf_bank_code,
+                    tid, vrf_word,
                 } = data;
                 let query = {
                     tid: tid,
-                    vrf_word: vrf_bank_code,
+                    vrf_word: vrf_word,
                 }
                 query = makeBody(query, dns_data, pay_type)
                 let result = await postRequest('/api/user/account/verify', query, makeHeaderData(dns_data, pay_type, decode_user));

@@ -150,8 +150,6 @@ const brandCtrl = {
                     push_url: deposit_noti_url,
                     encr_yn: 'N',
                 })
-                console.log(api_result);
-
                 if (api_result.code == 100) {
                     obj['deposit_noti_url'] = deposit_noti_url;
                 }
@@ -166,7 +164,6 @@ const brandCtrl = {
                     push_url: withdraw_noti_url,
                     encr_yn: 'N',
                 })
-                console.log(api_result);
                 if (api_result.code == 100) {
                     obj['withdraw_noti_url'] = withdraw_noti_url;
                 }
@@ -181,8 +178,6 @@ const brandCtrl = {
                     push_url: withdraw_fail_noti_url,
                     encr_yn: 'N',
                 })
-                console.log(api_result);
-
                 if (api_result.code == 100) {
                     obj['withdraw_fail_noti_url'] = withdraw_fail_noti_url;
                 }
