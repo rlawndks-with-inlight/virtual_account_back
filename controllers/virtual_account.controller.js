@@ -42,7 +42,11 @@ const virtualAccountCtrl = {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
             const { id } = req.params;
-            let data = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id}`)
+            let sql = ` SELECT ${table_name}.*, users.mid FROM ${table_name} `;
+            sql += ` LEFT JOIN users ON ${table_name}.mcht_id=users.id `;
+            sql += ` WHERE ${table_name}.id=${id} `;
+
+            let data = await pool.query(sql)
             data = data?.result[0];
             if (!isItemBrandIdSameDnsId(decode_dns, data)) {
                 return lowLevelException(req, res);
