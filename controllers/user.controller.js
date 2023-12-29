@@ -91,8 +91,15 @@ const userCtrl = {
             let sql = `SELECT ${columns.join()} FROM ${table_name} `;
             sql += ` LEFT JOIN merchandise_columns ON merchandise_columns.mcht_id=${table_name}.id `;
             sql += ` WHERE ${table_name}.id=${id} `;
+
             let data = await pool.query(sql)
             data = data?.result[0];
+            let api_result = await corpApi.balance.info({
+                pay_type: 'deposit',
+                dns_data: decode_dns,
+                decode_user,
+                guid: data?.guid
+            })
             if (!isItemBrandIdSameDnsId(decode_dns, data)) {
                 return lowLevelException(req, res);
             }

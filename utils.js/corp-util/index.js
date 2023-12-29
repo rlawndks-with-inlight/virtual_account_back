@@ -58,6 +58,32 @@ const corpApi = {
             }
             return result;
         },
+        withdraw: {
+            request: async (data_) => {//출금요청
+                let data = data_;
+                let { dns_data } = data;
+                data = await getDnsData(data, dns_data);
+                let result = default_result;
+
+                if (dns_data?.deposit_corp_type == 1) {
+                    result = await banknersApi.user.withdraw.request(data);
+                }
+                return result;
+            },
+        },
+    },
+    transfer: {
+        pass: async (data_) => {//이체
+            let data = data_;
+            let { dns_data } = data;
+            data = await getDnsData(data, dns_data);
+            let result = default_result;
+
+            if (dns_data?.deposit_corp_type == 1) {
+                result = await banknersApi.transfer.pass(data);
+            }
+            return result;
+        },
     },
     balance: {
         info: async (data_) => {//유저정보 출력
