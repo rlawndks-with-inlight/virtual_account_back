@@ -162,6 +162,7 @@ const userCtrl = {
                 phone_num,
                 birth
             })
+            console.log(api_result)
             if (api_result.code != 100) {
                 return response(req, res, -100, (api_result?.message || "서버 에러 발생"), api_result?.data)
             }
