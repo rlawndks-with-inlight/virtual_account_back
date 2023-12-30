@@ -139,11 +139,12 @@ const authCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = checkLevel(req.cookies.token, is_manager ? 1 : 0);
             const decode_dns = checkDns(req.cookies.dns);
-
             let deposit_column = [
                 `users.*`
             ];
+
             if (decode_user?.level >= 40) {
+                console.log(123)
                 return response(req, res, 100, "success", {})
             } else {
                 if (decode_user?.level == 10) {
@@ -152,12 +153,12 @@ const authCtrl = {
                     let find_oper_level = _.find(operatorLevelList, { level: parseInt(decode_user?.level) });
                     deposit_column.push(`(SELECT SUM(sales${find_oper_level.num}_amount) FROM deposits WHERE sales${find_oper_level.num}_id=${decode_user?.id}) AS settle_amount`);
                 }
+                let deposit_sql = ` SELECT ${deposit_column.join()} FROM users WHERE users.id=${decode_user?.id}`;
+                let deposit = await pool.query(deposit_sql);
+                deposit = deposit?.result[0];
+                return response(req, res, 100, "success", deposit)
             }
-            let deposit_sql = ` SELECT ${deposit_column.join()} FROM users WHERE users.id=${decode_user?.id}`;
-            let deposit = await pool.query(deposit_sql);
-            deposit = deposit?.result[0];
 
-            return response(req, res, 100, "success", deposit)
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)
