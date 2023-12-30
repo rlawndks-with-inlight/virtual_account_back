@@ -120,7 +120,7 @@ export const banknersApi = {
                     mem_email: email,
                     sms_recv_cp: phone_num,
                     birth_ymd: birth,
-                    ci: phone_num + birth,
+                    ci: `${new Date().getTime()}` + phone_num + birth,
                     user_tp: 'PERSON',
                     auth_tp: 'PASS',
                 }
