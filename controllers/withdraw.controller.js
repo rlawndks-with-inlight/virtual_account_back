@@ -149,9 +149,8 @@ const withdrawCtrl = {
             if (api_withdraw_request_result.code != 100) {
                 return response(req, res, -100, (api_withdraw_request_result?.message || "서버 에러 발생"), api_withdraw_request_result?.data)
             }
-
+            deposit_obj['trx_id'] = api_withdraw_request_result.data?.tid;
             let result = await insertQuery(`${table_name}`, deposit_obj);
-
             /*
             let trx_id = `${new Date().getTime()}${decode_dns?.id}${user?.id}5`;
             let deposit_obj = {
