@@ -77,7 +77,6 @@ const withdrawCtrl = {
 
             obj = { ...obj, ...files };
 
-            await db.beginTransaction();
 
 
             let user_column = [
@@ -116,7 +115,7 @@ const withdrawCtrl = {
             }
             let settle_amount = await pool.query(settle_amount_sql);
             settle_amount = settle_amount?.result[0]?.settle_amount ?? 0;
-            if (parseInt(withdraw_amount) + user?.withdraw_fee > settle_amount) {
+            if (amount > settle_amount) {
                 return response(req, res, -100, "출금 요청금이 보유정산금보다 많습니다.", false)
             }
             if (settle_amount < user?.min_withdraw_remain_price) {
@@ -168,11 +167,9 @@ const withdrawCtrl = {
 
            
 */
-            await db.commit();
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
-            await db.rollback();
             return response(req, res, -200, "서버 에러 발생", false)
         } finally {
 

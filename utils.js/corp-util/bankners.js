@@ -464,11 +464,11 @@ export const banknersApi = {
         try {
             let {
                 dns_data, pay_type, decode_user,
-                guid, virtual_bank_code
+                guid
             } = data;
             let query = {
                 guid,
-                bank_id: virtual_bank_code,
+                bank_id: '007',
                 version: 2,
             }
             query = makeBody(query, dns_data, pay_type)
