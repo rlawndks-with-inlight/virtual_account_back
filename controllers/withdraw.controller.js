@@ -144,7 +144,6 @@ const withdrawCtrl = {
                 guid: user?.guid,
                 amount: withdraw_amount,
             })
-            console.log(api_withdraw_request_result)
             if (api_withdraw_request_result.code != 100) {
                 return response(req, res, -100, (api_withdraw_request_result?.message || "서버 에러 발생"), api_withdraw_request_result?.data)
             }

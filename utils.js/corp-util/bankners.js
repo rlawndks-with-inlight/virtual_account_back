@@ -485,6 +485,7 @@ export const banknersApi = {
                 code: 100,
                 message: '',
                 data: {
+                    bank_id: '007',
                     virtual_acct_num: result?.data?.vacnt_no,
                     tid: result?.data?.tid,
                     virtual_acct_name: result?.data?.vacnt_nm,

@@ -242,6 +242,9 @@ const userCtrl = {
                 if (issued_api_result.code != 100) {
                     return response(req, res, -100, (issued_api_result?.message || "서버 에러 발생"), false)
                 }
+                obj['virtual_bank_code'] = issued_api_result.data?.bank_id;
+                obj['virtual_acct_num'] = issued_api_result.data?.virtual_acct_num;
+                obj['virtual_acct_name'] = issued_api_result.data?.virtual_acct_name;
             }
             let result = await updateQuery(`${table_name}`, obj, id);
             if (level == 10) {//가맹점
