@@ -235,9 +235,10 @@ const userCtrl = {
                 }
 
             }
+
             let issued_api_result = await corpApi.vaccount({
                 pay_type: 'deposit',
-                decode_dns,
+                dns_data: decode_dns,
                 decode_user: ago_user,
                 guid: ago_user?.guid,
             })
