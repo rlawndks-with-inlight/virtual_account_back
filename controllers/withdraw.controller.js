@@ -100,6 +100,7 @@ const withdrawCtrl = {
                 settle_acct_name: user?.settle_acct_name,
                 withdraw_fee: user?.withdraw_fee,
                 user_id: user?.id,
+                withdraw_status: 5,
             }
 
             let settle_amount_sql = ``;
