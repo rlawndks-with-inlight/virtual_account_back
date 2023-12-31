@@ -82,7 +82,7 @@ const brandCtrl = {
             obj['bizppurio_obj'] = JSON.stringify(obj.bizppurio_obj);
 
             let api_key = await createHashedPassword('dns');
-            api_key = api_key.hashedPassword.substring(0, 50);
+            api_key = api_key.hashedPassword.substring(0, 40);
             obj['api_key'] = api_key;
 
             obj = { ...obj, ...files };
