@@ -34,6 +34,7 @@ const domainCtrl = {
                 'default_withdraw_fee',
                 'head_office_fee',
                 'deposit_corp_type',
+                'api_key',
             ]
             let brand = await pool.query(`SELECT ${columns.join()} FROM brands WHERE dns='${dns}'`);
             if (brand?.result.length == 0) {

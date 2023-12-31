@@ -20,9 +20,17 @@ const userCtrl = {
             let columns = [
                 `${table_name}.*`,
                 `merchandise_columns.mcht_fee`,
+                `virtual_accounts.guid`,
+                `virtual_accounts.virtual_bank_code`,
+                `virtual_accounts.virtual_acct_num`,
+                `virtual_accounts.virtual_acct_name`,
+                `virtual_accounts.deposit_bank_code AS settle_bank_code`,
+                `virtual_accounts.deposit_acct_num AS settle_acct_num`,
+                `virtual_accounts.deposit_acct_name AS settle_acct_name`,
             ]
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
             sql += ` LEFT JOIN merchandise_columns ON merchandise_columns.mcht_id=${table_name}.id `;
+            sql += ` LEFT JOIN virtual_accounts ON ${table_name}.virtual_account_id=virtual_accounts.id `;
 
             for (var i = 0; i < decode_dns?.operator_list.length; i++) {
                 columns.push(`merchandise_columns.sales${decode_dns?.operator_list[i]?.num}_id`);
@@ -83,6 +91,13 @@ const userCtrl = {
             let columns = [
                 `${table_name}.*`,
                 `merchandise_columns.mcht_fee`,
+                `virtual_accounts.guid`,
+                `virtual_accounts.virtual_bank_code`,
+                `virtual_accounts.virtual_acct_num`,
+                `virtual_accounts.virtual_acct_name`,
+                `virtual_accounts.deposit_bank_code AS settle_bank_code`,
+                `virtual_accounts.deposit_acct_num AS settle_acct_num`,
+                `virtual_accounts.deposit_acct_name AS settle_acct_name`,
             ]
             for (var i = 0; i < decode_dns?.operator_list.length; i++) {
                 columns.push(`merchandise_columns.sales${decode_dns?.operator_list[i]?.num}_id`);
@@ -90,16 +105,11 @@ const userCtrl = {
             }
             let sql = `SELECT ${columns.join()} FROM ${table_name} `;
             sql += ` LEFT JOIN merchandise_columns ON merchandise_columns.mcht_id=${table_name}.id `;
+            sql += ` LEFT JOIN virtual_accounts ON ${table_name}.virtual_account_id=virtual_accounts.id `;
             sql += ` WHERE ${table_name}.id=${id} `;
 
             let data = await pool.query(sql)
             data = data?.result[0];
-            let api_result = await corpApi.balance.info({
-                pay_type: 'deposit',
-                dns_data: decode_dns,
-                decode_user,
-                guid: data?.guid
-            })
             if (!isItemBrandIdSameDnsId(decode_dns, data)) {
                 return lowLevelException(req, res);
             }
@@ -134,9 +144,10 @@ const userCtrl = {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
             let {
-                brand_id, user_name, user_pw, name, nickname, level, phone_num, profile_img, note, email, birth,
+                brand_id, user_name, user_pw, name, nickname, level, phone_num, profile_img, note,
                 mcht_fee = 0,
-                settle_bank_code = "", settle_acct_num = "", settle_acct_name = "", deposit_fee = 0, withdraw_fee = 0, min_withdraw_price = 0, min_withdraw_remain_price = 0,
+                guid,
+                deposit_fee = 0, withdraw_fee = 0, min_withdraw_price = 0, min_withdraw_remain_price = 0,
             } = req.body;
             let is_exist_user = await pool.query(`SELECT * FROM ${table_name} WHERE user_name=? AND brand_id=${brand_id}`, [user_name]);
             if (is_exist_user?.result.length > 0) {
@@ -147,27 +158,38 @@ const userCtrl = {
             user_pw = pw_data.hashedPassword;
             let user_salt = pw_data.salt;
             let files = settingFiles(req.files);
+
             let obj = {
-                brand_id, user_name, user_pw, user_salt, name, nickname, level, phone_num, profile_img, note, email, birth,
-                settle_bank_code, settle_acct_num, settle_acct_name, deposit_fee, withdraw_fee, min_withdraw_price, min_withdraw_remain_price,
+                brand_id, user_name, user_pw, user_salt, name, nickname, level, phone_num, profile_img, note,
+                deposit_fee, withdraw_fee, min_withdraw_price, min_withdraw_remain_price,
             };
+            if (guid) {
+                let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE guid=? AND brand_id=${decode_dns?.id}`, [guid]);
+                virtual_account = virtual_account?.result[0];
+                if (!virtual_account) {
+                    return response(req, res, -100, "가상계좌가 존재하지 않습니다.", false)
+                }
+                obj['virtual_account_id'] = virtual_account?.id;
+            }
+
+
             obj = { ...obj, ...files };
             await db.beginTransaction();
-            let api_result = await corpApi.user.create({
-                pay_type: 'deposit',
-                dns_data: decode_dns,
-                decode_user,
-                email,
-                name,
-                phone_num,
-                birth
-            })
-            console.log(api_result)
-            if (api_result.code != 100) {
-                return response(req, res, -100, (api_result?.message || "서버 에러 발생"), api_result?.data)
-            }
-            obj['guid'] = api_result.data?.guid
-            console.log(api_result)
+            // let api_result = await corpApi.user.create({
+            //     pay_type: 'deposit',
+            //     dns_data: decode_dns,
+            //     decode_user,
+            //     email,
+            //     name,
+            //     phone_num,
+            //     birth
+            // })
+            // console.log(api_result)
+            // if (api_result.code != 100) {
+            //     return response(req, res, -100, (api_result?.message || "서버 에러 발생"), api_result?.data)
+            // }
+            // obj['guid'] = api_result.data?.guid
+            // console.log(api_result)
             let result = await insertQuery(`${table_name}`, obj);
             let user_id = result?.result?.insertId;
             let result2 = await updateQuery(table_name, {
@@ -203,49 +225,58 @@ const userCtrl = {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
             const {
-                brand_id, user_name, name, nickname, level, phone_num, profile_img, note, email, birth,
+                brand_id, user_name, name, nickname, level, phone_num, profile_img, note,
                 mcht_fee = 0,
-                settle_bank_code = "", settle_acct_num = "", settle_acct_name = "", deposit_fee = 0, withdraw_fee = 0, min_withdraw_price = 0, min_withdraw_remain_price = 0,
-                vrf_word,
+                guid = "",
+                deposit_fee = 0, withdraw_fee = 0, min_withdraw_price = 0, min_withdraw_remain_price = 0,
                 id
             } = req.body;
             let files = settingFiles(req.files);
             let obj = {
-                brand_id, user_name, name, nickname, level, phone_num, profile_img, note, email, birth,
-                settle_bank_code, settle_acct_num, settle_acct_name, deposit_fee, withdraw_fee, min_withdraw_price, min_withdraw_remain_price,
+                brand_id, user_name, name, nickname, level, phone_num, profile_img, note,
+                deposit_fee, withdraw_fee, min_withdraw_price, min_withdraw_remain_price,
             };
             obj = { ...obj, ...files };
-            await db.beginTransaction();
-            let ago_user = await pool.query(`SELECT * FROM users WHERE id=${id}`);
-            ago_user = ago_user?.result[0];
+            if (guid) {
+                let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE guid=? AND brand_id=${decode_dns?.id}`, [guid]);
+                virtual_account = virtual_account?.result[0];
+                if (!virtual_account) {
+                    return response(req, res, -100, "가상계좌가 존재하지 않습니다.", false)
+                }
+                obj['virtual_account_id'] = virtual_account?.id;
+            }
 
-            let is_change_settle_bank = (settle_bank_code != ago_user?.settle_bank_code || settle_acct_num != ago_user?.settle_acct_num || settle_acct_name != ago_user?.settle_acct_name) && (settle_bank_code || settle_acct_num || settle_acct_name);
-            if (is_change_settle_bank && !vrf_word) {
-                return response(req, res, -200, "정산계좌 변경시 1원인증을 진행해주세요.", false)
-            }
-            if (is_change_settle_bank && vrf_word) {
-                let api_result = await corpApi.user.account_verify({
-                    pay_type: 'deposit',
-                    dns_data: decode_dns,
-                    decode_user,
-                    ...req.body,
-                })
-                if (api_result.code != 100) {
-                    return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
-                }
-                let issued_api_result = await corpApi.vaccount({
-                    pay_type: 'deposit',
-                    dns_data: decode_dns,
-                    decode_user: ago_user,
-                    guid: ago_user?.guid,
-                })
-                if (issued_api_result.code != 100) {
-                    return response(req, res, -100, (issued_api_result?.message || "서버 에러 발생"), false)
-                }
-                obj['virtual_bank_code'] = issued_api_result.data?.bank_id;
-                obj['virtual_acct_num'] = issued_api_result.data?.virtual_acct_num;
-                obj['virtual_acct_name'] = issued_api_result.data?.virtual_acct_name;
-            }
+            await db.beginTransaction();
+            // let ago_user = await pool.query(`SELECT * FROM users WHERE id=${id}`);
+            // ago_user = ago_user?.result[0];
+
+            // let is_change_settle_bank = (settle_bank_code != ago_user?.settle_bank_code || settle_acct_num != ago_user?.settle_acct_num || settle_acct_name != ago_user?.settle_acct_name) && (settle_bank_code || settle_acct_num || settle_acct_name);
+            // if (is_change_settle_bank && !vrf_word) {
+            //     return response(req, res, -200, "정산계좌 변경시 1원인증을 진행해주세요.", false)
+            // }
+            // if (is_change_settle_bank && vrf_word) {
+            //     let api_result = await corpApi.user.account_verify({
+            //         pay_type: 'deposit',
+            //         dns_data: decode_dns,
+            //         decode_user,
+            //         ...req.body,
+            //     })
+            //     if (api_result.code != 100) {
+            //         return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
+            //     }
+            //     let issued_api_result = await corpApi.vaccount({
+            //         pay_type: 'deposit',
+            //         dns_data: decode_dns,
+            //         decode_user: ago_user,
+            //         guid: ago_user?.guid,
+            //     })
+            //     if (issued_api_result.code != 100) {
+            //         return response(req, res, -100, (issued_api_result?.message || "서버 에러 발생"), false)
+            //     }
+            //     obj['virtual_bank_code'] = issued_api_result.data?.bank_id;
+            //     obj['virtual_acct_num'] = issued_api_result.data?.virtual_acct_num;
+            //     obj['virtual_acct_name'] = issued_api_result.data?.virtual_acct_name;
+            // }
 
 
             let result = await updateQuery(`${table_name}`, obj, id);

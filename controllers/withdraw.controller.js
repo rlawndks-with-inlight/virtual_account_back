@@ -85,6 +85,12 @@ const withdrawCtrl = {
             let user = await pool.query(`SELECT ${user_column.join()} FROM users WHERE id=${user_id}`);
             user = user?.result[0];
 
+            let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE id=${user?.virtual_account_id}`);
+            virtual_account = virtual_account?.result[0];
+            if (!virtual_account) {
+                return response(req, res, -100, "가상계좌를 먼저 등록해 주세요.", false)
+            }
+
             let amount = parseInt(withdraw_amount) + user?.withdraw_fee;
 
 
@@ -95,9 +101,9 @@ const withdrawCtrl = {
                 brand_id: decode_dns?.id,
                 pay_type,
                 expect_amount: (-1) * amount,
-                settle_bank_code: user?.settle_bank_code,
-                settle_acct_num: user?.settle_acct_num,
-                settle_acct_name: user?.settle_acct_name,
+                settle_bank_code: virtual_account?.deposit_bank_code,
+                settle_acct_num: virtual_account?.deposit_acct_num,
+                settle_acct_name: virtual_account?.deposit_acct_name,
                 withdraw_fee: user?.withdraw_fee,
                 user_id: user?.id,
                 withdraw_status: 5,
@@ -145,7 +151,6 @@ const withdrawCtrl = {
                 guid: user?.guid,
                 amount: withdraw_amount,
             })
-            console.log(api_withdraw_request_result);
             if (api_withdraw_request_result.code != 100) {
                 return response(req, res, -100, (api_withdraw_request_result?.message || "서버 에러 발생"), api_withdraw_request_result?.data)
             }

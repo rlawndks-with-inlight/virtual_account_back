@@ -67,7 +67,6 @@ const brandCtrl = {
                 user_name, user_pw,
                 deposit_corp_type, deposit_guid, deposit_api_id, deposit_sign_key, deposit_encr_key, deposit_iv,
                 withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv,
-                settle_bank_code, settle_acct_num, settle_acct_name,
                 default_deposit_fee, default_withdraw_fee, head_office_fee,
             } = req.body;
             let files = settingFiles(req.files);
@@ -75,13 +74,17 @@ const brandCtrl = {
                 name, dns, og_description, company_name, business_num, pvcy_rep_name, ceo_name, addr, addr_detail, resident_num, phone_num, fax_num, note, theme_css, setting_obj, level_obj, bizppurio_obj,
                 deposit_corp_type, deposit_guid, deposit_api_id, deposit_sign_key, deposit_encr_key, deposit_iv,
                 withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv,
-                settle_bank_code, settle_acct_num, settle_acct_name,
                 default_deposit_fee, default_withdraw_fee, head_office_fee,
             };
             obj['theme_css'] = JSON.stringify(obj.theme_css);
             obj['setting_obj'] = JSON.stringify(obj.setting_obj);
             obj['level_obj'] = JSON.stringify(obj.level_obj);
             obj['bizppurio_obj'] = JSON.stringify(obj.bizppurio_obj);
+
+            let api_key = await createHashedPassword('dns');
+            api_key = api_key.hashedPassword.substring(0, 50);
+            obj['api_key'] = api_key;
+
             obj = { ...obj, ...files };
             await db.beginTransaction();
 
@@ -118,7 +121,6 @@ const brandCtrl = {
                 deposit_corp_type, deposit_guid, deposit_api_id, deposit_sign_key, deposit_encr_key, deposit_iv,
                 withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv,
                 default_deposit_fee, default_withdraw_fee, head_office_fee,
-                settle_bank_code, settle_acct_num, settle_acct_name,
                 deposit_noti_url, withdraw_noti_url, withdraw_fail_noti_url, api_url,
             } = req.body;
             const { id } = req.params;
@@ -131,7 +133,6 @@ const brandCtrl = {
                 name, dns, og_description, company_name, business_num, pvcy_rep_name, ceo_name, addr, addr_detail, resident_num, phone_num, fax_num, note, theme_css, setting_obj, level_obj, bizppurio_obj,
                 deposit_corp_type, deposit_guid, deposit_api_id, deposit_sign_key, deposit_encr_key, deposit_iv,
                 withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv,
-                settle_bank_code, settle_acct_num, settle_acct_name,
                 default_deposit_fee, default_withdraw_fee, head_office_fee, api_url
             };
             obj['theme_css'] = JSON.stringify(obj.theme_css);
