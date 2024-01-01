@@ -125,7 +125,7 @@ export const banknersApi = {
                     auth_tp: 'PASS',
                 }
                 query = makeBody(query, dns_data, pay_type)
-                let result = await postRequest('/api/user', query, makeHeaderData(dns_data, pay_type, decode_user), 'DELETE');
+                let result = await postRequest('/api/user', query, makeHeaderData(dns_data, pay_type, decode_user));
                 if (result?.code != '0000') {
                     return {
                         code: -100,
@@ -513,7 +513,7 @@ export const banknersApi = {
                 vacnt_no: virtual_acct_num,
             }
             query = makeBody(query, dns_data, pay_type)
-            let result = await postRequest('/api/vaccount', query, makeHeaderData(dns_data, pay_type, decode_user));
+            let result = await postRequest('/api/vaccount', query, makeHeaderData(dns_data, pay_type, decode_user), 'DELETE');
             if (result?.code != '0000') {
                 return {
                     code: -100,

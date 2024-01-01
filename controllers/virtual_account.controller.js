@@ -121,9 +121,9 @@ const virtualAccountCtrl = {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
             const { id } = req.params;
-            console.log(id)
             let virtual_account = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id}`);
             virtual_account = virtual_account?.result[0];
+            console.log(virtual_account)
 
             let api_result = await corpApi.vaccount_delete({
                 pay_type: 'deposit',
@@ -133,6 +133,7 @@ const virtualAccountCtrl = {
                 bank_id: virtual_account?.virtual_bank_code,
                 virtual_acct_num: virtual_account?.virtual_acct_num,
             })
+            console.log(api_result)
             if (api_result.code != 100) {
                 return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
             }
