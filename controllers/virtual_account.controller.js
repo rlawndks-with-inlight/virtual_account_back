@@ -125,7 +125,18 @@ const virtualAccountCtrl = {
             virtual_account = virtual_account?.result[0];
 
             if (virtual_account?.deposit_acct_num) {
-
+                let api_result = await corpApi.account_delete({
+                    pay_type: 'deposit',
+                    dns_data: decode_dns,
+                    decode_user,
+                    guid: virtual_account?.guid,
+                    bank_id: virtual_account?.deposit_bank_code,
+                    deposit_acct_num: virtual_account?.deposit_acct_num,
+                })
+                console.log(api_result)
+                if (api_result.code != 100) {
+                    return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
+                }
             }
 
             if (virtual_account?.status == 0) {
@@ -137,6 +148,7 @@ const virtualAccountCtrl = {
                     bank_id: virtual_account?.virtual_bank_code,
                     virtual_acct_num: virtual_account?.virtual_acct_num,
                 })
+                console.log(api_result)
                 if (api_result.code != 100) {
                     return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
                 }
