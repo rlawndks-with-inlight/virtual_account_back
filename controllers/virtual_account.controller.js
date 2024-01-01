@@ -123,6 +123,11 @@ const virtualAccountCtrl = {
             const { id } = req.params;
             let virtual_account = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id}`);
             virtual_account = virtual_account?.result[0];
+
+            if (virtual_account?.deposit_acct_num) {
+
+            }
+
             if (virtual_account?.status == 0) {
                 let api_result = await corpApi.vaccount_delete({
                     pay_type: 'deposit',

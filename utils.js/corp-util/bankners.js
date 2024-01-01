@@ -233,6 +233,48 @@ export const banknersApi = {
 
             }
         },
+        account_delete: async (data) => {
+            try {
+                let {
+                    dns_data, pay_type, decode_user,
+                    guid, bank_id, deposit_acct_num
+                } = data;
+                let query = {
+                    guid,
+                    bank_id: bank_id,
+                    acnt_no: deposit_acct_num,
+                }
+                query = makeBody(query, dns_data, pay_type)
+                let result = await postRequest('/api/user/account', query, makeHeaderData(dns_data, pay_type, decode_user), 'DELETE');
+                if (result?.code != '0000') {
+                    return {
+                        code: -100,
+                        message: result?.message,
+                        data: {},
+                    };
+                }
+                console.log(result)
+                return {
+                    code: 100,
+                    message: '',
+                    data: {
+                        bank_id: '007',
+                        virtual_acct_num: result?.data?.vacnt_no,
+                        tid: result?.data?.tid,
+                        virtual_acct_name: result?.data?.vacnt_nm,
+                    },
+                };
+            } catch (err) {
+                console.log(err)
+                console.log(err?.response?.data)
+                return {
+                    code: -100,
+                    message: '',
+                    data: {},
+                };
+
+            }
+        },
         withdraw: {
             request: async (data) => {//출금요청
                 try {
