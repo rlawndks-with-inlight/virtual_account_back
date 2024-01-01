@@ -145,7 +145,6 @@ const virtualAccountCtrl = {
                 })
                 let obj = {
                     brand_id: decode_dns?.id,
-                    mcht_id: mcht?.id,
                     virtual_account_id: virtual_account?.id,
                     amount,
                     expect_amount: amount,
