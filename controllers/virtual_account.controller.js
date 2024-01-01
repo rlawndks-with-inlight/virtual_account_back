@@ -122,7 +122,7 @@ const virtualAccountCtrl = {
             const decode_dns = checkDns(req.cookies.dns);
             const { id } = req.params;
             let virtual_account = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id}`);
-            virtual_account = virtual_account?.result;
+            virtual_account = virtual_account?.result[0];
 
             let api_result = await corpApi.vaccount_delete({
                 guid: 'deposit',
