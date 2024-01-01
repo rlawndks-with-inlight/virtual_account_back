@@ -196,6 +196,10 @@ const userCtrl = {
                 mid: `${new Date().getTime()}${decode_dns?.id}${user_id}`,
             }, user_id)
             if (level == 10) {//가맹점
+                if (!(mcht_fee > 0)) {
+                    await db.rollback();
+                    return response(req, res, -100, "가맹점 수수료는 필수값입니다.", false)
+                }
                 let mcht_obj = {
                     mcht_id: result?.result?.insertId,
                     mcht_fee,
@@ -281,6 +285,10 @@ const userCtrl = {
 
             let result = await updateQuery(`${table_name}`, obj, id);
             if (level == 10) {//가맹점
+                if (!(mcht_fee > 0)) {
+                    await db.rollback();
+                    return response(req, res, -100, "가맹점 수수료는 필수값입니다.", false)
+                }
                 let mcht_obj = {
                     mcht_fee,
                 };
