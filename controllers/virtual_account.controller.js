@@ -169,7 +169,6 @@ const virtualAccountCtrl = {
                     return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
                 }
             }
-
             if (virtual_account?.deposit_acct_num) {
                 let api_result = await corpApi.user.account_delete({
                     pay_type: 'deposit',
@@ -179,10 +178,18 @@ const virtualAccountCtrl = {
                     bank_id: virtual_account?.deposit_bank_code,
                     deposit_acct_num: virtual_account?.deposit_acct_num,
                 })
-                console.log(api_result)
                 if (api_result.code != 100) {
                     return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
                 }
+            }
+            let delete_user = await corpApi.user.remove({
+                pay_type: 'deposit',
+                dns_data: decode_dns,
+                decode_user,
+                guid: virtual_account?.guid,
+            })
+            if (delete_user.code != 100) {
+                return response(req, res, -100, (delete_user?.message || "서버 에러 발생"), false)
             }
 
 

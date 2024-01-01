@@ -36,6 +36,17 @@ const corpApi = {
             }
             return result;
         },
+        remove: async (data_) => {//출금계좌등록
+            let data = data_;
+            let { dns_data } = data;
+            data = await getDnsData(data, dns_data);
+            let result = default_result;
+
+            if (dns_data?.deposit_corp_type == 1) {
+                result = await banknersApi.user.remove(data);
+            }
+            return result;
+        },
         account: async (data_) => {//출금계좌등록
             let data = data_;
             let { dns_data } = data;

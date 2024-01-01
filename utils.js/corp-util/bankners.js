@@ -151,6 +151,42 @@ export const banknersApi = {
 
             }
         },
+        remove: async (data) => {
+            try {
+                let {
+                    dns_data, pay_type, decode_user,
+                    guid,
+                } = data;
+                let query = {
+                    guid,
+                }
+                query = makeBody(query, dns_data, pay_type)
+                let result = await postRequest('/api/user/remove', query, makeHeaderData(dns_data, pay_type, decode_user), 'DELETE');
+                if (result?.code != '0000') {
+                    return {
+                        code: -100,
+                        message: result?.message,
+                        data: {},
+                    };
+                }
+                console.log(result)
+                return {
+                    code: 100,
+                    message: '',
+                    data: {
+                    },
+                };
+            } catch (err) {
+                console.log(err)
+                console.log(err?.response?.data)
+                return {
+                    code: -100,
+                    message: '',
+                    data: {},
+                };
+
+            }
+        },
         account: async (data) => {
             try {
                 let {
