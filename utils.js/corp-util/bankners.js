@@ -326,7 +326,6 @@ export const banknersApi = {
                     from_guid, to_guid,
                     amount,
                 } = data;
-                console.log(data)
                 let query = {
                     from_guid: from_guid,
                     to_guid: to_guid,

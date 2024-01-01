@@ -123,6 +123,39 @@ const virtualAccountCtrl = {
             const { id } = req.params;
             let virtual_account = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id}`);
             virtual_account = virtual_account?.result[0];
+            let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
+            dns_data = dns_data?.result[0];
+
+            let user_amount = await corpApi.balance.info({
+                pay_type: 'deposit',
+                dns_data: decode_dns,
+                decode_user,
+                guid: virtual_account?.guid,
+            })
+            let amount = user_amount.data?.bal_tot_amt
+            if (amount > 0) {
+                let mother_to_result = await corpApi.transfer.pass({
+                    pay_type: 'deposit',
+                    dns_data,
+                    decode_user,
+                    from_guid: virtual_account?.guid,
+                    to_guid: dns_data[`deposit_guid`],
+                    amount: amount,
+                })
+                let obj = {
+                    brand_id: decode_dns?.id,
+                    mcht_id: mcht?.id,
+                    virtual_account_id: virtual_account?.id,
+                    amount,
+                    expect_amount: amount,
+                    deposit_bank_code: virtual_account?.deposit_bank_code,
+                    deposit_acct_num: virtual_account?.deposit_acct_num,
+                    deposit_acct_name: virtual_account?.deposit_acct_name,
+                    pay_type: 15,
+                    trx_id: mother_to_result.data?.tid,
+                };
+                let result = await insertQuery(`deposits`, obj);
+            }
             if (virtual_account?.status == 0) {
                 let api_result = await corpApi.vaccount_delete({
                     pay_type: 'deposit',
@@ -132,7 +165,6 @@ const virtualAccountCtrl = {
                     bank_id: virtual_account?.virtual_bank_code,
                     virtual_acct_num: virtual_account?.virtual_acct_num,
                 })
-                console.log(api_result)
                 if (api_result.code != 100) {
                     return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
                 }
