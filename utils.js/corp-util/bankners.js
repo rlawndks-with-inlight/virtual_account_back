@@ -125,7 +125,7 @@ export const banknersApi = {
                     auth_tp: 'PASS',
                 }
                 query = makeBody(query, dns_data, pay_type)
-                let result = await postRequest('/api/user', query, makeHeaderData(dns_data, pay_type, decode_user));
+                let result = await postRequest('/api/user', query, makeHeaderData(dns_data, pay_type, decode_user), 'DELETE');
                 if (result?.code != '0000') {
                     return {
                         code: -100,
@@ -469,6 +469,48 @@ export const banknersApi = {
                 guid,
                 bank_id: '007',
                 version: 2,
+            }
+            query = makeBody(query, dns_data, pay_type)
+            let result = await postRequest('/api/vaccount', query, makeHeaderData(dns_data, pay_type, decode_user));
+            if (result?.code != '0000') {
+                return {
+                    code: -100,
+                    message: result?.message,
+                    data: {},
+                };
+            }
+            console.log(result)
+            return {
+                code: 100,
+                message: '',
+                data: {
+                    bank_id: '007',
+                    virtual_acct_num: result?.data?.vacnt_no,
+                    tid: result?.data?.tid,
+                    virtual_acct_name: result?.data?.vacnt_nm,
+                },
+            };
+        } catch (err) {
+            console.log(err)
+            console.log(err?.response?.data)
+            return {
+                code: -100,
+                message: '',
+                data: {},
+            };
+
+        }
+    },
+    vaccount_delete: async (data) => {
+        try {
+            let {
+                dns_data, pay_type, decode_user,
+                guid, bank_id, virtual_acct_num
+            } = data;
+            let query = {
+                guid,
+                bank_id: bank_id,
+                vacnt_no: virtual_acct_num,
             }
             query = makeBody(query, dns_data, pay_type)
             let result = await postRequest('/api/vaccount', query, makeHeaderData(dns_data, pay_type, decode_user));

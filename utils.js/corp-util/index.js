@@ -9,7 +9,7 @@ const getDnsData = async (data_, dns_data_) => {
     return data;
 }
 const default_result = {
-    code: -100,
+    code: 100,
     data: {},
     message: ''
 };
@@ -116,6 +116,16 @@ const corpApi = {
         let result = default_result;
         if (dns_data?.deposit_corp_type == 1) {
             result = await banknersApi.vaccount(data);
+        }
+        return result;
+    },
+    vaccount_delete: async (data_) => {//가상계좌삭제
+        let data = data_;
+        let { dns_data } = data;
+        data = await getDnsData(data, dns_data);
+        let result = default_result;
+        if (dns_data?.deposit_corp_type == 1) {
+            result = await banknersApi.vaccount_delete(data);
         }
         return result;
     },

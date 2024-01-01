@@ -121,6 +121,20 @@ const virtualAccountCtrl = {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
             const { id } = req.params;
+            let virtual_account = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id}`);
+            virtual_account = virtual_account?.result;
+
+            let api_result = await corpApi.vaccount_delete({
+                guid: 'deposit',
+                bank_id: decode_dns,
+                decode_user,
+                guid: virtual_account?.guid,
+                bank_id: virtual_account?.virtual_bank_code,
+                virtual_acct_num: virtual_account?.virtual_acct_num,
+            })
+            if (api_result.code != 100) {
+                return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
+            }
             let result = await deleteQuery(`${table_name}`, {
                 id
             })
