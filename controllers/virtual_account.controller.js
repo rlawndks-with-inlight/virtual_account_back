@@ -133,6 +133,7 @@ const virtualAccountCtrl = {
                 guid: virtual_account?.guid,
             })
             let amount = user_amount.data?.bal_tot_amt
+            console.log(amount)
             if (amount > 0) {
                 let mother_to_result = await corpApi.transfer.pass({
                     pay_type: 'deposit',
