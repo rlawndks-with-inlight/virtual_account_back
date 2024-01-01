@@ -121,12 +121,13 @@ const virtualAccountCtrl = {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
             const { id } = req.params;
+            console.log(id)
             let virtual_account = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id}`);
             virtual_account = virtual_account?.result[0];
 
             let api_result = await corpApi.vaccount_delete({
-                guid: 'deposit',
-                bank_id: decode_dns,
+                pay_type: 'deposit',
+                dns_data: decode_dns,
                 decode_user,
                 guid: virtual_account?.guid,
                 bank_id: virtual_account?.virtual_bank_code,
