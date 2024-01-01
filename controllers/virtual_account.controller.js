@@ -133,7 +133,6 @@ const virtualAccountCtrl = {
                 guid: virtual_account?.guid,
             })
             let amount = user_amount.data?.bal_tot_amt
-            console.log(amount)
             if (amount > 0) {
                 let mother_to_result = await corpApi.transfer.pass({
                     pay_type: 'deposit',
@@ -165,8 +164,6 @@ const virtualAccountCtrl = {
                     bank_id: virtual_account?.virtual_bank_code,
                     virtual_acct_num: virtual_account?.virtual_acct_num,
                 })
-                console.log('!!!!!!!!!!!!!!!!')
-                console.log(api_result)
                 if (api_result.code != 100 && api_result?.message != '가상계좌 해지 불가 상태') {
                     return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
                 }
@@ -180,8 +177,6 @@ const virtualAccountCtrl = {
                     bank_id: virtual_account?.deposit_bank_code,
                     deposit_acct_num: virtual_account?.deposit_acct_num,
                 })
-                console.log(`######################`)
-                console.log(api_result)
                 if (api_result.code != 100 && api_result.message != '출금계좌 불일치로 진행 불가') {
                     return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
                 }
