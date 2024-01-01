@@ -165,6 +165,8 @@ const virtualAccountCtrl = {
                     bank_id: virtual_account?.virtual_bank_code,
                     virtual_acct_num: virtual_account?.virtual_acct_num,
                 })
+                console.log('!!!!!!!!!!!!!!!!')
+                console.log(api_result)
                 if (api_result.code != 100) {
                     return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
                 }
@@ -178,6 +180,8 @@ const virtualAccountCtrl = {
                     bank_id: virtual_account?.deposit_bank_code,
                     deposit_acct_num: virtual_account?.deposit_acct_num,
                 })
+                console.log(`######################`)
+                console.log(api_result)
                 if (api_result.code != 100) {
                     return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
                 }
