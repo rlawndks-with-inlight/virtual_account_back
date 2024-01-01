@@ -16,7 +16,6 @@ const virtualAccountCtrl = {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
             const { } = req.query;
-
             let columns = [
                 `${table_name}.*`,
                 `mchts.user_name`,
@@ -41,23 +40,21 @@ const virtualAccountCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
-            const { id, ci } = req.params;
+            const { id } = req.params;
+            const { ci } = req.query;
             let values = [];
             let sql = ` SELECT ${table_name}.*, users.mid FROM ${table_name} `;
             sql += ` LEFT JOIN users ON ${table_name}.mcht_id=users.id `;
-            if (id) {
+            if (id > 0) {
                 sql += ` WHERE ${table_name}.id=? `;
                 values.push(id)
             } else if (ci) {
                 sql += ` WHERE ${table_name}.ci=? `;
                 values.push(ci)
             }
-
             let data = await pool.query(sql, values)
             data = data?.result[0];
-            if (!isItemBrandIdSameDnsId(decode_dns, data)) {
-                return lowLevelException(req, res);
-            }
+            console.log(data)
             return response(req, res, 100, "success", data)
         } catch (err) {
             console.log(err)
