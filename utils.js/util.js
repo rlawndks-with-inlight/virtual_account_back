@@ -343,7 +343,7 @@ export const commarNumber = (num) => {
 export const getOperatorList = (brand_) => {
     let operator_list = [];
     let brand = brand_;
-    if (typeof brand['level_obj'] == 'string') {
+    if (typeof brand?.level_obj == 'string') {
         brand['level_obj'] = JSON.parse(brand?.level_obj ?? '{}');
     }
     for (var i = 0; i < operatorLevelList.length; i++) {

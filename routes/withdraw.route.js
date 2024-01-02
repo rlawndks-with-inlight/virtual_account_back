@@ -6,6 +6,10 @@ router
     .route('/')
     .get(withdrawCtrl.list)
     .post(withdrawCtrl.create);
+router
+    .route('/mother')
+    .get(withdrawCtrl.motherDeposit)
+    .post(withdrawCtrl.motherDepositRequest);
 
 router
     .route('/:id')

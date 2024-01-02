@@ -2,8 +2,8 @@
 import db, { pool } from "../config/db.js";
 import corpApi from "../utils.js/corp-util/index.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
-import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
-import { checkDns, checkLevel, commarNumber, isItemBrandIdSameDnsId, operatorLevelList, response, settingFiles } from "../utils.js/util.js";
+import { deleteQuery, getMultipleQueryByWhen, getSelectQuery, insertQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
+import { checkDns, checkLevel, commarNumber, getOperatorList, isItemBrandIdSameDnsId, lowLevelException, operatorLevelList, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 
 const table_name = 'deposits';
@@ -220,6 +220,130 @@ const withdrawCtrl = {
 
         }
     },
+    motherDeposit: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = checkLevel(req.cookies.token, 40);
+            const decode_dns = checkDns(req.cookies.dns);
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
+            let data = await getMotherDeposit(decode_dns);
+
+            return response(req, res, 100, "success", data)
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
+    motherDepositRequest: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = checkLevel(req.cookies.token, 40);
+            const decode_dns = checkDns(req.cookies.dns);
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
+            const {
+                withdraw_amount, pay_type = 10
+            } = req.body;
+
+            let data = await getMotherDeposit(decode_dns);
+            if (withdraw_amount > data?.real_amount) {
+                return response(req, res, -100, "출금 요청금이 모계좌잔액보다 많습니다.", false)
+            }
+            let deposit_obj = {
+                brand_id: decode_dns?.id,
+                pay_type,
+                expect_amount: (-1) * amount,
+                settle_bank_code: data?.brand?.settle_bank_code,
+                settle_acct_num: data?.brand?.settle_acct_num,
+                settle_acct_name: data?.brand?.settle_acct_name,
+                withdraw_status: 5,
+            }
+            let api_move_to_user_amount_result = await corpApi.transfer.pass({
+                pay_type: 'deposit',
+                dns_data: decode_dns,
+                decode_user: {},
+                from_guid: dns_data[`deposit_guid`],
+                to_guid: data?.brand?.guid,
+                amount: withdraw_amount,
+            })
+            if (api_move_to_user_amount_result.code != 100) {
+                return response(req, res, -100, (api_move_to_user_amount_result?.message || "서버 에러 발생"), api_move_to_user_amount_result?.data)
+            }
+            let api_withdraw_request_result = await corpApi.user.withdraw.request({
+                pay_type: 'deposit',
+                dns_data: decode_dns,
+                decode_user: {},
+                guid: data?.brand?.guid,
+                amount: withdraw_amount,
+            })
+            if (api_withdraw_request_result.code != 100) {
+                return response(req, res, -100, (api_withdraw_request_result?.message || "서버 에러 발생"), api_withdraw_request_result?.data)
+            }
+            deposit_obj['trx_id'] = api_withdraw_request_result.data?.tid;
+            let result = await insertQuery(`${table_name}`, deposit_obj);
+
+            return response(req, res, 100, "success", {})
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
 };
 
+const getMotherDeposit = async (decode_dns) => {
+
+    let brand_columns = [
+        `brands.*`,
+        `virtual_accounts.guid`,
+        `virtual_accounts.virtual_bank_code`,
+        `virtual_accounts.virtual_acct_num`,
+        `virtual_accounts.virtual_acct_name`,
+        `virtual_accounts.deposit_bank_code AS settle_bank_code`,
+        `virtual_accounts.deposit_acct_num AS settle_acct_num`,
+        `virtual_accounts.deposit_acct_name AS settle_acct_name`,
+    ]
+    let brand_sql = `SELECT ${brand_columns.join()} FROM brands `;
+    brand_sql += ` LEFT JOIN virtual_accounts ON brands.virtual_account_id=virtual_accounts.id `;
+    brand_sql += ` WHERE brands.id=${decode_dns?.id} `;
+
+    let operator_list = getOperatorList(decode_dns);
+
+    let sum_columns = [
+        `SUM(amount) AS total_amount`,
+        `SUM(withdraw_fee) AS total_withdraw_fee`,
+        `SUM(deposit_fee) AS total_deposit_fee`,
+        `SUM(mcht_amount) AS total_mcht_amount`,
+    ]
+    for (var i = 0; i < operator_list.length; i++) {
+        sum_columns.push(`SUM(sales${operator_list[i].num}_amount) AS total_sales${operator_list[i].num}_amount`);
+    }
+    let sum_sql = `SELECT ${sum_columns.join()} FROM deposits WHERE brand_id=${decode_dns?.id}`;
+    let sql_list = [
+        { table: 'brand', sql: brand_sql },
+        { table: 'sum', sql: sum_sql },
+    ]
+    let data = await getMultipleQueryByWhen(sql_list);
+    data['brand'] = data['brand'][0];
+    data['sum'] = data['sum'][0];
+    data['sum'].total_oper_amount = 0;
+    for (var i = 0; i < operator_list.length; i++) {
+        data['sum'].total_oper_amount += data['sum'][`total_sales${operator_list[i].num}_amount`];
+    }
+    let real_amount = await corpApi.balance.info({
+        pay_type: 'deposit',
+        dns_data: data['brand'],
+        decode_user: {},
+        guid: data['brand']?.deposit_guid,
+    })
+
+    data['real_amount'] = real_amount.data?.bal_tot_amt ?? 0;
+    return data;
+}
 export default withdrawCtrl;

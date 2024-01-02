@@ -39,7 +39,14 @@ const brandCtrl = {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
             const { id } = req.params;
-            let data = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id}`)
+            let columns = [
+                `${table_name}.*`,
+                `virtual_accounts.guid`,
+            ]
+            let sql = `SELECT ${columns.join()} FROM ${table_name} `;
+            sql += ` LEFT JOIN virtual_accounts ON ${table_name}.virtual_account_id=virtual_accounts.id `;
+            sql += ` WHERE ${table_name}.id=${id} `;
+            let data = await pool.query(sql)
             data = data?.result[0];
             data['theme_css'] = JSON.parse(data?.theme_css ?? '{}');
             data['setting_obj'] = JSON.parse(data?.setting_obj ?? '{}');
@@ -85,6 +92,7 @@ const brandCtrl = {
             api_key = api_key.hashedPassword.substring(0, 40);
             obj['api_key'] = api_key;
 
+
             obj = { ...obj, ...files };
             await db.beginTransaction();
 
@@ -122,6 +130,7 @@ const brandCtrl = {
                 withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv,
                 default_deposit_fee, default_withdraw_fee, head_office_fee,
                 deposit_noti_url, withdraw_noti_url, withdraw_fail_noti_url, api_url,
+                guid = "",
             } = req.body;
             const { id } = req.params;
             if ((decode_user?.level < 50 && decode_user?.brand_id != id) || decode_user?.level < 40) {
@@ -142,13 +151,27 @@ const brandCtrl = {
             obj = { ...obj, ...files };
 
             await db.beginTransaction();
+
+
+
             let ago_brand = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id}`);
             ago_brand = ago_brand?.result[0];
+
+            if (guid) {
+                let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE guid=? AND brand_id=${id}`, [guid]);
+                virtual_account = virtual_account?.result[0];
+                if (!virtual_account) {
+                    return response(req, res, -100, "가상계좌가 존재하지 않습니다.", false)
+                }
+                obj['virtual_account_id'] = virtual_account?.id;
+            } else {
+                obj['virtual_account_id'] = 0;
+            }
 
             if (deposit_noti_url != ago_brand?.deposit_noti_url && deposit_noti_url) {
                 let api_result = await corpApi.push[(ago_brand?.deposit_noti_url) ? 'update' : 'create']({
                     pay_type: 'deposit',
-                    dns_data: decode_dns,
+                    dns_data: ago_brand,
                     decode_user,
                     push_kind: 'DEPOSIT',
                     push_tp: 'JSON',
@@ -162,7 +185,7 @@ const brandCtrl = {
             if (withdraw_noti_url != ago_brand?.withdraw_noti_url && withdraw_noti_url) {
                 let api_result = await corpApi.push[(ago_brand?.withdraw_noti_url) ? 'update' : 'create']({
                     pay_type: 'deposit',
-                    dns_data: decode_dns,
+                    dns_data: ago_brand,
                     decode_user,
                     push_kind: 'WITHDRAW',
                     push_tp: 'JSON',
@@ -176,7 +199,7 @@ const brandCtrl = {
             if (withdraw_fail_noti_url != ago_brand?.withdraw_fail_noti_url && withdraw_fail_noti_url) {
                 let api_result = await corpApi.push[(ago_brand?.withdraw_fail_noti_url) ? 'update' : 'create']({
                     pay_type: 'deposit',
-                    dns_data: decode_dns,
+                    dns_data: ago_brand,
                     decode_user,
                     push_kind: 'WITHDRAW_FAIL',
                     push_tp: 'JSON',

@@ -170,6 +170,8 @@ const userCtrl = {
                     return response(req, res, -100, "가상계좌가 존재하지 않습니다.", false)
                 }
                 obj['virtual_account_id'] = virtual_account?.id;
+            } else {
+                obj['virtual_account_id'] = 0;
             }
 
 
@@ -248,6 +250,8 @@ const userCtrl = {
                     return response(req, res, -100, "가상계좌가 존재하지 않습니다.", false)
                 }
                 obj['virtual_account_id'] = virtual_account?.id;
+            } else {
+                obj['virtual_account_id'] = 0;
             }
 
             await db.beginTransaction();
