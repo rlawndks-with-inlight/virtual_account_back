@@ -140,11 +140,17 @@ const authCtrl = {
             const decode_user = checkLevel(req.cookies.token, is_manager ? 1 : 0);
             const decode_dns = checkDns(req.cookies.dns);
             let deposit_column = [
-                `users.*`
+                `users.*`,
+                `virtual_accounts.guid`,
+                `virtual_accounts.virtual_bank_code`,
+                `virtual_accounts.virtual_acct_num`,
+                `virtual_accounts.virtual_acct_name`,
+                `virtual_accounts.deposit_bank_code AS settle_bank_code`,
+                `virtual_accounts.deposit_acct_num AS settle_acct_num`,
+                `virtual_accounts.deposit_acct_name AS settle_acct_name`,
             ];
 
             if (decode_user?.level >= 40) {
-                console.log(123)
                 return response(req, res, 100, "success", {})
             } else {
                 if (decode_user?.level == 10) {
@@ -153,7 +159,9 @@ const authCtrl = {
                     let find_oper_level = _.find(operatorLevelList, { level: parseInt(decode_user?.level) });
                     deposit_column.push(`(SELECT SUM(sales${find_oper_level.num}_amount) FROM deposits WHERE sales${find_oper_level.num}_id=${decode_user?.id}) AS settle_amount`);
                 }
-                let deposit_sql = ` SELECT ${deposit_column.join()} FROM users WHERE users.id=${decode_user?.id}`;
+                let deposit_sql = ` SELECT ${deposit_column.join()} FROM users `;
+                deposit_sql += ` LEFT JOIN virtual_accounts ON users.virtual_account_id=virtual_accounts.id `;
+                deposit_sql += ` WHERE users.id=${decode_user?.id} `;
                 let deposit = await pool.query(deposit_sql);
                 deposit = deposit?.result[0];
                 return response(req, res, 100, "success", deposit)
