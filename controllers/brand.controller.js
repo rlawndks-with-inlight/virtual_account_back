@@ -184,7 +184,7 @@ const brandCtrl = {
             }
             if (withdraw_noti_url != ago_brand?.withdraw_noti_url && withdraw_noti_url) {
                 let api_result = await corpApi.push[(ago_brand?.withdraw_noti_url) ? 'update' : 'create']({
-                    pay_type: 'deposit',
+                    pay_type: 'withdraw',
                     dns_data: ago_brand,
                     decode_user,
                     push_kind: 'WITHDRAW',
@@ -198,7 +198,7 @@ const brandCtrl = {
             }
             if (withdraw_fail_noti_url != ago_brand?.withdraw_fail_noti_url && withdraw_fail_noti_url) {
                 let api_result = await corpApi.push[(ago_brand?.withdraw_fail_noti_url) ? 'update' : 'create']({
-                    pay_type: 'deposit',
+                    pay_type: 'withdraw',
                     dns_data: ago_brand,
                     decode_user,
                     push_kind: 'WITHDRAW_FAIL',

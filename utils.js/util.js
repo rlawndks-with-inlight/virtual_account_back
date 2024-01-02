@@ -41,7 +41,7 @@ export const checkLevel = (token, level) => { //유저 정보 뿌려주기
         const decoded = jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
             //console.log(decoded)
             if (err) {
-                console.log("token이 변조되었습니다." + err);
+                //  console.log("token이 변조되었습니다." + err);
                 return false
             }
             else return decoded;
@@ -66,7 +66,7 @@ export const checkDns = (token) => { //dns 정보 뿌려주기
         const decoded = jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
             //console.log(decoded)
             if (err) {
-                console.log("token이 변조되었습니다." + err);
+                // console.log("token이 변조되었습니다." + err);
                 return false
             }
             else return decoded;
