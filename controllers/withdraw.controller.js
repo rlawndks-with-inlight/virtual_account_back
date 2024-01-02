@@ -137,7 +137,7 @@ const withdrawCtrl = {
                 dns_data: decode_dns,
                 decode_user: user,
                 from_guid: dns_data[`deposit_guid`],
-                to_guid: user?.guid,
+                to_guid: virtual_account?.guid,
                 amount: withdraw_amount,
             })
 
@@ -148,7 +148,7 @@ const withdrawCtrl = {
                 pay_type: 'deposit',
                 dns_data: decode_dns,
                 decode_user: user,
-                guid: user?.guid,
+                guid: virtual_account?.guid,
                 amount: withdraw_amount,
             })
             if (api_withdraw_request_result.code != 100) {
