@@ -36,19 +36,28 @@ const depositCtrl = {
                 columns.push(`sales${decode_dns?.operator_list[i]?.num}.nickname AS sales${decode_dns?.operator_list[i]?.num}_nickname`);
                 sql += ` LEFT JOIN users AS sales${decode_dns?.operator_list[i]?.num} ON sales${decode_dns?.operator_list[i]?.num}.id=${table_name}.sales${decode_dns?.operator_list[i]?.num}_id `;
             }
-            sql += ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
+            let where_sql = ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
             if (!is_mother) {
-                sql += ` AND pay_type=0 `
+                where_sql += ` AND pay_type=0 `
             }
             if (decode_user?.level < 40) {
                 if (decode_user?.level == 10) {
-                    sql += ` AND ${table_name}.mcht_id=${decode_user?.id} `;
+                    where_sql += ` AND ${table_name}.mcht_id=${decode_user?.id} `;
                 } else {
                     let sales_num = _.find(operatorLevelList, { level: decode_user?.level })?.num;
-                    sql += ` AND ${table_name}.sales${sales_num}_id=${decode_user?.id} `;
+                    where_sql += ` AND ${table_name}.sales${sales_num}_id=${decode_user?.id} `;
                 }
             }
-
+            let operator_list = getOperatorList(decode_dns);
+            for (var i = 0; i < operator_list.length; i++) {
+                if (req.query[`sales${operator_list[i]?.num}_id`] > 0) {
+                    where_sql += ` AND ${table_name}.sales${operator_list[i]?.num}_id=${req.query[`sales${operator_list[i]?.num}_id`]} `;
+                }
+            }
+            if (req.query?.mcht_id > 0) {
+                where_sql += ` AND ${table_name}.mcht_id=${req.query?.mcht_id} `;
+            }
+            sql = sql + where_sql;
             let data = await getSelectQuery(sql, columns, req.query);
 
             return response(req, res, 100, "success", data);
