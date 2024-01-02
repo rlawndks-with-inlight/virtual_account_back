@@ -254,6 +254,9 @@ const withdrawCtrl = {
             if (withdraw_amount > data?.real_amount) {
                 return response(req, res, -100, "출금 요청금이 모계좌잔액보다 많습니다.", false)
             }
+            if (!data?.brand?.settle_acct_num) {
+                return response(req, res, -100, "입금받을 계좌를 등록해 주세요..", false)
+            }
             let deposit_obj = {
                 brand_id: decode_dns?.id,
                 pay_type,
