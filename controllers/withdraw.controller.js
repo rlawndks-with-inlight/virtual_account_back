@@ -156,7 +156,7 @@ const withdrawCtrl = {
                 return response(req, res, -100, (api_move_to_user_amount_result?.message || "서버 에러 발생"), api_move_to_user_amount_result?.data)
             }
             let api_withdraw_request_result = await corpApi.user.withdraw.request({
-                pay_type: 'deposit',
+                pay_type: 'withdraw',
                 dns_data: decode_dns,
                 decode_user: user,
                 guid: virtual_account?.guid,
@@ -180,9 +180,7 @@ const withdrawCtrl = {
                 withdraw_fee: user?.withdraw_fee,
                 user_id: user?.id,
             }
-
-           
-*/
+            */
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)

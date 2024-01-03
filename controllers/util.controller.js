@@ -14,7 +14,6 @@ const utilCtrl = {
             const decode_dns = checkDns(req.cookies.dns);
             const { id } = req.params;
             let api_result = await corpApi.bank.list({
-                pay_type: 'deposit',
                 dns_data: decode_dns,
                 decode_user,
             })
