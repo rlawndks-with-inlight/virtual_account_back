@@ -78,7 +78,7 @@ const withdrawCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
-            const {
+            let {
                 withdraw_amount, user_id, pay_type = 5,
                 virtual_account_id,
             } = req.body;
@@ -88,16 +88,22 @@ const withdrawCtrl = {
             };
 
             obj = { ...obj, ...files };
-
-
+            let pay_type_name = '';
+            if (pay_type == 5) {
+                pay_type_name = '출금';
+            } else if (pay_type == 20) {
+                pay_type_name = '반환';
+            }
 
             let user_column = [
                 `users.*`,
             ]
             let user = await pool.query(`SELECT ${user_column.join()} FROM users WHERE id=${user_id}`);
             user = user?.result[0];
-
-            let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE id=${user?.virtual_account_id}`);
+            if (!virtual_account_id) {
+                virtual_account_id = user?.virtual_account_id;
+            }
+            let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE id=${virtual_account_id}`);
             virtual_account = virtual_account?.result[0];
             if (!virtual_account) {
                 return response(req, res, -100, "가상계좌를 먼저 등록해 주세요.", false)
@@ -117,6 +123,7 @@ const withdrawCtrl = {
                 settle_acct_num: virtual_account?.deposit_acct_num,
                 settle_acct_name: virtual_account?.deposit_acct_name,
                 withdraw_fee: user?.withdraw_fee,
+                virtual_account_id: virtual_account_id,
                 user_id: user?.id,
                 withdraw_status: 5,
             }
@@ -135,13 +142,13 @@ const withdrawCtrl = {
             let settle_amount = await pool.query(settle_amount_sql);
             settle_amount = settle_amount?.result[0]?.settle_amount ?? 0;
             if (amount > settle_amount) {
-                return response(req, res, -100, "출금 요청금이 보유정산금보다 많습니다.", false)
+                return response(req, res, -100, `${pay_type_name} 요청금이 보유정산금보다 많습니다.`, false)
             }
             if (settle_amount < user?.min_withdraw_remain_price) {
-                return response(req, res, -100, `최소 정산출금잔액은 ${commarNumber(user?.min_withdraw_remain_price)}원 입니다.`, false)
+                return response(req, res, -100, `최소 ${pay_type_name}잔액은 ${commarNumber(user?.min_withdraw_remain_price)}원 입니다.`, false)
             }
             if (parseInt(withdraw_amount) < user?.min_withdraw_price) {
-                return response(req, res, -100, `최소 정산 출금액은 ${commarNumber(user?.min_withdraw_price)}원 입니다.`, false)
+                return response(req, res, -100, `최소 ${pay_type_name}액은 ${commarNumber(user?.min_withdraw_price)}원 입니다.`, false)
             }
 
             let api_move_to_user_amount_result = await corpApi.transfer.pass({
