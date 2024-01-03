@@ -21,7 +21,6 @@ const virtualAccountCtrl = {
                 `mchts.user_name`,
                 `mchts.nickname`,
             ]
-            console.log(status)
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
             sql += ` LEFT JOIN users AS mchts ON ${table_name}.mcht_id=mchts.id `;
             sql += ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
