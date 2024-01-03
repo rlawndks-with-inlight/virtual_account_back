@@ -15,16 +15,22 @@ const virtualAccountCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
-            const { } = req.query;
+            const { mcht_id, status } = req.query;
             let columns = [
                 `${table_name}.*`,
                 `mchts.user_name`,
                 `mchts.nickname`,
             ]
+            console.log(status)
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
             sql += ` LEFT JOIN users AS mchts ON ${table_name}.mcht_id=mchts.id `;
             sql += ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
-
+            if (mcht_id > 0) {
+                sql += ` AND ${table_name}.mcht_id=${mcht_id} `
+            }
+            if (status) {
+                sql += ` AND ${table_name}.status=${status} `
+            }
             let data = await getSelectQuery(sql, columns, req.query);
 
             return response(req, res, 100, "success", data);
