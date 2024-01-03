@@ -82,7 +82,6 @@ const withdrawCtrl = {
                 withdraw_amount, user_id, pay_type = 5, note = "",
                 virtual_account_id,
             } = req.body;
-            console.log(req.body)
             let files = settingFiles(req.files);
             let obj = {
                 withdraw_amount, user_id, pay_type
