@@ -446,5 +446,55 @@ const userCtrl = {
 
         }
     },
+    changeUserDeposit: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_dns = checkDns(req.cookies.dns);
+            let { amount, pay_type, user_id, note = "" } = req.body;
+
+            let user = await selectQuerySimple(table_name, user_id);
+            user = user?.result[0];
+
+            amount = parseFloat(amount);
+            if (pay_type == 25) {
+                amount = amount;
+            } else if (pay_type == 30) {
+                amount = (-1) * amount;
+            }
+            if (!user) {
+                return response(req, res, -100, "존재하지 않는 회원입니다.", false)
+            }
+            let obj = {
+                brand_id: decode_dns?.id,
+                pay_type,
+                expect_amount: amount,
+                amount: amount,
+                user_id: user?.id,
+                note: note,
+            }
+            let operator_list = getOperatorList(decode_dns);
+            if (user?.level == 10) {
+                obj[`mcht_id`] = user?.id
+                obj[`mcht_amount`] = amount;
+            }
+            for (var i = 0; i < operator_list.length; i++) {
+                if (user?.level == operator_list[i].value) {
+                    obj[`sales${operator_list[i].num}_id`] = user?.id
+                    obj[`sales${operator_list[i].num}_amount`] = amount;
+                    break;
+                }
+            }
+            let result = insertQuery(`deposits`, obj);
+
+
+            return response(req, res, 100, "success", {})
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
 }
 export default userCtrl;

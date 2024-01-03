@@ -22,7 +22,9 @@ router
     .get(userCtrl.get)
     .put(userCtrl.update)
     .delete(userCtrl.remove)
-
+router
+    .route('/change-deposit')
+    .post(userCtrl.changeUserDeposit)
 router
     .route('/change-pw/:id')
     .put(userCtrl.changePassword)
