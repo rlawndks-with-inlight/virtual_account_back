@@ -79,9 +79,10 @@ const withdrawCtrl = {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
             let {
-                withdraw_amount, user_id, pay_type = 5,
+                withdraw_amount, user_id, pay_type = 5, note = "",
                 virtual_account_id,
             } = req.body;
+            console.log(req.body)
             let files = settingFiles(req.files);
             let obj = {
                 withdraw_amount, user_id, pay_type
@@ -125,6 +126,7 @@ const withdrawCtrl = {
                 virtual_account_id: virtual_account_id,
                 user_id: user?.id,
                 withdraw_status: 5,
+                note: note,
             }
 
             let settle_amount_sql = ``;
