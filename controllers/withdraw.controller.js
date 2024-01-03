@@ -150,7 +150,10 @@ const withdrawCtrl = {
             if (parseInt(withdraw_amount) < user?.min_withdraw_price) {
                 return response(req, res, -100, `최소 ${pay_type_name}액은 ${commarNumber(user?.min_withdraw_price)}원 입니다.`, false)
             }
-
+            let data = await getMotherDeposit(decode_dns);
+            if (withdraw_amount > data?.real_amount) {
+                return response(req, res, -100, "출금 요청금이 모계좌잔액보다 많습니다.", false)
+            }
             let api_move_to_user_amount_result = await corpApi.transfer.pass({
                 pay_type: 'deposit',
                 dns_data: decode_dns,
