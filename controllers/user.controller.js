@@ -3,7 +3,7 @@ import _ from "lodash";
 import db, { pool } from "../config/db.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
-import { checkDns, checkLevel, createHashedPassword, isItemBrandIdSameDnsId, lowLevelException, makeObjByList, makeUserChildrenList, makeUserTree, operatorLevelList, response, settingFiles } from "../utils.js/util.js";
+import { checkDns, checkLevel, createHashedPassword, getOperatorList, isItemBrandIdSameDnsId, lowLevelException, makeObjByList, makeUserChildrenList, makeUserTree, operatorLevelList, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 import corpApi from "../utils.js/corp-util/index.js";
 import axios from "axios";
@@ -176,6 +176,7 @@ const userCtrl = {
 
 
             obj = { ...obj, ...files };
+
             await db.beginTransaction();
             // let api_result = await corpApi.user.create({
             //     pay_type: 'deposit',
@@ -198,19 +199,31 @@ const userCtrl = {
                 mid: `${new Date().getTime()}${decode_dns?.id}${user_id}`,
             }, user_id)
             if (level == 10) {//가맹점
-                if (!(mcht_fee > 0)) {
-                    await db.rollback();
-                    return response(req, res, -100, "가맹점 수수료는 필수값입니다.", false)
-                }
+                let mother_fee = decode_dns?.head_office_fee;
+                let up_user = '본사';
+                let down_user = '';
                 let mcht_obj = {
                     mcht_id: result?.result?.insertId,
                     mcht_fee,
                 };
                 for (var i = 0; i < decode_dns?.operator_list.length; i++) {
                     if (req.body[`sales${decode_dns?.operator_list[i]?.num}_id`]) {
+                        down_user = decode_dns?.operator_list[i]?.label;
+                        if (req.body[`sales${decode_dns?.operator_list[i]?.num}_fee`] < mother_fee) {
+                            await db.rollback();
+                            return response(req, res, -200, `${up_user} 수수료가 ${down_user} 수수료보다 높습니다.`, false)
+                        }
+                        up_user = decode_dns?.operator_list[i]?.label;
+                        mother_fee = req.body[`sales${decode_dns?.operator_list[i]?.num}_fee`];
+
                         mcht_obj[`sales${decode_dns?.operator_list[i]?.num}_id`] = req.body[`sales${decode_dns?.operator_list[i]?.num}_id`];
                         mcht_obj[`sales${decode_dns?.operator_list[i]?.num}_fee`] = req.body[`sales${decode_dns?.operator_list[i]?.num}_fee`];
                     }
+                }
+                down_user = '가맹점';
+                if (mcht_fee < mother_fee) {
+                    await db.rollback();
+                    return response(req, res, -200, `${up_user} 수수료가 ${down_user} 수수료보다 높습니다.`, false)
                 }
                 let mcht_result = await insertQuery(`merchandise_columns`, mcht_obj);
             }
@@ -289,16 +302,29 @@ const userCtrl = {
 
             let result = await updateQuery(`${table_name}`, obj, id);
             if (level == 10) {//가맹점
-                if (!(mcht_fee > 0)) {
-                    await db.rollback();
-                    return response(req, res, -100, "가맹점 수수료는 필수값입니다.", false)
-                }
+                let mother_fee = decode_dns?.head_office_fee;
+                let up_user = '본사';
+                let down_user = '';
                 let mcht_obj = {
                     mcht_fee,
                 };
                 for (var i = 0; i < decode_dns?.operator_list.length; i++) {
                     mcht_obj[`sales${decode_dns?.operator_list[i]?.num}_id`] = req.body[`sales${decode_dns?.operator_list[i]?.num}_id`] || 0;
                     mcht_obj[`sales${decode_dns?.operator_list[i]?.num}_fee`] = req.body[`sales${decode_dns?.operator_list[i]?.num}_fee`] || 0;
+                    if (req.body[`sales${decode_dns?.operator_list[i]?.num}_id`]) {
+                        down_user = decode_dns?.operator_list[i]?.label;
+                        if (req.body[`sales${decode_dns?.operator_list[i]?.num}_fee`] < mother_fee) {
+                            await db.rollback();
+                            return response(req, res, -200, `${up_user} 수수료가 ${down_user} 수수료보다 높습니다.`, false)
+                        }
+                        up_user = decode_dns?.operator_list[i]?.label;
+                        mother_fee = req.body[`sales${decode_dns?.operator_list[i]?.num}_fee`];
+                    }
+                }
+                down_user = '가맹점';
+                if (mcht_fee < mother_fee) {
+                    await db.rollback();
+                    return response(req, res, -200, `${up_user} 수수료가 ${down_user} 수수료보다 높습니다.`, false)
                 }
                 let mcht_result = await updateQuery(`merchandise_columns`, mcht_obj, id, 'mcht_id');
             }

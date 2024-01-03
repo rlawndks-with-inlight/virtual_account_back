@@ -44,7 +44,6 @@ const withdrawCtrl = {
             }
 
             sql = sql + where_sql;
-            console.log(sql)
             let data = await getSelectQuery(sql, columns, req.query);
 
             return response(req, res, 100, "success", data);
@@ -358,7 +357,6 @@ const getMotherDeposit = async (decode_dns) => {
         guid: data['brand']?.deposit_guid,
     })
     data['real_amount'] = real_amount.data?.bal_tot_amt ?? 0;
-    console.log(data)
 
     return data;
 }
