@@ -111,7 +111,6 @@ const withdrawCtrl = {
 
             let amount = parseInt(withdraw_amount) + user?.withdraw_fee;
 
-
             let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
             dns_data = dns_data?.result[0];
 
@@ -150,8 +149,8 @@ const withdrawCtrl = {
             if (parseInt(withdraw_amount) < user?.min_withdraw_price) {
                 return response(req, res, -100, `최소 ${pay_type_name}액은 ${commarNumber(user?.min_withdraw_price)}원 입니다.`, false)
             }
-            let data = await getMotherDeposit(decode_dns);
-            if (withdraw_amount > data?.real_amount) {
+            let mother_account = await getMotherDeposit(decode_dns);
+            if (withdraw_amount > mother_account?.real_amount) {
                 return response(req, res, -100, "출금 요청금이 모계좌잔액보다 많습니다.", false)
             }
             let api_move_to_user_amount_result = await corpApi.transfer.pass({
