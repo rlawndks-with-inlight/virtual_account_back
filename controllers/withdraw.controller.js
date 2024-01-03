@@ -79,7 +79,8 @@ const withdrawCtrl = {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
             const {
-                withdraw_amount, user_id, pay_type = 5
+                withdraw_amount, user_id, pay_type = 5,
+                virtual_account_id,
             } = req.body;
             let files = settingFiles(req.files);
             let obj = {
