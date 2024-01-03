@@ -137,7 +137,7 @@ const virtualAccountCtrl = {
                 decode_user,
                 guid: virtual_account?.guid,
             })
-            let amount = user_amount.data?.bal_tot_amt
+            let amount = user_amount.data?.bal_tot_amt ?? 0
             if (amount > 0) {
                 let mother_to_result = await corpApi.transfer.pass({
                     pay_type: 'deposit',
@@ -169,9 +169,9 @@ const virtualAccountCtrl = {
                     bank_id: virtual_account?.virtual_bank_code,
                     virtual_acct_num: virtual_account?.virtual_acct_num,
                 })
-                if (api_result.code != 100 && api_result?.message != '가상계좌 해지 불가 상태') {
-                    return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
-                }
+                // if (api_result.code != 100 && api_result?.message != '가상계좌 해지 불가 상태') {
+                //     return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
+                // }
             }
             if (virtual_account?.deposit_acct_num) {
                 let api_result = await corpApi.user.account_delete({
@@ -182,9 +182,9 @@ const virtualAccountCtrl = {
                     bank_id: virtual_account?.deposit_bank_code,
                     deposit_acct_num: virtual_account?.deposit_acct_num,
                 })
-                if (api_result.code != 100 && api_result.message != '출금계좌 불일치로 진행 불가') {
-                    return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
-                }
+                // if (api_result.code != 100 && api_result.message != '출금계좌 불일치로 진행 불가') {
+                //     return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
+                // }
             }
             let delete_user = await corpApi.user.remove({
                 pay_type: 'deposit',
@@ -195,8 +195,6 @@ const virtualAccountCtrl = {
             if (delete_user.code != 100) {
                 return response(req, res, -100, (delete_user?.message || "서버 에러 발생"), false)
             }
-
-
 
             let result = await deleteQuery(`${table_name}`, {
                 id
