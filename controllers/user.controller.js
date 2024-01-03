@@ -207,7 +207,7 @@ const userCtrl = {
                     mcht_fee,
                 };
                 for (var i = 0; i < decode_dns?.operator_list.length; i++) {
-                    if (req.body[`sales${decode_dns?.operator_list[i]?.num}_id`]) {
+                    if (req.body[`sales${decode_dns?.operator_list[i]?.num}_id`] > 0) {
                         down_user = decode_dns?.operator_list[i]?.label;
                         if (req.body[`sales${decode_dns?.operator_list[i]?.num}_fee`] < mother_fee) {
                             await db.rollback();
@@ -311,7 +311,7 @@ const userCtrl = {
                 for (var i = 0; i < decode_dns?.operator_list.length; i++) {
                     mcht_obj[`sales${decode_dns?.operator_list[i]?.num}_id`] = req.body[`sales${decode_dns?.operator_list[i]?.num}_id`] || 0;
                     mcht_obj[`sales${decode_dns?.operator_list[i]?.num}_fee`] = req.body[`sales${decode_dns?.operator_list[i]?.num}_fee`] || 0;
-                    if (req.body[`sales${decode_dns?.operator_list[i]?.num}_id`]) {
+                    if (req.body[`sales${decode_dns?.operator_list[i]?.num}_id`] > 0) {
                         down_user = decode_dns?.operator_list[i]?.label;
                         if (req.body[`sales${decode_dns?.operator_list[i]?.num}_fee`] < mother_fee) {
                             await db.rollback();
