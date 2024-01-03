@@ -58,7 +58,6 @@ const postRequest = async (uri, query, headers_data, method = 'POST') => {
             });
 
             res.on('end', () => {
-                console.log(typeof data)
                 resolve(JSON.parse(data));
             });
         });
@@ -203,7 +202,6 @@ export const banknersApi = {
                 }
                 query = makeBody(query, dns_data, pay_type)
                 let result = await postRequest('/api/user/account', query, makeHeaderData(dns_data, pay_type, decode_user));
-                console.log(result);
 
                 if (result?.code != '0000') {
                     return {
@@ -289,7 +287,6 @@ export const banknersApi = {
                         data: {},
                     };
                 }
-                console.log(result)
                 return {
                     code: 100,
                     message: '',
@@ -556,7 +553,6 @@ export const banknersApi = {
                     data: {},
                 };
             }
-            console.log(result)
             return {
                 code: 100,
                 message: '',
@@ -598,7 +594,6 @@ export const banknersApi = {
                     data: {},
                 };
             }
-            console.log(result)
             return {
                 code: 100,
                 message: '',

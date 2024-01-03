@@ -182,6 +182,7 @@ const virtualAccountCtrl = {
                     bank_id: virtual_account?.deposit_bank_code,
                     deposit_acct_num: virtual_account?.deposit_acct_num,
                 })
+
                 // if (api_result.code != 100 && api_result.message != '출금계좌 불일치로 진행 불가') {
                 //     return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
                 // }
@@ -192,9 +193,6 @@ const virtualAccountCtrl = {
                 decode_user,
                 guid: virtual_account?.guid,
             })
-            if (delete_user.code != 100) {
-                return response(req, res, -100, (delete_user?.message || "서버 에러 발생"), false)
-            }
 
             let result = await deleteQuery(`${table_name}`, {
                 id
