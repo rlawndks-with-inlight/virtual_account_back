@@ -24,7 +24,7 @@ const withdrawCtrl = {
             ]
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
             sql += ` LEFT JOIN users ON ${table_name}.mcht_id=users.id `;
-            let where_sql = ` WHERE ${table_name}.brand_id=${decode_dns?.id} AND pay_type=5 `;
+            let where_sql = ` WHERE ${table_name}.brand_id=${decode_dns?.id} AND pay_type IN (5, 20) `;
             if (decode_user?.level < 40) {
                 if (decode_user?.level == 10) {
                     where_sql += ` AND ${table_name}.mcht_id=${decode_user?.id} `;
