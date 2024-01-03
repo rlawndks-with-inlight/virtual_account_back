@@ -111,8 +111,8 @@ export const getSelectQuery = async (sql_, columns, query, add_sql_list = []) =>
 }
 const settingSelectQueryWhere = (sql_, query, table) => {
     let sql = sql_;
-    const { s_dt, e_dt, search } = query;
-    sql += ` ${sql.includes('WHERE') ? 'AND' : 'WHERE'} ${table}.is_delete=0 `;
+    const { s_dt, e_dt, search, is_delete } = query;
+    sql += ` ${sql.includes('WHERE') ? 'AND' : 'WHERE'} ${table}.is_delete=${is_delete || '0'} `;
     if (s_dt) {
         sql += ` AND ${table}.created_at >= '${s_dt} 00:00:00' `;
     }
