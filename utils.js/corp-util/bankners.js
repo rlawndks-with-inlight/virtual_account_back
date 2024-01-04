@@ -435,24 +435,21 @@ export const banknersApi = {
                 let query = {
                     guid: guid
                 }
+                /*
                 query = new URLSearchParams(query).toString();
-                // let { data: result } = await axios.get(`https://${API_URL}/api/bank/list`, {
-                //     headers: makeHeaderData(dns_data, pay_type, decode_user)
-                // })
-                // if (result?.code != '0000') {
-                //     return {
-                //         code: -100,
-                //         message: result?.message,
-                //         data: {},
-                //     };
-                // }
+                let { data: response } = await axios.get(`https://${API_URL}/api/bank/list`, {
+                    headers: makeHeaderData(dns_data, 'deposit', decode_user)
+                })
+                console.log(response)
+                if (response?.code != '0000') {
+                    return {
+                        code: -100,
+                        message: response?.message,
+                        data: {},
+                    };
+                }
+                */
                 const bank_list = [
-                    {
-                        bank_id: '039',
-                        bank_nm: '경남은행',
-                        bank_en_nm: 'Kyongnam Bank',
-                        swift_cd: 'KYNAKR22'
-                    },
                     {
                         bank_id: '003',
                         bank_nm: 'IBK기업은행',
@@ -460,17 +457,48 @@ export const banknersApi = {
                         swift_cd: 'IBKOKRSE'
                     },
                     {
-                        bank_id: '088',
-                        bank_nm: '신한은행',
-                        bank_en_nm: 'SHINHAN BANK',
-                        swift_cd: 'SHBKKRSE'
-                    },
-                    {
                         bank_id: '004',
                         bank_nm: 'KB국민은행',
                         bank_en_nm: '',
                         swift_cd: 'CZNBKRSE'
                     },
+                    {
+                        bank_id: '092',
+                        bank_nm: '토스뱅크',
+                        bank_en_nm: 'TOSS Bank',
+                        swift_cd: ''
+                    },
+                    {
+                        bank_id: '032',
+                        bank_nm: '부산은행',
+                        bank_en_nm: 'Busan Bank',
+                        swift_cd: 'PUSBKR2P'
+                    },
+                    {
+                        bank_id: '031',
+                        bank_nm: '대구은행',
+                        bank_en_nm: 'Daegu Bank',
+                        swift_cd: 'DAEBKR22'
+                    },
+                    {
+                        bank_id: '034',
+                        bank_nm: '광주은행',
+                        bank_en_nm: 'Kwangju Bank',
+                        swift_cd: 'KWABKRSE'
+                    },
+                    {
+                        bank_id: '039',
+                        bank_nm: '경남은행',
+                        bank_en_nm: 'Kyongnam Bank',
+                        swift_cd: 'KYNAKR22'
+                    },
+                    {
+                        bank_id: '088',
+                        bank_nm: '신한은행',
+                        bank_en_nm: 'SHINHAN BANK',
+                        swift_cd: 'SHBKKRSE'
+                    },
+
                     {
                         bank_id: '081',
                         bank_nm: 'KEB하나은행',
