@@ -290,11 +290,12 @@ const withdrawCtrl = {
                 withdraw_status: 5,
                 note: note
             }
+
             let api_move_to_user_amount_result = await corpApi.transfer.pass({
                 pay_type: 'deposit',
                 dns_data: decode_dns,
                 decode_user: {},
-                from_guid: dns_data[`deposit_guid`],
+                from_guid: data?.brand?.deposit_guid,
                 to_guid: data?.brand?.guid,
                 amount: withdraw_amount,
             })
