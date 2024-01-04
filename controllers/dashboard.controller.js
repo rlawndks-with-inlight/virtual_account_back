@@ -12,17 +12,25 @@ const dashboardCtrl = {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
             const { s_dt, e_dt } = req.query;
-            let sub_query = ` SELECT SUM(amount) FROM deposits WHERE mcht_id=users.id AND pay_type=0 `;
+            let amount_sub_sql = ` SELECT SUM(amount) FROM deposits  `;
+            let count_sub_sql = ` SELECT COUNT(*) FROM deposits `;
+            let mcht_amount_sub_sql = ` SELECT SUM(mcht_amount) FROM deposits `;
+            let sub_query_where_sql = ` WHERE mcht_id=users.id AND pay_type=0 `;
             if (s_dt) {
-                sub_query += ` AND created_at >= '${s_dt} 00:00:00' `;
+                sub_query_where_sql += ` AND created_at >= '${s_dt} 00:00:00' `;
             }
             if (e_dt) {
-                sub_query += ` AND created_at <= '${e_dt} 23:59:59' `;
+                sub_query_where_sql += ` AND created_at <= '${e_dt} 23:59:59' `;
             }
+            amount_sub_sql += sub_query_where_sql;
+            count_sub_sql += sub_query_where_sql;
+            mcht_amount_sub_sql += sub_query_where_sql;
             let columns = [
                 `users.*`,
                 `users.nickname AS label`,
-                `(${sub_query}) AS amount`,
+                `(${amount_sub_sql}) AS amount`,
+                `(${count_sub_sql}) AS count`,
+                `(${mcht_amount_sub_sql}) AS mcht_amount`,
             ]
             let sql = `SELECT ${columns.join()} FROM users `;
             sql += ` WHERE users.level=10 `;
@@ -76,16 +84,21 @@ const dashboardCtrl = {
                     date_format = data[i]?.created_at.substring(0, 7);
                 }
                 if (!chart_obj[date_format]) {
-                    chart_obj[date_format] = 0;
+                    chart_obj[date_format] = {
+                        amount: 0,
+                        count: 0,
+                    };
                 }
-                chart_obj[date_format] += parseFloat(data[i]?.amount);
+                chart_obj[date_format].amount += parseFloat(data[i]?.amount);
+                chart_obj[date_format].count++;
             }
             let result = [];
             for (var i = 0; i < Object.keys(chart_obj).length; i++) {
                 let key = Object.keys(chart_obj)[i];
                 result.push({
-                    amount: chart_obj[key],
+                    amount: chart_obj[key].amount,
                     label: key,
+                    count: chart_obj[key].count,
                 })
             }
             return response(req, res, 100, "success", result);
