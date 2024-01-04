@@ -283,7 +283,7 @@ const withdrawCtrl = {
             let deposit_obj = {
                 brand_id: decode_dns?.id,
                 pay_type,
-                expect_amount: (-1) * amount,
+                expect_amount: (-1) * withdraw_amount,
                 settle_bank_code: data?.brand?.settle_bank_code,
                 settle_acct_num: data?.brand?.settle_acct_num,
                 settle_acct_name: data?.brand?.settle_acct_name,
