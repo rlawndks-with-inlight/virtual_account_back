@@ -359,7 +359,7 @@ const withdrawCtrl = {
             if (!withdraw) {
                 return response(req, res, -100, "잘못된 출금 입니다.", false)
             }
-            let withdraw_amount = withdraw?.expect_amount * (-1);
+            let withdraw_amount = (withdraw?.expect_amount - withdraw?.withdraw_fee) * (-1);
             let user = await pool.query(`SELECT * FROM users WHERE id=${withdraw?.user_id} AND brand_id=${decode_dns?.id}`);
             user = user?.result[0];
 
