@@ -35,6 +35,7 @@ const domainCtrl = {
                 'head_office_fee',
                 'deposit_corp_type',
                 'api_key',
+                'virtual_account_id'
             ]
             let brand = await pool.query(`SELECT ${columns.join()} FROM brands WHERE dns='${dns}'`);
             if (brand?.result.length == 0) {

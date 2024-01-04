@@ -94,6 +94,8 @@ const withdrawCtrl = {
                 pay_type_name = '출금';
             } else if (pay_type == 20) {
                 pay_type_name = '반환';
+            } else if (pay_type == 10) {
+                pay_type_name = '모계좌출금';
             }
 
             let user_column = [
