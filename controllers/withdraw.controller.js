@@ -297,6 +297,8 @@ const withdrawCtrl = {
                 withdraw_status: 5,
                 note: note
             }
+            let result = await insertQuery(`${table_name}`, deposit_obj);
+            let withdraw_id = result?.result?.insertId;
 
             let api_move_to_user_amount_result = await corpApi.transfer.pass({
                 pay_type: 'deposit',
@@ -309,6 +311,10 @@ const withdrawCtrl = {
             if (api_move_to_user_amount_result.code != 100) {
                 return response(req, res, -100, (api_move_to_user_amount_result?.message || "서버 에러 발생"), api_move_to_user_amount_result?.data)
             }
+            let result2 = await updateQuery(`${table_name}`, {
+                is_pass_confirm: 1,
+            }, withdraw_id);
+
             let api_withdraw_request_result = await corpApi.user.withdraw.request({
                 pay_type: 'deposit',
                 dns_data: decode_dns,
@@ -319,8 +325,9 @@ const withdrawCtrl = {
             if (api_withdraw_request_result.code != 100) {
                 return response(req, res, -100, (api_withdraw_request_result?.message || "서버 에러 발생"), api_withdraw_request_result?.data)
             }
-            deposit_obj['trx_id'] = api_withdraw_request_result.data?.tid;
-            let result = await insertQuery(`${table_name}`, deposit_obj);
+            let result3 = await updateQuery(`${table_name}`, {
+                trx_id: api_withdraw_request_result.data?.tid,
+            }, withdraw_id);
 
             return response(req, res, 100, "success", {})
         } catch (err) {
