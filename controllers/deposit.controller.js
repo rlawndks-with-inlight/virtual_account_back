@@ -38,7 +38,9 @@ const depositCtrl = {
             }
             let where_sql = ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
             console.log(is_mother)
-            if (!is_mother) {
+            if (is_mother) {
+                where_sql += ` AND (amount > 0 OR amount < 0) `
+            } else {
                 where_sql += ` AND pay_type=0 `
             }
 
