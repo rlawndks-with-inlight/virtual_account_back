@@ -14,7 +14,7 @@ const depositCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
-            const { is_mother } = req.query;
+            const { is_mother, pay_type } = req.query;
 
             let columns = [
                 `${table_name}.*`,
@@ -43,7 +43,9 @@ const depositCtrl = {
             } else {
                 where_sql += ` AND ${table_name}.pay_type=0 `
             }
-
+            if (pay_type) {
+                where_sql += ` AND ${table_name}.pay_type=${pay_type} `
+            }
             if (decode_user?.level < 40) {
                 if (decode_user?.level == 10) {
                     where_sql += ` AND ${table_name}.mcht_id=${decode_user?.id} `;
