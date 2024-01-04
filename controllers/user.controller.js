@@ -211,7 +211,7 @@ const userCtrl = {
                         down_user = decode_dns?.operator_list[i]?.label;
                         if (req.body[`sales${decode_dns?.operator_list[i]?.num}_fee`] < mother_fee) {
                             await db.rollback();
-                            return response(req, res, -200, `${up_user} 수수료가 ${down_user} 수수료보다 높습니다.`, false)
+                            return response(req, res, -200, `${up_user} 요율이 ${down_user} 요율보다 높습니다.`, false)
                         }
                         up_user = decode_dns?.operator_list[i]?.label;
                         mother_fee = req.body[`sales${decode_dns?.operator_list[i]?.num}_fee`];
@@ -223,7 +223,7 @@ const userCtrl = {
                 down_user = '가맹점';
                 if (mcht_fee < mother_fee) {
                     await db.rollback();
-                    return response(req, res, -200, `${up_user} 수수료가 ${down_user} 수수료보다 높습니다.`, false)
+                    return response(req, res, -200, `${up_user} 요율이 ${down_user} 요율보다 높습니다.`, false)
                 }
                 let mcht_result = await insertQuery(`merchandise_columns`, mcht_obj);
             }
@@ -315,7 +315,7 @@ const userCtrl = {
                         down_user = decode_dns?.operator_list[i]?.label;
                         if (req.body[`sales${decode_dns?.operator_list[i]?.num}_fee`] < mother_fee) {
                             await db.rollback();
-                            return response(req, res, -200, `${up_user} 수수료가 ${down_user} 수수료보다 높습니다.`, false)
+                            return response(req, res, -200, `${up_user} 요율이 ${down_user} 요율보다 높습니다.`, false)
                         }
                         up_user = decode_dns?.operator_list[i]?.label;
                         mother_fee = req.body[`sales${decode_dns?.operator_list[i]?.num}_fee`];
@@ -324,7 +324,7 @@ const userCtrl = {
                 down_user = '가맹점';
                 if (mcht_fee < mother_fee) {
                     await db.rollback();
-                    return response(req, res, -200, `${up_user} 수수료가 ${down_user} 수수료보다 높습니다.`, false)
+                    return response(req, res, -200, `${up_user} 요율이 ${down_user} 요율보다 높습니다.`, false)
                 }
                 let mcht_result = await updateQuery(`merchandise_columns`, mcht_obj, id, 'mcht_id');
             }
