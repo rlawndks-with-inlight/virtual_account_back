@@ -468,8 +468,8 @@ const userCtrl = {
             let obj = {
                 brand_id: decode_dns?.id,
                 pay_type,
-                expect_amount: amount,
-                amount: amount,
+                expect_amount: 0,
+                amount: 0,
                 user_id: user?.id,
                 note: note,
             }
