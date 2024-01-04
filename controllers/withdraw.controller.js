@@ -94,8 +94,8 @@ const withdrawCtrl = {
                 pay_type_name = '출금';
             } else if (pay_type == 20) {
                 pay_type_name = '반환';
-            } else if (pay_type == 10) {
-                pay_type_name = '모계좌출금';
+            } else {
+                return response(req, res, -100, "결제타입에러", false)
             }
 
             let user_column = [
@@ -270,7 +270,7 @@ const withdrawCtrl = {
                 return lowLevelException(req, res);
             }
             const {
-                withdraw_amount, pay_type = 10
+                withdraw_amount, pay_type = 10, note = ""
             } = req.body;
 
             let data = await getMotherDeposit(decode_dns);
@@ -288,6 +288,7 @@ const withdrawCtrl = {
                 settle_acct_num: data?.brand?.settle_acct_num,
                 settle_acct_name: data?.brand?.settle_acct_name,
                 withdraw_status: 5,
+                note: note
             }
             let api_move_to_user_amount_result = await corpApi.transfer.pass({
                 pay_type: 'deposit',
