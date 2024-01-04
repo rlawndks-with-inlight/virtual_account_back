@@ -37,7 +37,6 @@ const depositCtrl = {
                 sql += ` LEFT JOIN users AS sales${decode_dns?.operator_list[i]?.num} ON sales${decode_dns?.operator_list[i]?.num}.id=${table_name}.sales${decode_dns?.operator_list[i]?.num}_id `;
             }
             let where_sql = ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
-            console.log(is_mother)
             if (is_mother) {
                 where_sql += ` AND (${table_name}.amount > 0 OR ${table_name}.amount < 0) `
             } else {
