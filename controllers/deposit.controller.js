@@ -39,9 +39,9 @@ const depositCtrl = {
             let where_sql = ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
             console.log(is_mother)
             if (is_mother) {
-                where_sql += ` AND (amount > 0 OR amount < 0) `
+                where_sql += ` AND (${table_name}.amount > 0 OR ${table_name}.amount < 0) `
             } else {
-                where_sql += ` AND pay_type=0 `
+                where_sql += ` AND ${table_name}.pay_type=0 `
             }
 
             if (decode_user?.level < 40) {
