@@ -113,7 +113,8 @@ const withdrawCtrl = {
             }
 
             let amount = parseInt(withdraw_amount) + user?.withdraw_fee;
-
+            console.log(amount);
+            console.log(user?.withdraw_fee);
             let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
             dns_data = dns_data?.result[0];
 
