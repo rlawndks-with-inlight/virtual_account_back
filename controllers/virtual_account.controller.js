@@ -193,8 +193,13 @@ const virtualAccountCtrl = {
                 decode_user,
                 guid: virtual_account?.guid,
             })
-
-            let result = await deleteQuery(`${table_name}`, {
+            let result1 = await updateQuery(`users`, {
+                virtual_account_id: 0,
+            }, id, 'virtual_account_id')
+            let result2 = await updateQuery(`brands`, {
+                virtual_account_id: 0,
+            }, id, 'virtual_account_id')
+            let result3 = await deleteQuery(`${table_name}`, {
                 id
             })
             return response(req, res, 100, "success", {})
