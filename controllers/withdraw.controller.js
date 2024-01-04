@@ -153,11 +153,18 @@ const withdrawCtrl = {
             if (parseInt(withdraw_amount) < user?.min_withdraw_price) {
                 return response(req, res, -100, `최소 ${pay_type_name}액은 ${commarNumber(user?.min_withdraw_price)}원 입니다.`, false)
             }
+            if (user?.is_withdraw_hold == 1) {
+                deposit_obj['is_withdraw_hold'] = 1;
+            }
+            let result = await insertQuery(`${table_name}`, deposit_obj);
+            if (user?.is_withdraw_hold == 1) {
+                return response(req, res, 100, "출금 요청이 완료되었습니다.", {});
+            }
             let mother_account = await getMotherDeposit(decode_dns);
             if (withdraw_amount > mother_account?.real_amount) {
                 return response(req, res, -100, "출금 요청금이 모계좌잔액보다 많습니다.", false)
             }
-            let result = await insertQuery(`${table_name}`, deposit_obj);
+
             let withdraw_id = result?.result?.insertId;
 
             let api_move_to_user_amount_result = await corpApi.transfer.pass({
@@ -329,6 +336,93 @@ const withdrawCtrl = {
                 trx_id: api_withdraw_request_result.data?.tid,
             }, withdraw_id);
 
+            return response(req, res, 100, "success", {})
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
+    confirm: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_dns = checkDns(req.cookies.dns);
+            let {
+                id,
+            } = req.body;
+
+            let withdraw = await pool.query(`SELECT * FROM deposits WHERE id=${id} AND brand_id=${decode_dns?.id}`);
+            withdraw = withdraw?.result[0];
+            if (!withdraw) {
+                return response(req, res, -100, "잘못된 출금 입니다.", false)
+            }
+            let withdraw_amount = withdraw?.expect_amount * (-1);
+            let user = await pool.query(`SELECT * FROM users WHERE id=${withdraw?.user_id} AND brand_id=${decode_dns?.id}`);
+            user = user?.result[0];
+
+            if (!user) {
+                return response(req, res, -100, "잘못된 유저 입니다.", false)
+            }
+            let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE id=${withdraw?.virtual_account_id}`);
+            virtual_account = virtual_account?.result[0];
+
+            let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
+            dns_data = dns_data?.result[0];
+
+            let mother_account = await getMotherDeposit(decode_dns);
+            if (withdraw_amount > mother_account?.real_amount) {
+                return response(req, res, -100, "출금 요청금이 모계좌잔액보다 많습니다.", false)
+            }
+
+
+            let withdraw_id = withdraw?.id;
+
+            let api_move_to_user_amount_result = await corpApi.transfer.pass({
+                pay_type: 'deposit',
+                dns_data: decode_dns,
+                decode_user: user,
+                from_guid: dns_data[`deposit_guid`],
+                to_guid: virtual_account?.guid,
+                amount: withdraw_amount,
+            })
+
+            if (api_move_to_user_amount_result.code != 100) {
+                return response(req, res, -100, (api_move_to_user_amount_result?.message || "서버 에러 발생"), api_move_to_user_amount_result?.data)
+            }
+
+            let result2 = await updateQuery(`${table_name}`, {
+                is_pass_confirm: 1,
+            }, withdraw_id);
+            let api_withdraw_request_result = await corpApi.user.withdraw.request({
+                pay_type: 'withdraw',
+                dns_data: decode_dns,
+                decode_user: user,
+                guid: virtual_account?.guid,
+                amount: withdraw_amount,
+            })
+            if (api_withdraw_request_result.code != 100) {
+                return response(req, res, -100, (api_withdraw_request_result?.message || "서버 에러 발생"), api_withdraw_request_result?.data)
+            }
+            let result3 = await updateQuery(`${table_name}`, {
+                trx_id: api_withdraw_request_result.data?.tid,
+                is_withdraw_hold: 0,
+            }, withdraw_id);
+            /*
+            let trx_id = `${new Date().getTime()}${decode_dns?.id}${user?.id}5`;
+            let deposit_obj = {
+                brand_id: decode_dns?.id,
+                pay_type,
+                amount: (-1) * (parseInt(withdraw_amount) + user?.withdraw_fee),
+                settle_bank_code: user?.settle_bank_code,
+                settle_acct_num: user?.settle_acct_num,
+                settle_acct_name: user?.settle_acct_name,
+                trx_id: trx_id,
+                withdraw_fee: user?.withdraw_fee,
+                user_id: user?.id,
+            }
+            */
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)

@@ -10,7 +10,9 @@ router
     .route('/mother')
     .get(withdrawCtrl.motherDeposit)
     .post(withdrawCtrl.motherDepositRequest);
-
+router
+    .route('/confirm')
+    .post(withdrawCtrl.confirm)
 router
     .route('/:id')
     .get(withdrawCtrl.get)
