@@ -56,7 +56,6 @@ const corpApi = {
             if (pay_type) {
                 corp_type = dns_data[`${pay_type}_corp_type`];
             }
-
             if (corp_type == 1) {
                 result = await banknersApi.user.create(data);
             }

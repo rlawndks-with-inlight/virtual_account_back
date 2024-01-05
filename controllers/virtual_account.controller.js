@@ -24,8 +24,9 @@ const virtualAccountCtrl = {
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
             sql += ` LEFT JOIN users AS mchts ON ${table_name}.mcht_id=mchts.id `;
             sql += ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
-            if (mcht_id > 0) {
-                sql += ` AND ${table_name}.mcht_id=${mcht_id} `
+
+            if (mcht_id > 0 || decode_user?.level == 10) {
+                sql += ` AND ${table_name}.mcht_id=${mcht_id || decode_user?.id} `;
             }
             if (status) {
                 sql += ` AND ${table_name}.status=${status} `

@@ -177,21 +177,7 @@ const userCtrl = {
             obj = { ...obj, ...files };
 
             await db.beginTransaction();
-            // let api_result = await corpApi.user.create({
-            //     pay_type: 'deposit',
-            //     dns_data: decode_dns,
-            //     decode_user,
-            //     email,
-            //     name,
-            //     phone_num,
-            //     birth
-            // })
-            // console.log(api_result)
-            // if (api_result.code != 100) {
-            //     return response(req, res, -100, (api_result?.message || "서버 에러 발생"), api_result?.data)
-            // }
-            // obj['guid'] = api_result.data?.guid
-            // console.log(api_result)
+
             let result = await insertQuery(`${table_name}`, obj);
             let user_id = result?.result?.insertId;
             let result2 = await updateQuery(table_name, {
