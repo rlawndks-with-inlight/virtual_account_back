@@ -42,6 +42,9 @@ const userCtrl = {
             sql += ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
             sql += ` AND ${table_name}.level <= ${decode_user?.level} `;
 
+            if (decode_user?.level < 40) {
+                sql += ` AND ${table_name}.id=${decode_user?.id} `;
+            }
             if (level) {
                 let find_oper_level = _.find(operatorLevelList, { level: parseInt(level) });
                 if (level == 10) {
