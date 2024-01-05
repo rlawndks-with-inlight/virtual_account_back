@@ -26,11 +26,19 @@ const authCtrl = {
                 return response(req, res, -100, "승인 대기중입니다.", {})
             }
             if (user?.status == 2) {
-                return response(req, res, -100, "로그인 불가 회원입니다.", {})
+                return response(req, res, -100, "로그인 차단 회원입니다. 관리자에게 문의하세요.", {})
             }
             user_pw = (await createHashedPassword(user_pw, user.user_salt)).hashedPassword;
             if (user_pw != user.user_pw) {
-                return response(req, res, -100, "가입되지 않은 회원입니다.", {})
+                let login_fail_obj = {
+                    login_fail_count: user?.login_fail_count + 1,
+                }
+                if (login_fail_obj.login_fail_count == 5) {
+                    login_fail_obj.status = 2;
+                }
+                let add_login_fail_count = await updateQuery(`users`, login_fail_obj, user?.id);
+                return response(req, res, -100, "가입되지 않은 회원입니다.", {});
+
             }
             const token = makeUserToken({
                 id: user.id,
@@ -49,7 +57,8 @@ const authCtrl = {
                 //secure: true 
             });
             let check_last_login_time = await updateQuery('users', {
-                last_login_time: returnMoment()
+                last_login_time: returnMoment(),
+                login_fail_count: 0,
             }, user.id)
 
             return response(req, res, 100, "success", user)
