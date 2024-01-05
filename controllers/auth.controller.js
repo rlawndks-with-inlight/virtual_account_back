@@ -33,11 +33,13 @@ const authCtrl = {
                 let login_fail_obj = {
                     login_fail_count: user?.login_fail_count + 1,
                 }
+                let err_message = '가입되지 않은 회원입니다.';
                 if (login_fail_obj.login_fail_count == 5) {
                     login_fail_obj.status = 2;
+                    err_message = `로그인 5회실패, 관리자에게 문의해주세요.`
                 }
                 let add_login_fail_count = await updateQuery(`users`, login_fail_obj, user?.id);
-                return response(req, res, -100, "가입되지 않은 회원입니다.", {});
+                return response(req, res, -100, err_message, {});
 
             }
             const token = makeUserToken({
