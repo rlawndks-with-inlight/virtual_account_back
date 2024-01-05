@@ -151,6 +151,9 @@ const withdrawCtrl = {
             }
             let settle_amount = await pool.query(settle_amount_sql);
             settle_amount = settle_amount?.result[0]?.settle_amount ?? 0;
+            if (dns_data?.default_withdraw_max_price < withdraw_amount) {
+                return response(req, res, -100, `최대 ${pay_type_name}액은 ${commarNumber(dns_data?.default_withdraw_max_price)}원 입니다.`, false)
+            }
             if (amount > settle_amount) {
                 return response(req, res, -100, `${pay_type_name} 요청금이 보유정산금보다 많습니다.`, false)
             }
