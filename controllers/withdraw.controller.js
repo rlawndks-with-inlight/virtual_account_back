@@ -113,11 +113,17 @@ const withdrawCtrl = {
             }
 
             let amount = parseInt(withdraw_amount) + user?.withdraw_fee;
-            console.log(amount);
-            console.log(user?.withdraw_fee);
             let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
             dns_data = dns_data?.result[0];
 
+
+            if (pay_type == 20 && user?.can_return_ago_pay == 1) {
+                let deposit_count = await pool.query(`SELECT COUNT(*) AS count FROM deposits WHERE pay_type=0 AND virtual_account_id=${virtual_account_id}`);
+                deposit_count = deposit_count?.result[0];
+                if (deposit_count?.count < 1) {
+                    return response(req, res, -100, "결제한 이력이 없는 유저이므로 반환 불가합니다.", false)
+                }
+            }
             let deposit_obj = {
                 brand_id: decode_dns?.id,
                 pay_type,

@@ -150,7 +150,7 @@ const userCtrl = {
                 brand_id, user_name, user_pw, name, nickname, level, phone_num, profile_img, note,
                 mcht_fee = 0,
                 guid,
-                deposit_fee = 0, withdraw_fee = 0, min_withdraw_price = 0, min_withdraw_remain_price = 0, is_withdraw_hold = 0,
+                deposit_fee = 0, withdraw_fee = 0, min_withdraw_price = 0, min_withdraw_remain_price = 0, is_withdraw_hold = 0, can_return_ago_pay = 1,
             } = req.body;
             let is_exist_user = await pool.query(`SELECT * FROM ${table_name} WHERE user_name=? AND brand_id=${brand_id}`, [user_name]);
             if (is_exist_user?.result.length > 0) {
@@ -163,7 +163,7 @@ const userCtrl = {
 
             let obj = {
                 brand_id, user_name, user_pw, user_salt, name, nickname, level, phone_num, profile_img, note,
-                deposit_fee, withdraw_fee, min_withdraw_price, min_withdraw_remain_price, is_withdraw_hold,
+                deposit_fee, withdraw_fee, min_withdraw_price, min_withdraw_remain_price, is_withdraw_hold, can_return_ago_pay,
             };
             if (guid) {
                 let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE guid=? AND brand_id=${decode_dns?.id}`, [guid]);
@@ -235,13 +235,13 @@ const userCtrl = {
                 brand_id, user_name, name, nickname, level, phone_num, profile_img, note,
                 mcht_fee = 0,
                 guid = "",
-                deposit_fee = 0, withdraw_fee = 0, min_withdraw_price = 0, min_withdraw_remain_price = 0, is_withdraw_hold = 0,
+                deposit_fee = 0, withdraw_fee = 0, min_withdraw_price = 0, min_withdraw_remain_price = 0, is_withdraw_hold = 0, can_return_ago_pay = 1,
                 id
             } = req.body;
             let files = settingFiles(req.files);
             let obj = {
                 brand_id, user_name, name, nickname, level, phone_num, profile_img, note,
-                deposit_fee, withdraw_fee, min_withdraw_price, min_withdraw_remain_price, is_withdraw_hold,
+                deposit_fee, withdraw_fee, min_withdraw_price, min_withdraw_remain_price, is_withdraw_hold, can_return_ago_pay,
             };
             obj = { ...obj, ...files };
             if (guid) {
