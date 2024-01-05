@@ -160,6 +160,9 @@ const withdrawCtrl = {
             if (parseInt(withdraw_amount) < user?.min_withdraw_price) {
                 return response(req, res, -100, `최소 ${pay_type_name}액은 ${commarNumber(user?.min_withdraw_price)}원 입니다.`, false)
             }
+            if (settle_amount - amount < user?.min_withdraw_hold_price) {
+                return response(req, res, -100, `최소 ${pay_type_name} 보류금액은 ${commarNumber(user?.min_withdraw_hold_price)}원 입니다.`, false)
+            }
             if (user?.is_withdraw_hold == 1) {
                 deposit_obj['is_withdraw_hold'] = 1;
             }
