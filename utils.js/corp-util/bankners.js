@@ -451,46 +451,16 @@ export const banknersApi = {
                 */
                 const bank_list = [
                     {
-                        bank_id: '003',
-                        bank_nm: 'IBK기업은행',
-                        bank_en_nm: '',
-                        swift_cd: 'IBKOKRSE'
-                    },
-                    {
-                        bank_id: '004',
-                        bank_nm: 'KB국민은행',
-                        bank_en_nm: '',
-                        swift_cd: 'CZNBKRSE'
-                    },
-                    {
-                        bank_id: '092',
-                        bank_nm: '토스뱅크',
-                        bank_en_nm: 'TOSS Bank',
-                        swift_cd: ''
-                    },
-                    {
-                        bank_id: '032',
-                        bank_nm: '부산은행',
-                        bank_en_nm: 'Busan Bank',
-                        swift_cd: 'PUSBKR2P'
-                    },
-                    {
-                        bank_id: '031',
-                        bank_nm: '대구은행',
-                        bank_en_nm: 'Daegu Bank',
-                        swift_cd: 'DAEBKR22'
-                    },
-                    {
-                        bank_id: '034',
-                        bank_nm: '광주은행',
-                        bank_en_nm: 'Kwangju Bank',
-                        swift_cd: 'KWABKRSE'
-                    },
-                    {
                         bank_id: '039',
                         bank_nm: '경남은행',
                         bank_en_nm: 'Kyongnam Bank',
                         swift_cd: 'KYNAKR22'
+                    },
+                    {
+                        bank_id: '003',
+                        bank_nm: 'IBK기업은행',
+                        bank_en_nm: '',
+                        swift_cd: 'IBKOKRSE'
                     },
                     {
                         bank_id: '088',
@@ -498,7 +468,12 @@ export const banknersApi = {
                         bank_en_nm: 'SHINHAN BANK',
                         swift_cd: 'SHBKKRSE'
                     },
-
+                    {
+                        bank_id: '004',
+                        bank_nm: 'KB국민은행',
+                        bank_en_nm: '',
+                        swift_cd: 'CZNBKRSE'
+                    },
                     {
                         bank_id: '081',
                         bank_nm: 'KEB하나은행',
@@ -534,6 +509,48 @@ export const banknersApi = {
                         bank_nm: '우리은행',
                         bank_en_nm: '',
                         swift_cd: 'HVBKKRSE'
+                    },
+                    {
+                        bank_id: '011',
+                        bank_nm: 'NH농협은행',
+                        bank_en_nm: '',
+                        swift_cd: 'NACFKRSE'
+                    },
+                    {
+                        bank_id: '012',
+                        bank_nm: '지역농축협',
+                        bank_en_nm: '',
+                        swift_cd: ''
+                    },
+                    {
+                        bank_id: '034',
+                        bank_nm: '광주은행',
+                        bank_en_nm: 'Kwangju Bank',
+                        swift_cd: 'KWABKRSE'
+                    },
+                    {
+                        bank_id: '037',
+                        bank_nm: '전북은행',
+                        bank_en_nm: 'Jeonbuk Bank',
+                        swift_cd: 'JEONKRSE'
+                    },
+                    {
+                        bank_id: '031',
+                        bank_nm: '대구은행',
+                        bank_en_nm: 'Daegu Bank',
+                        swift_cd: 'DAEBKR22'
+                    },
+                    {
+                        bank_id: '032',
+                        bank_nm: '부산은행',
+                        bank_en_nm: 'Busan Bank',
+                        swift_cd: 'PUSBKR2P'
+                    },
+                    {
+                        bank_id: '092',
+                        bank_nm: '토스뱅크',
+                        bank_en_nm: 'TOSS Bank',
+                        swift_cd: ''
                     },
                 ]
                 let result = {
