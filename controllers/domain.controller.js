@@ -33,6 +33,7 @@ const domainCtrl = {
                 'default_deposit_fee',
                 'default_withdraw_fee',
                 'deposit_head_office_fee',
+                'withdraw_head_office_fee',
                 'deposit_corp_type',
                 'api_key',
                 'virtual_account_id',
