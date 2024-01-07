@@ -52,7 +52,7 @@ const domainCtrl = {
             brand['bizppurio_obj'] = JSON.parse(brand?.bizppurio_obj ?? '{}');
 
             brand['operator_list'] = getOperatorList(brand);
-            brand['ㅁㄴㅇ'] = 'ㅁㄴㅇ'
+
             const token = await makeUserToken(brand);
             res.cookie("dns", token, {
                 httpOnly: true,
