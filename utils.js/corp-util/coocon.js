@@ -6,6 +6,30 @@ import https from 'https';
 const API_URL = process.env.NODE_ENV == 'production' ? "https://apigw.coocon.co.kr" : "https://dev2.coocon.co.kr:8443";
 
 export const cooconApi = {
+    balance: {
+        info: async (data) => {//잔액
+            try {
+                let {
+                    dns_data, pay_type, decode_user,
+                    guid, amount,
+                } = data;
+                let query = {
+                    guid: guid,
+                    trx_amt: amount,
+                    trx_curr: 'KRW'
+                }
+            } catch (err) {
+                console.log(err)
+                console.log(err?.response?.data)
+                return {
+                    code: -100,
+                    message: '',
+                    data: {},
+                };
+
+            }
+        },
+    },
     bank: {
         list: async (data) => {
             try {

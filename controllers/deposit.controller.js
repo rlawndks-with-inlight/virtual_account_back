@@ -87,6 +87,7 @@ const depositCtrl = {
             let chart_data = await pool.query(chart_sql);
             chart_data = chart_data?.result[0];
             let data = await getSelectQuery(sql, columns, req.query);
+
             return response(req, res, 100, "success", { ...data, chart: chart_data });
         } catch (err) {
             console.log(err)
@@ -156,13 +157,13 @@ const depositCtrl = {
                 virtual_account_id: virtual_account?.id,
                 amount, deposit_bank_code, deposit_acct_num, deposit_acct_name, pay_type,
                 trx_id: trx_id,
-                head_office_fee: dns_data?.head_office_fee,
+                deposit_head_office_fee: dns_data?.deposit_head_office_fee,
                 deposit_fee: mcht?.deposit_fee ?? 0
             };
 
             let is_use_sales = false;
             let sales_depth_num = -1;
-            let minus_fee = dns_data?.head_office_fee;
+            let minus_fee = dns_data?.deposit_head_office_fee;
             for (var i = 0; i < dns_data?.operator_list.length; i++) {
                 if (mcht[`sales${dns_data?.operator_list[i]?.num}_id`] > 0) {
                     is_use_sales = true;

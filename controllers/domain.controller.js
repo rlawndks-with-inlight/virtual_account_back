@@ -32,10 +32,11 @@ const domainCtrl = {
                 'fax_num',
                 'default_deposit_fee',
                 'default_withdraw_fee',
-                'head_office_fee',
+                'deposit_head_office_fee',
                 'deposit_corp_type',
                 'api_key',
-                'virtual_account_id'
+                'virtual_account_id',
+                'withdraw_type',
             ]
             let brand = await pool.query(`SELECT ${columns.join()} FROM brands WHERE dns='${dns}'`);
             if (brand?.result.length == 0) {

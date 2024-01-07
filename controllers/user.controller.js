@@ -20,14 +20,18 @@ const userCtrl = {
             let columns = [
                 `${table_name}.*`,
                 `merchandise_columns.mcht_fee`,
-                `virtual_accounts.guid`,
-                `virtual_accounts.virtual_bank_code`,
-                `virtual_accounts.virtual_acct_num`,
-                `virtual_accounts.virtual_acct_name`,
-                `virtual_accounts.deposit_bank_code AS settle_bank_code`,
-                `virtual_accounts.deposit_acct_num AS settle_acct_num`,
-                `virtual_accounts.deposit_acct_name AS settle_acct_name`,
             ]
+            if (decode_dns?.withdraw_type == 0) {
+                columns = [...columns, ...[
+                    `virtual_accounts.guid`,
+                    `virtual_accounts.virtual_bank_code`,
+                    `virtual_accounts.virtual_acct_num`,
+                    `virtual_accounts.virtual_acct_name`,
+                    `virtual_accounts.deposit_bank_code AS settle_bank_code`,
+                    `virtual_accounts.deposit_acct_num AS settle_acct_num`,
+                    `virtual_accounts.deposit_acct_name AS settle_acct_name`,
+                ]]
+            }
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
             sql += ` LEFT JOIN merchandise_columns ON merchandise_columns.mcht_id=${table_name}.id `;
             sql += ` LEFT JOIN virtual_accounts ON ${table_name}.virtual_account_id=virtual_accounts.id `;
@@ -151,6 +155,7 @@ const userCtrl = {
                 mcht_fee = 0,
                 guid,
                 deposit_fee = 0, withdraw_fee = 0, min_withdraw_price = 0, min_withdraw_remain_price = 0, min_withdraw_hold_price = 0, is_withdraw_hold = 0, can_return_ago_pay = 1,
+                withdraw_bank_code, withdraw_acct_num, withdraw_acct_name,
             } = req.body;
             let is_exist_user = await pool.query(`SELECT * FROM ${table_name} WHERE user_name=? AND brand_id=${brand_id}`, [user_name]);
             if (is_exist_user?.result.length > 0) {
@@ -164,6 +169,7 @@ const userCtrl = {
             let obj = {
                 brand_id, user_name, user_pw, user_salt, name, nickname, level, phone_num, profile_img, note,
                 deposit_fee, withdraw_fee, min_withdraw_price, min_withdraw_remain_price, min_withdraw_hold_price, is_withdraw_hold, can_return_ago_pay,
+                withdraw_bank_code, withdraw_acct_num, withdraw_acct_name,
             };
             if (guid) {
                 let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE guid=? AND brand_id=${decode_dns?.id}`, [guid]);
@@ -187,7 +193,7 @@ const userCtrl = {
                 mid: `${new Date().getTime()}${decode_dns?.id}${user_id}`,
             }, user_id)
             if (level == 10) {//가맹점
-                let mother_fee = decode_dns?.head_office_fee;
+                let mother_fee = decode_dns?.deposit_head_office_fee;
                 let up_user = '본사';
                 let down_user = '';
                 let mcht_obj = {
@@ -236,12 +242,14 @@ const userCtrl = {
                 mcht_fee = 0,
                 guid = "",
                 deposit_fee = 0, withdraw_fee = 0, min_withdraw_price = 0, min_withdraw_remain_price = 0, min_withdraw_hold_price = 0, is_withdraw_hold = 0, can_return_ago_pay = 1,
+                withdraw_bank_code, withdraw_acct_num, withdraw_acct_name,
                 id
             } = req.body;
             let files = settingFiles(req.files);
             let obj = {
                 brand_id, user_name, name, nickname, level, phone_num, profile_img, note,
                 deposit_fee, withdraw_fee, min_withdraw_price, min_withdraw_remain_price, min_withdraw_hold_price, is_withdraw_hold, can_return_ago_pay,
+                withdraw_bank_code, withdraw_acct_num, withdraw_acct_name,
             };
             obj = { ...obj, ...files };
             if (guid) {
@@ -290,7 +298,7 @@ const userCtrl = {
 
             let result = await updateQuery(`${table_name}`, obj, id);
             if (level == 10) {//가맹점
-                let mother_fee = decode_dns?.head_office_fee;
+                let mother_fee = decode_dns?.deposit_head_office_fee;
                 let up_user = '본사';
                 let down_user = '';
                 let mcht_obj = {
