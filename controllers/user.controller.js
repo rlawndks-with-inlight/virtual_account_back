@@ -39,6 +39,7 @@ const userCtrl = {
             for (var i = 0; i < decode_dns?.operator_list.length; i++) {
                 columns.push(`merchandise_columns.sales${decode_dns?.operator_list[i]?.num}_id`);
                 columns.push(`merchandise_columns.sales${decode_dns?.operator_list[i]?.num}_fee`);
+                columns.push(`merchandise_columns.sales${decode_dns?.operator_list[i]?.num}_withdraw_fee`);
                 columns.push(`sales${decode_dns?.operator_list[i]?.num}.user_name AS sales${decode_dns?.operator_list[i]?.num}_user_name`);
                 columns.push(`sales${decode_dns?.operator_list[i]?.num}.nickname AS sales${decode_dns?.operator_list[i]?.num}_nickname`);
                 sql += ` LEFT JOIN users AS sales${decode_dns?.operator_list[i]?.num} ON sales${decode_dns?.operator_list[i]?.num}.id=merchandise_columns.sales${decode_dns?.operator_list[i]?.num}_id `;
@@ -109,6 +110,7 @@ const userCtrl = {
             for (var i = 0; i < decode_dns?.operator_list.length; i++) {
                 columns.push(`merchandise_columns.sales${decode_dns?.operator_list[i]?.num}_id`);
                 columns.push(`merchandise_columns.sales${decode_dns?.operator_list[i]?.num}_fee`);
+                columns.push(`merchandise_columns.sales${decode_dns?.operator_list[i]?.num}_withdraw_fee`);
             }
             let sql = `SELECT ${columns.join()} FROM ${table_name} `;
             sql += ` LEFT JOIN merchandise_columns ON merchandise_columns.mcht_id=${table_name}.id `;
@@ -194,6 +196,7 @@ const userCtrl = {
             }, user_id)
             if (level == 10) {//가맹점
                 let mother_fee = decode_dns?.deposit_head_office_fee;
+                let mother_withdraw_fee = decode_dns?.withdraw_head_office_fee;
                 let up_user = '본사';
                 let down_user = '';
                 let mcht_obj = {
@@ -203,21 +206,31 @@ const userCtrl = {
                 for (var i = 0; i < decode_dns?.operator_list.length; i++) {
                     if (req.body[`sales${decode_dns?.operator_list[i]?.num}_id`] > 0) {
                         down_user = decode_dns?.operator_list[i]?.label;
-                        if (req.body[`sales${decode_dns?.operator_list[i]?.num}_fee`] < mother_fee) {
+                        if (req.body[`sales${decode_dns?.operator_list[i]?.num}_fee`] < mother_fee && decode_dns?.is_use_deposit_operator == 1) {
                             await db.rollback();
                             return response(req, res, -200, `${up_user} 요율이 ${down_user} 요율보다 높습니다.`, false)
                         }
+                        if (req.body[`sales${decode_dns?.operator_list[i]?.num}_withdraw_fee`] < mother_withdraw_fee && decode_dns?.is_use_withdraw_operator == 1) {
+                            await db.rollback();
+                            return response(req, res, -200, `${up_user} 출금수수료가 ${down_user} 출금수수료보다 높습니다.`, false)
+                        }
                         up_user = decode_dns?.operator_list[i]?.label;
                         mother_fee = req.body[`sales${decode_dns?.operator_list[i]?.num}_fee`];
+                        mother_withdraw_fee = req.body[`sales${decode_dns?.operator_list[i]?.num}_withdraw_fee`];
 
                         mcht_obj[`sales${decode_dns?.operator_list[i]?.num}_id`] = req.body[`sales${decode_dns?.operator_list[i]?.num}_id`];
-                        mcht_obj[`sales${decode_dns?.operator_list[i]?.num}_fee`] = req.body[`sales${decode_dns?.operator_list[i]?.num}_fee`];
+                        mcht_obj[`sales${decode_dns?.operator_list[i]?.num}_fee`] = req.body[`sales${decode_dns?.operator_list[i]?.num}_fee`] ?? 0;
+                        mcht_obj[`sales${decode_dns?.operator_list[i]?.num}_withdraw_fee`] = req.body[`sales${decode_dns?.operator_list[i]?.num}_withdraw_fee`] ?? 0;
                     }
                 }
                 down_user = '가맹점';
-                if (mcht_fee < mother_fee) {
+                if (mcht_fee < mother_fee && decode_dns?.is_use_deposit_operator == 1) {
                     await db.rollback();
                     return response(req, res, -200, `${up_user} 요율이 ${down_user} 요율보다 높습니다.`, false)
+                }
+                if (withdraw_fee < mother_withdraw_fee && decode_dns?.is_use_withdraw_operator == 1) {
+                    await db.rollback();
+                    return response(req, res, -200, `${up_user} 출금수수료가 ${down_user} 출금수수료보다 높습니다.`, false)
                 }
                 let mcht_result = await insertQuery(`merchandise_columns`, mcht_obj);
             }
@@ -299,6 +312,7 @@ const userCtrl = {
             let result = await updateQuery(`${table_name}`, obj, id);
             if (level == 10) {//가맹점
                 let mother_fee = decode_dns?.deposit_head_office_fee;
+                let mother_withdraw_fee = decode_dns?.withdraw_head_office_fee;
                 let up_user = '본사';
                 let down_user = '';
                 let mcht_obj = {
@@ -307,20 +321,29 @@ const userCtrl = {
                 for (var i = 0; i < decode_dns?.operator_list.length; i++) {
                     mcht_obj[`sales${decode_dns?.operator_list[i]?.num}_id`] = req.body[`sales${decode_dns?.operator_list[i]?.num}_id`] || 0;
                     mcht_obj[`sales${decode_dns?.operator_list[i]?.num}_fee`] = req.body[`sales${decode_dns?.operator_list[i]?.num}_fee`] || 0;
+                    mcht_obj[`sales${decode_dns?.operator_list[i]?.num}_withdraw_fee`] = req.body[`sales${decode_dns?.operator_list[i]?.num}_withdraw_fee`] || 0;
                     if (req.body[`sales${decode_dns?.operator_list[i]?.num}_id`] > 0) {
                         down_user = decode_dns?.operator_list[i]?.label;
-                        if (req.body[`sales${decode_dns?.operator_list[i]?.num}_fee`] < mother_fee) {
+                        if (req.body[`sales${decode_dns?.operator_list[i]?.num}_fee`] < mother_fee && decode_dns?.is_use_deposit_operator == 1) {
                             await db.rollback();
                             return response(req, res, -200, `${up_user} 요율이 ${down_user} 요율보다 높습니다.`, false)
+                        }
+                        if (req.body[`sales${decode_dns?.operator_list[i]?.num}_withdraw_fee`] < mother_withdraw_fee && decode_dns?.is_use_withdraw_operator == 1) {
+                            await db.rollback();
+                            return response(req, res, -200, `${up_user} 출금수수료가 ${down_user} 출금수수료보다 높습니다.`, false)
                         }
                         up_user = decode_dns?.operator_list[i]?.label;
                         mother_fee = req.body[`sales${decode_dns?.operator_list[i]?.num}_fee`];
                     }
                 }
                 down_user = '가맹점';
-                if (mcht_fee < mother_fee) {
+                if (mcht_fee < mother_fee && decode_dns?.is_use_deposit_operator == 1) {
                     await db.rollback();
                     return response(req, res, -200, `${up_user} 요율이 ${down_user} 요율보다 높습니다.`, false)
+                }
+                if (withdraw_fee < mother_withdraw_fee && decode_dns?.is_use_withdraw_operator == 1) {
+                    await db.rollback();
+                    return response(req, res, -200, `${up_user} 출금수수료가 ${down_user} 출금수수료보다 높습니다.`, false)
                 }
                 let mcht_result = await updateQuery(`merchandise_columns`, mcht_obj, id, 'mcht_id');
             }
