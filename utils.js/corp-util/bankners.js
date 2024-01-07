@@ -432,6 +432,7 @@ export const banknersApi = {
         list: async (data) => {
             try {
                 let { dns_data, pay_type, decode_user, guid } = data;
+
                 let query = {
                     guid: guid
                 }
@@ -520,6 +521,18 @@ export const banknersApi = {
                         bank_id: '012',
                         bank_nm: '지역농축협',
                         bank_en_nm: '',
+                        swift_cd: ''
+                    },
+                    {
+                        bank_id: '048',
+                        bank_nm: '신협은행',
+                        bank_en_nm: 'Credit Union',
+                        swift_cd: ''
+                    },
+                    {
+                        bank_id: '045',
+                        bank_nm: '새마을금고',
+                        bank_en_nm: 'Korea Federation of Community Credit Cooperative.',
                         swift_cd: ''
                     },
                     {
