@@ -51,6 +51,7 @@ const authCtrl = {
                 phone_num: user.phone_num,
                 profile_img: user.profile_img,
                 brand_id: user.brand_id,
+                mid: user.mid,
             })
             res.cookie("token", token, {
                 httpOnly: true,
