@@ -3,7 +3,10 @@ import { banknersApi } from "./bankners.js";
 import { cooconApi } from "./coocon.js";
 
 const getDnsData = async (dns_data_) => {
+    console.log(123)
     let dns_data = await selectQuerySimple('brands', dns_data_?.id);
+    console.log(456)
+
     dns_data = dns_data?.result[0];
     dns_data['theme_css'] = JSON.parse(dns_data?.theme_css ?? '{}');
     dns_data['setting_obj'] = JSON.parse(dns_data?.setting_obj ?? '{}');
