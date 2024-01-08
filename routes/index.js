@@ -11,6 +11,7 @@ import virtualAccountRoutes from './virtual_account.route.js';
 import utilRoutes from './util.route.js';
 import settleRoutes from './settle.route.js';
 import dashboardRoutes from './dashboard.route.js';
+import corpUtilRoutes from './corp_util.route.js';
 
 const router = express.Router(); // eslint-disable-line new-cap
 
@@ -25,6 +26,7 @@ router.use('/withdraws', withdrawRoutes);
 router.use('/settles', settleRoutes);
 router.use('/virtual-accounts', virtualAccountRoutes);
 
+
 //auth
 router.use('/auth', authRoutes);
 
@@ -33,6 +35,7 @@ router.use('/domain', domainRoutes);
 router.use('/upload', uploadRoutes);
 router.use('/util', utilRoutes);
 router.use('/dashboard', dashboardRoutes);
+router.use('/corp', corpUtilRoutes);
 
 
 
