@@ -381,7 +381,7 @@ const withdrawCtrl = {
             let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE id=${withdraw?.virtual_account_id}`);
             virtual_account = virtual_account?.result[0];
             console.log(decode_dns?.id)
-            let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
+            let dns_data = await pool.query(`SELECT * FROM brands WHERE id=?`, [decode_dns?.id]);
             dns_data = dns_data?.result[0];
 
             let mother_account = await getMotherDeposit(decode_dns);
