@@ -74,29 +74,7 @@ const corpUtilCtrl = {
                 return response(req, res, -200, "서버 에러 발생", false)
             }
         },
-        account: async (req, res, next) => {//출금계좌등록
-            try {
-                let {
-                    dns_data,
-                    user,
-                    pay_type,
-                } = req.body;
 
-                let result = await corpApi.user.account({
-                    ...req.body,
-                    pay_type,
-                    dns_data: dns_data,
-                    decode_user: user,
-                })
-                if (result.code == 100) {
-                    return response(req, res, 100, "success", result.data);
-                } else {
-                    return response(req, res, -100, (result?.message || "서버 에러 발생"), result.data);
-                }
-            } catch (err) {
-                return response(req, res, -200, "서버 에러 발생", false)
-            }
-        },
         account_verify: async (req, res, next) => {//출금계좌등록
             try {
                 let {
@@ -155,6 +133,29 @@ const corpUtilCtrl = {
 
                     }
                     let result = await corpApi.user.account.info({
+                        ...req.body,
+                        pay_type,
+                        dns_data: dns_data,
+                        decode_user: user,
+                    })
+                    if (result.code == 100) {
+                        return response(req, res, 100, "success", result.data);
+                    } else {
+                        return response(req, res, -100, (result?.message || "서버 에러 발생"), result.data);
+                    }
+                } catch (err) {
+                    return response(req, res, -200, "서버 에러 발생", false)
+                }
+            },
+            create: async (req, res, next) => {//출금계좌등록
+                try {
+                    let {
+                        dns_data,
+                        user,
+                        pay_type,
+                    } = req.body;
+
+                    let result = await corpApi.user.account.create({
                         ...req.body,
                         pay_type,
                         dns_data: dns_data,

@@ -417,7 +417,7 @@ const userCtrl = {
             const decode_dns = checkDns(req.cookies.dns);
             let { birth, settle_bank_code, settle_acct_num, settle_acct_name, guid } = req.body;
 
-            let result = await corpApi.user.account({
+            let result = await corpApi.user.account.create({
                 pay_type: 'deposit',
                 dns_data: decode_dns,
                 decode_user: decode_user,

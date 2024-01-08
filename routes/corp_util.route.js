@@ -11,9 +11,7 @@ router
 router
     .route('/user/remove')
     .post(corpUtilCtrl.user.remove);
-router
-    .route('/user/account')
-    .post(corpUtilCtrl.user.account);
+
 router
     .route('/user/account_verify')
     .post(corpUtilCtrl.user.account_verify);
@@ -23,6 +21,9 @@ router
 router
     .route('/user/account/info')
     .post(corpUtilCtrl.user.account.info);
+router
+    .route('/user/account')
+    .post(corpUtilCtrl.user.account.create);
 router
     .route('/transfer/pass')
     .post(corpUtilCtrl.transfer.pass);
