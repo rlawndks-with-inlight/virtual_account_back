@@ -190,19 +190,18 @@ export const banknersApi = {
             try {
                 let {
                     dns_data, pay_type, decode_user,
-                    settle_bank_code, settle_acct_num, settle_acct_name, guid,
+                    deposit_bank_code, deposit_acct_num, deposit_acct_name, guid,
                     birth
                 } = data;
                 let query = {
                     guid: guid,
-                    bank_id: settle_bank_code,
-                    acnt_no: settle_acct_num,
-                    acnt_holder: settle_acct_name,
+                    bank_id: deposit_bank_code,
+                    acnt_no: deposit_acct_num,
                     real_auth_no: birth,
+                    acnt_holder: deposit_acct_name
                 }
                 query = makeBody(query, dns_data, pay_type)
                 let result = await postRequest('/api/user/account', query, makeHeaderData(dns_data, pay_type, decode_user));
-
                 if (result?.code != '0000') {
                     return {
                         code: -100,
@@ -416,10 +415,13 @@ export const banknersApi = {
                 return {
                     code: 100,
                     message: result?.message,
-                    data: result.data,
+                    data: {
+                        guid: result.data?.guid,
+                        amount: result.data?.bal_tot_amt,
+                    },
                 };
             } catch (err) {
-                console.log(err);
+                console.log(err?.response?.data);
                 return {
                     code: -100,
                     message: '',
@@ -748,5 +750,45 @@ export const banknersApi = {
 
             }
         },
-    }
+    },
+    mother: {
+        to: async (data) => {//은행정보 출력
+            try {
+                let {
+                    dns_data, pay_type, decode_user,
+                    amount, guid
+                } = data;
+                let query = {
+                    from_guid: guid,
+                    to_guid: dns_data[`${pay_type}_guid`],
+                    trx_amt: amount,
+                    trx_curr: 'KRW',
+                }
+                query = makeBody(query, dns_data, pay_type)
+                let result = await postRequest('/api/pay/auth/pass', query, makeHeaderData(dns_data, pay_type, decode_user));
+                console.log(result)
+                if (result?.code != '0000') {
+                    return {
+                        code: -100,
+                        message: result?.message,
+                        data: {},
+                    };
+                }
+                return {
+                    code: 100,
+                    message: '',
+                    data: {},
+                };
+            } catch (err) {
+                console.log(err)
+                console.log(err?.response?.data)
+                return {
+                    code: -100,
+                    message: '',
+                    data: {},
+                };
+
+            }
+        },
+    },
 }

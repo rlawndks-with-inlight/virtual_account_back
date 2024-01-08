@@ -491,7 +491,7 @@ const getMotherDeposit = async (decode_dns) => {
         decode_user: {},
         guid: data['brand']?.deposit_guid,
     })
-    data['real_amount'] = real_amount.data?.bal_tot_amt ?? 0;
+    data['real_amount'] = real_amount.data?.amount ?? 0;
 
     return data;
 }

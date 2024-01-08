@@ -2,7 +2,7 @@
 import { pool } from "../config/db.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
-import { checkDns, checkLevel, isItemBrandIdSameDnsId, response, settingFiles } from "../utils.js/util.js";
+import { checkDns, checkLevel, getOperatorList, isItemBrandIdSameDnsId, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 
 const dashboardCtrl = {
@@ -34,6 +34,17 @@ const dashboardCtrl = {
             ]
             let sql = `SELECT ${columns.join()} FROM users `;
             sql += ` WHERE users.level=10 AND users.brand_id=${decode_dns?.id} `;
+
+            let operator_list = getOperatorList(decode_dns);
+            for (var i = 0; i < operator_list.length; i++) {
+                if (operator_list[i].value == decode_user?.id) {
+                    sql += ` AND users.id IN (SELECT mcht_id FROM deposits WHERE pay_type=0 AND sales${operator_list[i].num}_id=${decode_user?.id}) `;
+                }
+            }
+
+            if (decode_user?.level == 10) {
+                sql += ` AND users.id=${decode_user?.id} `;
+            }
             sql += ` HAVING amount > 0 `;
             sql += ` ORDER BY amount DESC `;
             let result = await pool.query(sql);
@@ -61,6 +72,15 @@ const dashboardCtrl = {
             let sql = `SELECT ${columns.join()} FROM deposits `;
             sql += ` WHERE pay_type=0 `;
             sql += ` AND amount > 0 `;
+            let operator_list = getOperatorList(decode_dns);
+            for (var i = 0; i < operator_list.length; i++) {
+                if (operator_list[i].value == decode_user?.id) {
+                    sql += ` AND deposits.sales${operator_list[i].num}_id=${decode_user?.id} `;
+                }
+            }
+            if (decode_user?.level == 10) {
+                sql += ` AND deposits.mcht_id=${decode_user?.id} `;
+            }
             if (s_dt) {
                 sql += ` AND created_at >= '${s_dt} 00:00:00' `;
             }
