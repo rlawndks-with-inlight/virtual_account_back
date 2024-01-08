@@ -37,7 +37,7 @@ const dashboardCtrl = {
 
             let operator_list = getOperatorList(decode_dns);
             for (var i = 0; i < operator_list.length; i++) {
-                if (operator_list[i].value == decode_user?.id) {
+                if (operator_list[i].value == decode_user?.level) {
                     sql += ` AND users.id IN (SELECT mcht_id FROM deposits WHERE pay_type=0 AND sales${operator_list[i].num}_id=${decode_user?.id}) `;
                 }
             }
@@ -74,7 +74,7 @@ const dashboardCtrl = {
             sql += ` AND amount > 0 `;
             let operator_list = getOperatorList(decode_dns);
             for (var i = 0; i < operator_list.length; i++) {
-                if (operator_list[i].value == decode_user?.id) {
+                if (operator_list[i].value == decode_user?.level) {
                     sql += ` AND deposits.sales${operator_list[i].num}_id=${decode_user?.id} `;
                 }
             }
