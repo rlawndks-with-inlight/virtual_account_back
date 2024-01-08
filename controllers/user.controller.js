@@ -35,34 +35,62 @@ const userCtrl = {
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
             sql += ` LEFT JOIN merchandise_columns ON merchandise_columns.mcht_id=${table_name}.id `;
             sql += ` LEFT JOIN virtual_accounts ON ${table_name}.virtual_account_id=virtual_accounts.id `;
-
-            for (var i = 0; i < decode_dns?.operator_list.length; i++) {
-                columns.push(`merchandise_columns.sales${decode_dns?.operator_list[i]?.num}_id`);
-                columns.push(`merchandise_columns.sales${decode_dns?.operator_list[i]?.num}_fee`);
-                columns.push(`merchandise_columns.sales${decode_dns?.operator_list[i]?.num}_withdraw_fee`);
-                columns.push(`sales${decode_dns?.operator_list[i]?.num}.user_name AS sales${decode_dns?.operator_list[i]?.num}_user_name`);
-                columns.push(`sales${decode_dns?.operator_list[i]?.num}.nickname AS sales${decode_dns?.operator_list[i]?.num}_nickname`);
-                sql += ` LEFT JOIN users AS sales${decode_dns?.operator_list[i]?.num} ON sales${decode_dns?.operator_list[i]?.num}.id=merchandise_columns.sales${decode_dns?.operator_list[i]?.num}_id `;
+            let operator_list = decode_dns?.operator_list;
+            for (var i = 0; i < operator_list.length; i++) {
+                columns.push(`merchandise_columns.sales${operator_list[i]?.num}_id`);
+                columns.push(`merchandise_columns.sales${operator_list[i]?.num}_fee`);
+                columns.push(`merchandise_columns.sales${operator_list[i]?.num}_withdraw_fee`);
+                columns.push(`sales${operator_list[i]?.num}.user_name AS sales${operator_list[i]?.num}_user_name`);
+                columns.push(`sales${operator_list[i]?.num}.nickname AS sales${operator_list[i]?.num}_nickname`);
+                sql += ` LEFT JOIN users AS sales${operator_list[i]?.num} ON sales${operator_list[i]?.num}.id=merchandise_columns.sales${operator_list[i]?.num}_id `;
             }
-            sql += ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
-            sql += ` AND ${table_name}.level <= ${decode_user?.level} `;
+            let where_sql = ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
+            where_sql += ` AND ${table_name}.level <= ${decode_user?.level} `;
 
             if (decode_user?.level < 40) {
-                sql += ` AND ${table_name}.id=${decode_user?.id} `;
+                if (decode_user?.level == 10) {
+                    where_sql += ` AND ${table_name}.id=${decode_user?.id} `;
+                } else {
+
+                    let merchandise_columns = [];
+                    for (var i = 0; i < operator_list.length; i++) {
+                        if (operator_list[i]?.value == decode_user?.level) {
+                            merchandise_columns = await pool.query(`SELECT * FROM merchandise_columns WHERE sales${operator_list[i]?.num}_id=${decode_user?.id}`);
+                            merchandise_columns = merchandise_columns?.result;
+                            break;
+                        }
+                    }
+                    let children_ids = [];
+                    for (var i = 0; i < merchandise_columns.length; i++) {
+                        for (var j = 0; j < operator_list.length; j++) {
+                            if (operator_list[i]?.value < decode_user?.level) {
+                                children_ids.push(merchandise_columns[i][`sales${operator_list[i]?.num}_id`]);
+                            }
+                        }
+                        children_ids.push(merchandise_columns[i]?.mcht_id);
+                    }
+                    children_ids = new Set(children_ids);
+                    children_ids = [...children_ids];
+                    children_ids.push(0);
+                    where_sql += ` AND ${table_name}.id IN (${children_ids.join()}) `;
+                }
+
             }
             if (level) {
                 let find_oper_level = _.find(operatorLevelList, { level: parseInt(level) });
                 if (level == 10) {
-                    columns.push(`(SELECT SUM(mcht_amount) FROM deposits WHERE mcht_id=${table_name}.id) AS settle_amount`)
+                    columns.push(`(SELECT SUM(mcht_amount) FROM deposits WHERE mcht_id=${table_name}.id) AS settle_amount`);
+
                 } else if (find_oper_level) {
                     columns.push(`(SELECT SUM(sales${find_oper_level.num}_amount) FROM deposits WHERE sales${find_oper_level.num}_id=${table_name}.id) AS settle_amount`)
                 }
-                sql += ` AND ${table_name}.level = ${level} `;
+                where_sql += ` AND ${table_name}.level = ${level} `;
             }
 
             if (level_list.length > 0) {
-                sql += ` AND ${table_name}.level IN (${level_list}) `;
+                where_sql += ` AND ${table_name}.level IN (${level_list}) `;
             }
+            sql = sql + where_sql;
             let data = await getSelectQuery(sql, columns, req.query);
 
             return response(req, res, 100, "success", data);
@@ -107,10 +135,11 @@ const userCtrl = {
                 `virtual_accounts.deposit_acct_num AS settle_acct_num`,
                 `virtual_accounts.deposit_acct_name AS settle_acct_name`,
             ]
-            for (var i = 0; i < decode_dns?.operator_list.length; i++) {
-                columns.push(`merchandise_columns.sales${decode_dns?.operator_list[i]?.num}_id`);
-                columns.push(`merchandise_columns.sales${decode_dns?.operator_list[i]?.num}_fee`);
-                columns.push(`merchandise_columns.sales${decode_dns?.operator_list[i]?.num}_withdraw_fee`);
+            let operator_list = decode_dns?.operator_list;
+            for (var i = 0; i < operator_list.length; i++) {
+                columns.push(`merchandise_columns.sales${operator_list[i]?.num}_id`);
+                columns.push(`merchandise_columns.sales${operator_list[i]?.num}_fee`);
+                columns.push(`merchandise_columns.sales${operator_list[i]?.num}_withdraw_fee`);
             }
             let sql = `SELECT ${columns.join()} FROM ${table_name} `;
             sql += ` LEFT JOIN merchandise_columns ON merchandise_columns.mcht_id=${table_name}.id `;
@@ -203,24 +232,25 @@ const userCtrl = {
                     mcht_id: result?.result?.insertId,
                     mcht_fee,
                 };
-                for (var i = 0; i < decode_dns?.operator_list.length; i++) {
-                    if (req.body[`sales${decode_dns?.operator_list[i]?.num}_id`] > 0) {
-                        down_user = decode_dns?.operator_list[i]?.label;
-                        if (req.body[`sales${decode_dns?.operator_list[i]?.num}_fee`] < mother_fee && decode_dns?.is_use_deposit_operator == 1) {
+                let operator_list = decode_dns?.operator_list;
+                for (var i = 0; i < operator_list.length; i++) {
+                    if (req.body[`sales${operator_list[i]?.num}_id`] > 0) {
+                        down_user = operator_list[i]?.label;
+                        if (req.body[`sales${operator_list[i]?.num}_fee`] < mother_fee && decode_dns?.is_use_deposit_operator == 1) {
                             await db.rollback();
                             return response(req, res, -200, `${up_user} 요율이 ${down_user} 요율보다 높습니다.`, false)
                         }
-                        if (req.body[`sales${decode_dns?.operator_list[i]?.num}_withdraw_fee`] < mother_withdraw_fee && decode_dns?.is_use_withdraw_operator == 1) {
+                        if (req.body[`sales${operator_list[i]?.num}_withdraw_fee`] < mother_withdraw_fee && decode_dns?.is_use_withdraw_operator == 1) {
                             await db.rollback();
                             return response(req, res, -200, `${up_user} 출금수수료가 ${down_user} 출금수수료보다 높습니다.`, false)
                         }
-                        up_user = decode_dns?.operator_list[i]?.label;
-                        mother_fee = req.body[`sales${decode_dns?.operator_list[i]?.num}_fee`];
-                        mother_withdraw_fee = req.body[`sales${decode_dns?.operator_list[i]?.num}_withdraw_fee`];
+                        up_user = operator_list[i]?.label;
+                        mother_fee = req.body[`sales${operator_list[i]?.num}_fee`];
+                        mother_withdraw_fee = req.body[`sales${operator_list[i]?.num}_withdraw_fee`];
 
-                        mcht_obj[`sales${decode_dns?.operator_list[i]?.num}_id`] = req.body[`sales${decode_dns?.operator_list[i]?.num}_id`];
-                        mcht_obj[`sales${decode_dns?.operator_list[i]?.num}_fee`] = req.body[`sales${decode_dns?.operator_list[i]?.num}_fee`] ?? 0;
-                        mcht_obj[`sales${decode_dns?.operator_list[i]?.num}_withdraw_fee`] = req.body[`sales${decode_dns?.operator_list[i]?.num}_withdraw_fee`] ?? 0;
+                        mcht_obj[`sales${operator_list[i]?.num}_id`] = req.body[`sales${operator_list[i]?.num}_id`];
+                        mcht_obj[`sales${operator_list[i]?.num}_fee`] = req.body[`sales${operator_list[i]?.num}_fee`] ?? 0;
+                        mcht_obj[`sales${operator_list[i]?.num}_withdraw_fee`] = req.body[`sales${operator_list[i]?.num}_withdraw_fee`] ?? 0;
                     }
                 }
                 down_user = '가맹점';
@@ -308,7 +338,7 @@ const userCtrl = {
             //     obj['virtual_acct_name'] = issued_api_result.data?.virtual_acct_name;
             // }
 
-
+            let operator_list = decode_dns?.operator_list;
             let result = await updateQuery(`${table_name}`, obj, id);
             if (level == 10) {//가맹점
                 let mother_fee = decode_dns?.deposit_head_office_fee;
@@ -318,22 +348,22 @@ const userCtrl = {
                 let mcht_obj = {
                     mcht_fee,
                 };
-                for (var i = 0; i < decode_dns?.operator_list.length; i++) {
-                    mcht_obj[`sales${decode_dns?.operator_list[i]?.num}_id`] = req.body[`sales${decode_dns?.operator_list[i]?.num}_id`] || 0;
-                    mcht_obj[`sales${decode_dns?.operator_list[i]?.num}_fee`] = req.body[`sales${decode_dns?.operator_list[i]?.num}_fee`] || 0;
-                    mcht_obj[`sales${decode_dns?.operator_list[i]?.num}_withdraw_fee`] = req.body[`sales${decode_dns?.operator_list[i]?.num}_withdraw_fee`] || 0;
-                    if (req.body[`sales${decode_dns?.operator_list[i]?.num}_id`] > 0) {
-                        down_user = decode_dns?.operator_list[i]?.label;
-                        if (req.body[`sales${decode_dns?.operator_list[i]?.num}_fee`] < mother_fee && decode_dns?.is_use_deposit_operator == 1) {
+                for (var i = 0; i < operator_list.length; i++) {
+                    mcht_obj[`sales${operator_list[i]?.num}_id`] = req.body[`sales${operator_list[i]?.num}_id`] || 0;
+                    mcht_obj[`sales${operator_list[i]?.num}_fee`] = req.body[`sales${operator_list[i]?.num}_fee`] || 0;
+                    mcht_obj[`sales${operator_list[i]?.num}_withdraw_fee`] = req.body[`sales${operator_list[i]?.num}_withdraw_fee`] || 0;
+                    if (req.body[`sales${operator_list[i]?.num}_id`] > 0) {
+                        down_user = operator_list[i]?.label;
+                        if (req.body[`sales${operator_list[i]?.num}_fee`] < mother_fee && decode_dns?.is_use_deposit_operator == 1) {
                             await db.rollback();
                             return response(req, res, -200, `${up_user} 요율이 ${down_user} 요율보다 높습니다.`, false)
                         }
-                        if (req.body[`sales${decode_dns?.operator_list[i]?.num}_withdraw_fee`] < mother_withdraw_fee && decode_dns?.is_use_withdraw_operator == 1) {
+                        if (req.body[`sales${operator_list[i]?.num}_withdraw_fee`] < mother_withdraw_fee && decode_dns?.is_use_withdraw_operator == 1) {
                             await db.rollback();
                             return response(req, res, -200, `${up_user} 출금수수료가 ${down_user} 출금수수료보다 높습니다.`, false)
                         }
-                        up_user = decode_dns?.operator_list[i]?.label;
-                        mother_fee = req.body[`sales${decode_dns?.operator_list[i]?.num}_fee`];
+                        up_user = operator_list[i]?.label;
+                        mother_fee = req.body[`sales${operator_list[i]?.num}_fee`];
                     }
                 }
                 down_user = '가맹점';
