@@ -15,7 +15,7 @@ const dashboardCtrl = {
             let amount_sub_sql = ` SELECT SUM(amount) FROM deposits  `;
             let count_sub_sql = ` SELECT COUNT(*) FROM deposits `;
             let mcht_amount_sub_sql = ` SELECT SUM(mcht_amount) FROM deposits `;
-            let sub_query_where_sql = ` WHERE mcht_id=users.id AND pay_type=0 `;
+            let sub_query_where_sql = ` WHERE mcht_id=users.id AND users.brand_id=${decode_dns?.id} AND pay_type=0 `;
             if (s_dt) {
                 sub_query_where_sql += ` AND created_at >= '${s_dt} 00:00:00' `;
             }
@@ -33,7 +33,7 @@ const dashboardCtrl = {
                 `(${mcht_amount_sub_sql}) AS mcht_amount`,
             ]
             let sql = `SELECT ${columns.join()} FROM users `;
-            sql += ` WHERE users.level=10 `;
+            sql += ` WHERE users.level=10 AND users.brand_id=${decode_dns?.id} `;
             sql += ` HAVING amount > 0 `;
             sql += ` ORDER BY amount DESC `;
             let result = await pool.query(sql);
