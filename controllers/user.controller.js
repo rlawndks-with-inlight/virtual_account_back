@@ -151,6 +151,7 @@ const userCtrl = {
             if (!isItemBrandIdSameDnsId(decode_dns, data)) {
                 return lowLevelException(req, res);
             }
+            data['telegram_chat_ids'] = JSON.parse(data?.telegram_chat_ids ?? '[]').join();
             return response(req, res, 100, "success", data)
         } catch (err) {
             console.log(err)

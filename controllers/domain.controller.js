@@ -40,6 +40,7 @@ const domainCtrl = {
                 'withdraw_type',
                 'is_use_deposit_operator',
                 'is_use_withdraw_operator',
+                'telegram_bot_id',
             ]
             let brand = await pool.query(`SELECT ${columns.join()} FROM brands WHERE dns='${dns}'`);
             if (brand?.result.length == 0) {
