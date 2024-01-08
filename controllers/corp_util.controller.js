@@ -9,15 +9,15 @@ const corpUtilCtrl = {
             try {
                 let {
                     dns_data,
-                    user,
+                    decode_user,
                     pay_type,
                 } = req.body;
 
                 let result = await corpApi.user.info({
                     ...req.body,
                     pay_type,
-                    dns_data: dns_data,
-                    decode_user: user,
+                    dns_data,
+                    decode_user,
                 })
                 if (result.code == 100) {
                     return response(req, res, 100, "success", result.data);
@@ -32,15 +32,15 @@ const corpUtilCtrl = {
             try {
                 let {
                     dns_data,
-                    user,
+                    decode_user,
                     pay_type,
                 } = req.body;
 
                 let result = await corpApi.user.create({
                     ...req.body,
                     pay_type,
-                    dns_data: dns_data,
-                    decode_user: user,
+                    dns_data,
+                    decode_user,
                 })
                 if (result.code == 100) {
                     return response(req, res, 100, "success", result.data);
@@ -55,15 +55,15 @@ const corpUtilCtrl = {
             try {
                 let {
                     dns_data,
-                    user,
+                    decode_user,
                     pay_type,
                 } = req.body;
 
                 let result = await corpApi.user.remove({
                     ...req.body,
                     pay_type,
-                    dns_data: dns_data,
-                    decode_user: user,
+                    dns_data,
+                    decode_user,
                 })
                 if (result.code == 100) {
                     return response(req, res, 100, "success", result.data);
@@ -79,15 +79,15 @@ const corpUtilCtrl = {
             try {
                 let {
                     dns_data,
-                    user,
+                    decode_user,
                     pay_type,
                 } = req.body;
 
                 let result = await corpApi.user.account_verify({
                     ...req.body,
                     pay_type,
-                    dns_data: dns_data,
-                    decode_user: user,
+                    dns_data,
+                    decode_user,
                 })
                 if (result.code == 100) {
                     return response(req, res, 100, "success", result.data);
@@ -102,15 +102,15 @@ const corpUtilCtrl = {
             try {
                 let {
                     dns_data,
-                    user,
+                    decode_user,
                     pay_type,
                 } = req.body;
 
                 let result = await corpApi.user.account_delete({
                     ...req.body,
                     pay_type,
-                    dns_data: dns_data,
-                    decode_user: user,
+                    dns_data,
+                    decode_user,
                 })
                 if (result.code == 100) {
                     return response(req, res, 100, "success", result.data);
@@ -126,7 +126,7 @@ const corpUtilCtrl = {
                 try {
                     let {
                         dns_data,
-                        user,
+                        decode_user,
                         pay_type,
                     } = req.body;
                     if (!brand_id) {
@@ -135,8 +135,8 @@ const corpUtilCtrl = {
                     let result = await corpApi.user.account.info({
                         ...req.body,
                         pay_type,
-                        dns_data: dns_data,
-                        decode_user: user,
+                        dns_data,
+                        decode_user,
                     })
                     if (result.code == 100) {
                         return response(req, res, 100, "success", result.data);
@@ -151,15 +151,15 @@ const corpUtilCtrl = {
                 try {
                     let {
                         dns_data,
-                        user,
+                        decode_user,
                         pay_type,
                     } = req.body;
 
                     let result = await corpApi.user.account.create({
                         ...req.body,
                         pay_type,
-                        dns_data: dns_data,
-                        decode_user: user,
+                        dns_data,
+                        decode_user,
                     })
                     if (result.code == 100) {
                         return response(req, res, 100, "success", result.data);
@@ -177,15 +177,15 @@ const corpUtilCtrl = {
             try {
                 let {
                     dns_data,
-                    user,
+                    decode_user,
                     pay_type,
                 } = req.body;
 
                 let result = await corpApi.transfer.pass({
                     ...req.body,
                     pay_type,
-                    dns_data: dns_data,
-                    decode_user: user,
+                    dns_data,
+                    decode_user,
                 })
                 if (result.code == 100) {
                     return response(req, res, 100, "success", result.data);
@@ -202,15 +202,15 @@ const corpUtilCtrl = {
             try {
                 let {
                     dns_data,
-                    user,
+                    decode_user,
                     pay_type,
                 } = req.body;
 
                 let result = await corpApi.balance.info({
                     ...req.body,
                     pay_type,
-                    dns_data: dns_data,
-                    decode_user: user,
+                    dns_data,
+                    decode_user,
                 })
                 if (result.code == 100) {
                     return response(req, res, 100, "success", result.data);
@@ -227,15 +227,15 @@ const corpUtilCtrl = {
             try {
                 let {
                     dns_data,
-                    user,
+                    decode_user,
                     pay_type,
                 } = req.body;
 
                 let result = await corpApi.bank.list({
                     ...req.body,
                     pay_type,
-                    dns_data: dns_data,
-                    decode_user: user,
+                    dns_data,
+                    decode_user,
                 })
                 if (result.code == 100) {
                     return response(req, res, 100, "success", result.data);
@@ -251,7 +251,7 @@ const corpUtilCtrl = {
         try {
             let {
                 dns_data,
-                user,
+                decode_user,
                 pay_type,
             } = req.body;
             if (!brand_id) {
@@ -260,8 +260,8 @@ const corpUtilCtrl = {
             let result = await corpApi.vaccount({
                 ...req.body,
                 pay_type,
-                dns_data: dns_data,
-                decode_user: user,
+                dns_data,
+                decode_user,
             })
             if (result.code == 100) {
                 return response(req, res, 100, "success", result.data);
@@ -276,7 +276,7 @@ const corpUtilCtrl = {
         try {
             let {
                 dns_data,
-                user,
+                decode_user,
                 pay_type,
             } = req.body;
             if (!brand_id) {
@@ -285,8 +285,8 @@ const corpUtilCtrl = {
             let result = await corpApi.vaccount_delete({
                 ...req.body,
                 pay_type,
-                dns_data: dns_data,
-                decode_user: user,
+                dns_data,
+                decode_user,
             })
             if (result.code == 100) {
                 return response(req, res, 100, "success", result.data);
@@ -302,15 +302,15 @@ const corpUtilCtrl = {
             try {
                 let {
                     dns_data,
-                    user,
+                    decode_user,
                     pay_type,
                 } = req.body;
 
                 let result = await corpApi.push.create({
                     ...req.body,
                     pay_type,
-                    dns_data: dns_data,
-                    decode_user: user,
+                    dns_data,
+                    decode_user,
                 })
                 if (result.code == 100) {
                     return response(req, res, 100, "success", result.data);
@@ -325,15 +325,15 @@ const corpUtilCtrl = {
             try {
                 let {
                     dns_data,
-                    user,
+                    decode_user,
                     pay_type,
                 } = req.body;
 
                 let result = await corpApi.push.update({
                     ...req.body,
                     pay_type,
-                    dns_data: dns_data,
-                    decode_user: user,
+                    dns_data,
+                    decode_user,
                 })
                 if (result.code == 100) {
                     return response(req, res, 100, "success", result.data);
@@ -350,15 +350,15 @@ const corpUtilCtrl = {
             try {
                 let {
                     dns_data,
-                    user,
+                    decode_user,
                     pay_type,
                 } = req.body;
 
                 let result = await corpApi.mother.to({
                     ...req.body,
                     pay_type,
-                    dns_data: dns_data,
-                    decode_user: user,
+                    dns_data,
+                    decode_user,
                 })
                 if (result.code == 100) {
                     return response(req, res, 100, "success", result.data);
@@ -375,15 +375,15 @@ const corpUtilCtrl = {
             try {
                 let {
                     dns_data,
-                    user,
+                    decode_user,
                     pay_type,
                 } = req.body;
 
                 let result = await corpApi.withdraw.request({
                     ...req.body,
                     pay_type,
-                    dns_data: dns_data,
-                    decode_user: user,
+                    dns_data,
+                    decode_user,
                 })
                 if (result.code == 100) {
                     return response(req, res, 100, "success", result.data);
@@ -398,15 +398,15 @@ const corpUtilCtrl = {
             try {
                 let {
                     dns_data,
-                    user,
+                    decode_user,
                     pay_type,
                 } = req.body;
 
                 let result = await corpApi.withdraw.request_check({
                     ...req.body,
                     pay_type,
-                    dns_data: dns_data,
-                    decode_user: user,
+                    dns_data,
+                    decode_user,
                 })
                 if (result.code == 100) {
                     return response(req, res, 100, "success", result.data);
