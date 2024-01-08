@@ -3,9 +3,7 @@ import { banknersApi } from "./bankners.js";
 import { cooconApi } from "./coocon.js";
 
 const getDnsData = async (dns_data_) => {
-    console.log(123)
     let dns_data = await selectQuerySimple('brands', dns_data_?.id);
-    console.log(456)
 
     dns_data = dns_data?.result[0];
     dns_data['theme_css'] = JSON.parse(dns_data?.theme_css ?? '{}');
@@ -156,7 +154,7 @@ const corpApi = {
             info: async (data_) => {//이체
                 let data = data_;
                 let { dns_data, pay_type } = data;
-                data = await getDnsData(data, dns_data);
+                data = await getDnsData(dns_data);
                 dns_data = data?.dns_data;
                 let result = default_result;
                 let corp_type = dns_data?.deposit_corp_type || dns_data?.withdraw_corp_type;
@@ -338,7 +336,7 @@ const corpApi = {
         to: async (data_) => {//은행정보 출력
             let data = data_;
             let { dns_data, pay_type } = data;
-            data = await getDnsData(data, dns_data);
+            data = await getDnsData(dns_data);
             dns_data = data?.dns_data;
             let result = default_result;
             let corp_type = dns_data?.deposit_corp_type || dns_data?.withdraw_corp_type;
@@ -360,7 +358,7 @@ const corpApi = {
         request: async (data_) => {//출금요청
             let data = data_;
             let { dns_data, pay_type } = data;
-            data = await getDnsData(data, dns_data);
+            data = await getDnsData(dns_data);
             dns_data = data?.dns_data;
 
             let result = default_result;
@@ -384,7 +382,7 @@ const corpApi = {
         request_check: async (data_) => {//출금요청
             let data = data_;
             let { dns_data, pay_type } = data;
-            data = await getDnsData(data, dns_data);
+            data = await getDnsData(dns_data);
             dns_data = data?.dns_data;
 
             let result = default_result;
