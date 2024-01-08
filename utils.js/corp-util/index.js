@@ -154,8 +154,8 @@ const corpApi = {
             info: async (data_) => {//이체
                 let data = data_;
                 let { dns_data, pay_type } = data;
-                data = await getDnsData(dns_data);
-                dns_data = data?.dns_data;
+                dns_data = await getDnsData(dns_data);
+                data['dns_data'] = dns_data;
                 let result = default_result;
                 let corp_type = dns_data?.deposit_corp_type || dns_data?.withdraw_corp_type;
                 if (dns_data?.setting_obj?.is_use_deposit == 1) {
@@ -336,8 +336,8 @@ const corpApi = {
         to: async (data_) => {//은행정보 출력
             let data = data_;
             let { dns_data, pay_type } = data;
-            data = await getDnsData(dns_data);
-            dns_data = data?.dns_data;
+            dns_data = await getDnsData(dns_data);
+            data['dns_data'] = dns_data;
             let result = default_result;
             let corp_type = dns_data?.deposit_corp_type || dns_data?.withdraw_corp_type;
             if (dns_data?.setting_obj?.is_use_deposit == 1) {
@@ -358,8 +358,8 @@ const corpApi = {
         request: async (data_) => {//출금요청
             let data = data_;
             let { dns_data, pay_type } = data;
-            data = await getDnsData(dns_data);
-            dns_data = data?.dns_data;
+            dns_data = await getDnsData(dns_data);
+            data['dns_data'] = dns_data;
 
             let result = default_result;
             let corp_type = dns_data?.deposit_corp_type || dns_data?.withdraw_corp_type;
@@ -382,8 +382,8 @@ const corpApi = {
         request_check: async (data_) => {//출금요청
             let data = data_;
             let { dns_data, pay_type } = data;
-            data = await getDnsData(dns_data);
-            dns_data = data?.dns_data;
+            dns_data = await getDnsData(dns_data);
+            data['dns_data'] = dns_data;
 
             let result = default_result;
             let corp_type = dns_data?.deposit_corp_type || dns_data?.withdraw_corp_type;
