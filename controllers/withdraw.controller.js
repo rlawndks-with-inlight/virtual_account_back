@@ -195,7 +195,7 @@ const withdrawCtrl = {
             let result2 = await updateQuery(`${table_name}`, {
                 is_pass_confirm: 1,
             }, withdraw_id);
-            let api_withdraw_request_result = await corpApi.user.withdraw.request({
+            let api_withdraw_request_result = await corpApi.withdraw.request({
                 pay_type: 'withdraw',
                 dns_data: decode_dns,
                 decode_user: user,
@@ -335,7 +335,7 @@ const withdrawCtrl = {
                 is_pass_confirm: 1,
             }, withdraw_id);
 
-            let api_withdraw_request_result = await corpApi.user.withdraw.request({
+            let api_withdraw_request_result = await corpApi.withdraw.request({
                 pay_type: 'deposit',
                 dns_data: decode_dns,
                 decode_user: {},
@@ -408,7 +408,7 @@ const withdrawCtrl = {
             let result2 = await updateQuery(`${table_name}`, {
                 is_pass_confirm: 1,
             }, withdraw_id);
-            let api_withdraw_request_result = await corpApi.user.withdraw.request({
+            let api_withdraw_request_result = await corpApi.withdraw.request({
                 pay_type: 'withdraw',
                 dns_data: decode_dns,
                 decode_user: user,

@@ -191,7 +191,7 @@ const corpApi = {
                 }
 
                 if (corp_type == 1) {
-                    result = await banknersApi.user.withdraw.request(data);
+                    result = await banknersApi.withdraw.request(data);
                 }
                 if (corp_type == 2) {
                     result = await cooconApi.withdraw.request(data);
