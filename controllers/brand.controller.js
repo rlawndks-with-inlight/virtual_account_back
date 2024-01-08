@@ -75,6 +75,7 @@ const brandCtrl = {
                 deposit_corp_type, deposit_guid, deposit_api_id, deposit_sign_key, deposit_encr_key, deposit_iv,
                 withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv,
                 default_deposit_fee, default_withdraw_fee, deposit_head_office_fee = 0, withdraw_head_office_fee = 0, default_withdraw_max_price = 0, withdraw_type = 0,
+                is_use_telegram_bot = 0, telegram_bot_token = "", telegram_bot_id = "",
                 is_use_deposit_operator = 1, is_use_withdraw_operator = 0,
             } = req.body;
             let files = settingFiles(req.files);
@@ -83,6 +84,7 @@ const brandCtrl = {
                 deposit_corp_type, deposit_guid, deposit_api_id, deposit_sign_key, deposit_encr_key, deposit_iv,
                 withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv,
                 default_deposit_fee, default_withdraw_fee, deposit_head_office_fee, withdraw_head_office_fee, default_withdraw_max_price, withdraw_type,
+                is_use_telegram_bot, telegram_bot_token, telegram_bot_id,
                 is_use_deposit_operator, is_use_withdraw_operator,
             };
             obj['theme_css'] = JSON.stringify(obj.theme_css);
@@ -132,6 +134,7 @@ const brandCtrl = {
                 withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv,
                 default_deposit_fee, default_withdraw_fee, deposit_head_office_fee = 0, withdraw_head_office_fee = 0, default_withdraw_max_price = 0,
                 deposit_noti_url, withdraw_noti_url, withdraw_fail_noti_url, api_url, withdraw_type = 0, is_use_deposit_operator = 1, is_use_withdraw_operator = 0,
+                is_use_telegram_bot = 0, telegram_bot_token = "", telegram_bot_id = "",
                 guid = "",
             } = req.body;
             const { id } = req.params;
@@ -145,6 +148,7 @@ const brandCtrl = {
                 deposit_corp_type, deposit_guid, deposit_api_id, deposit_sign_key, deposit_encr_key, deposit_iv,
                 withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv,
                 default_deposit_fee, default_withdraw_fee, deposit_head_office_fee, withdraw_head_office_fee, default_withdraw_max_price, api_url, withdraw_type,
+                is_use_telegram_bot, telegram_bot_token, telegram_bot_id,
                 is_use_deposit_operator, is_use_withdraw_operator,
             };
             obj['theme_css'] = JSON.stringify(obj.theme_css);
