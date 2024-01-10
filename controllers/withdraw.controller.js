@@ -390,19 +390,21 @@ const withdrawCtrl = {
 
 
             let withdraw_id = withdraw?.id;
+            if (withdraw?.is_pass_confirm != 1) {
+                let api_move_to_user_amount_result = await corpApi.transfer.pass({
+                    pay_type: 'deposit',
+                    dns_data: decode_dns,
+                    decode_user: user,
+                    from_guid: dns_data[`deposit_guid`],
+                    to_guid: virtual_account?.guid,
+                    amount: withdraw_amount,
+                })
 
-            let api_move_to_user_amount_result = await corpApi.transfer.pass({
-                pay_type: 'deposit',
-                dns_data: decode_dns,
-                decode_user: user,
-                from_guid: dns_data[`deposit_guid`],
-                to_guid: virtual_account?.guid,
-                amount: withdraw_amount,
-            })
-
-            if (api_move_to_user_amount_result.code != 100) {
-                return response(req, res, -100, (api_move_to_user_amount_result?.message || "서버 에러 발생"), api_move_to_user_amount_result?.data)
+                if (api_move_to_user_amount_result.code != 100) {
+                    return response(req, res, -100, (api_move_to_user_amount_result?.message || "서버 에러 발생"), api_move_to_user_amount_result?.data)
+                }
             }
+
 
             let result2 = await updateQuery(`${table_name}`, {
                 is_pass_confirm: 1,

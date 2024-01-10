@@ -222,7 +222,7 @@ const userCtrl = {
             let result = await insertQuery(`${table_name}`, obj);
             let user_id = result?.result?.insertId;
             let result2 = await updateQuery(table_name, {
-                mid: `${new Date().getTime()}${decode_dns?.id}${user_id}`,
+                mid: `${decode_dns?.id}${user_id}${new Date().getTime()}`,
             }, user_id)
             if (level == 10) {//가맹점
                 let mother_fee = decode_dns?.deposit_head_office_fee;
