@@ -80,6 +80,8 @@ const userCtrl = {
                 let find_oper_level = _.find(operatorLevelList, { level: parseInt(level) });
                 if (level == 10) {
                     columns.push(`(SELECT SUM(mcht_amount) FROM deposits WHERE mcht_id=${table_name}.id) AS settle_amount`);
+                    columns.push(`(SELECT SUM(mcht_amount) FROM deposits WHERE mcht_id=${table_name}.id AND pay_type IN (5, 20)) AS withdraw_amount`);
+                    columns.push(`(SELECT SUM(withdraw_fee) FROM deposits WHERE mcht_id=${table_name}.id AND pay_type IN (5, 20)) AS withdraw_fee_amount`);
 
                 } else if (find_oper_level) {
                     columns.push(`(SELECT SUM(sales${find_oper_level.num}_amount) FROM deposits WHERE sales${find_oper_level.num}_id=${table_name}.id) AS settle_amount`)
