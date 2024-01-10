@@ -12,6 +12,8 @@ router
     .get(virtualAccountCtrl.get)
     .put(virtualAccountCtrl.update)
     .delete(virtualAccountCtrl.remove);
-
+router
+    .route('/balance/:id')
+    .get(virtualAccountCtrl.getBalance)
 
 export default router;

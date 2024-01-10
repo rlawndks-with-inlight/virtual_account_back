@@ -121,6 +121,35 @@ const virtualAccountCtrl = {
 
         }
     },
+    getBalance: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_dns = checkDns(req.cookies.dns);
+            const { id } = req.params;
+            let virtual_account = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id}`);
+            virtual_account = virtual_account?.result[0];
+            let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
+            dns_data = dns_data?.result[0];
+
+            let user_amount = await corpApi.balance.info({
+                pay_type: 'deposit',
+                dns_data: decode_dns,
+                decode_user,
+                guid: virtual_account?.guid,
+            })
+            let amount = user_amount.data?.amount ?? 0
+
+            return response(req, res, 100, "success", {
+                amount
+            })
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
     remove: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
