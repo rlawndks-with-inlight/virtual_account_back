@@ -120,25 +120,25 @@ const settingSelectQueryWhere = (sql_, query, table) => {
         sql += ` AND ${table}.created_at <= '${e_dt} 23:59:59' `;
     }
     if (search) {
-        if (searchColumnsByTable[table]?.length > 0) {
-            for (var i = 0; i < searchColumnsByTable[table]?.length; i++) {
-                if (i == 0) {
-                    sql += ` AND ( `
-                } else {
-                    sql += ` OR `
-                }
-                sql += ` ${searchColumnsByTable[table][i]} LIKE '%${search}%' `;
-            }
-            sql += ` ) `;
-        }
+
     }
     return sql;
 }
-const searchColumnsByTable = {
-    'deposits': [
-        'users.nickname',
-        'users.user_name',
-    ]
+
+export const makeSearchQuery = (search_columns = [], search = "") => {
+    let where_sql = '';
+    for (var i = 0; i < search_columns?.length; i++) {
+        if (i == 0) {
+            where_sql += ` AND ( `
+        } else {
+            where_sql += ` OR `
+        }
+        where_sql += ` ${search_columns[i]} LIKE '%${search}%' `;
+    }
+    where_sql += ` ) `;
+
+    return where_sql;
+
 }
 const settingSelectQueryObj = (obj_) => {
     let obj = obj_;

@@ -3,11 +3,12 @@ import _ from "lodash";
 import db, { pool } from "../config/db.js";
 import corpApi from "../utils.js/corp-util/index.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
-import { deleteQuery, getMultipleQueryByWhen, getSelectQuery, insertQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
+import { deleteQuery, getMultipleQueryByWhen, getSelectQuery, insertQuery, makeSearchQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, commarNumber, getOperatorList, isItemBrandIdSameDnsId, lowLevelException, operatorLevelList, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 
 const table_name = 'deposits';
+
 
 const withdrawCtrl = {
     list: async (req, res, next) => {
@@ -15,8 +16,13 @@ const withdrawCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
-            const { withdraw_status } = req.query;
-
+            const { withdraw_status, search } = req.query;
+            let search_columns = [
+                `users.user_name`,
+                `users.nickname`,
+                `${table_name}.settle_acct_num`,
+                `${table_name}.settle_acct_name`,
+            ]
             let columns = [
                 `${table_name}.*`,
                 `users.user_name`,
@@ -46,6 +52,10 @@ const withdrawCtrl = {
             if (withdraw_status) {
                 where_sql += ` AND ${table_name}.withdraw_status=${withdraw_status} `;
             }
+            if (search) {
+                where_sql += makeSearchQuery(search_columns, search);
+            }
+
             sql = sql + where_sql;
             let data = await getSelectQuery(sql, columns, req.query);
 

@@ -1,7 +1,7 @@
 'use strict';
 import { pool } from "../config/db.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
-import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
+import { deleteQuery, getSelectQuery, insertQuery, makeSearchQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, getNumberByPercent, isItemBrandIdSameDnsId, response, settingFiles, operatorLevelList, getOperatorList } from "../utils.js/util.js";
 import _ from 'lodash';
 import 'dotenv/config';
@@ -15,7 +15,12 @@ const depositCtrl = {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
             const { is_mother, pay_type, s_dt, e_dt, search, is_delete } = req.query;
-
+            let search_columns = [
+                `users.user_name`,
+                `users.nickname`,
+                `${table_name}.deposit_acct_num`,
+                `${table_name}.deposit_acct_name`,
+            ]
             let columns = [
                 `${table_name}.*`,
                 `virtual_accounts.virtual_bank_code`,
@@ -63,6 +68,9 @@ const depositCtrl = {
             }
             if (req.query?.mcht_id > 0) {
                 where_sql += ` AND ${table_name}.mcht_id=${req.query?.mcht_id} `;
+            }
+            if (search) {
+                where_sql += makeSearchQuery(search_columns, search);
             }
             sql = sql + where_sql;
 
