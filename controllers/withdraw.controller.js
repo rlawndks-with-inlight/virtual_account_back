@@ -15,7 +15,7 @@ const withdrawCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
-            const { } = req.query;
+            const { withdraw_status } = req.query;
 
             let columns = [
                 `${table_name}.*`,
@@ -43,7 +43,9 @@ const withdrawCtrl = {
             if (req.query?.mcht_id > 0) {
                 where_sql += ` AND ${table_name}.mcht_id=${req.query?.mcht_id} `;
             }
-
+            if (withdraw_status) {
+                where_sql += ` AND ${table_name}.withdraw_status=${withdraw_status} `;
+            }
             sql = sql + where_sql;
             let data = await getSelectQuery(sql, columns, req.query);
 
