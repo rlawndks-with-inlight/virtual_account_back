@@ -15,7 +15,7 @@ const settleCtrl = {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
             const { level } = req.query;
-
+            console.log(req.query);
             let columns = [
                 `${table_name}.*`,
                 `users.user_name`,
@@ -64,13 +64,12 @@ const settleCtrl = {
 
             if (decode_user?.level >= 40) {
                 where_sql += ` AND ${table_name}.${user_id_column} > 0 `;
-                if (req.body[user_id_column] > 0) {
-                    where_sql += ` AND ${table_name}.${user_id_column}=${req.body[user_id_column]} `;
+                if (req.query[user_id_column] > 0) {
+                    where_sql += ` AND ${table_name}.${user_id_column}=${req.query[user_id_column]} `;
                 }
             } else {
                 where_sql += ` AND ${table_name}.${user_id_column}=${decode_user?.id} `;
             }
-
             sql = sql + where_sql;
             let data = await getSelectQuery(sql, columns, req.query);
 
