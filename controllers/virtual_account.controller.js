@@ -3,7 +3,7 @@ import axios from "axios";
 import db, { pool } from "../config/db.js";
 import corpApi from "../utils.js/corp-util/index.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
-import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
+import { deleteQuery, getSelectQuery, insertQuery, makeSearchQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, isItemBrandIdSameDnsId, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 
@@ -15,7 +15,13 @@ const virtualAccountCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
-            const { mcht_id, status } = req.query;
+            const { mcht_id, status, search } = req.query;
+            let search_columns = [
+                `mchts.user_name`,
+                `mchts.nickname`,
+                `${table_name}.deposit_acct_num`,
+                `${table_name}.deposit_acct_name`,
+            ]
             let columns = [
                 `${table_name}.*`,
                 `mchts.user_name`,
@@ -30,6 +36,9 @@ const virtualAccountCtrl = {
             }
             if (status) {
                 sql += ` AND ${table_name}.status=${status} `
+            }
+            if (search) {
+                sql += makeSearchQuery(search_columns, search);
             }
             let data = await getSelectQuery(sql, columns, req.query);
 
