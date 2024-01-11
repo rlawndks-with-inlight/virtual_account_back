@@ -2,7 +2,7 @@
 import _ from "lodash";
 import db, { pool } from "../config/db.js";
 import corpApi from "../utils.js/corp-util/index.js";
-import { checkIsManagerUrl } from "../utils.js/function.js";
+import { checkIsManagerUrl, returnMoment } from "../utils.js/function.js";
 import { deleteQuery, getMultipleQueryByWhen, getSelectQuery, insertQuery, makeSearchQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, commarNumber, getOperatorList, isItemBrandIdSameDnsId, lowLevelException, operatorLevelList, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
@@ -127,7 +127,17 @@ const withdrawCtrl = {
             let amount = parseInt(withdraw_amount) + user?.withdraw_fee;
             let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
             dns_data = dns_data?.result[0];
-
+            dns_data['setting_obj'] = JSON.parse(dns_data?.setting_obj ?? '{}');
+            let return_time = returnMoment().substring(11, 16);
+            if (dns_data?.setting_obj?.not_withdraw_s_time >= dns_data?.setting_obj?.not_withdraw_e_time) {
+                if (return_time >= dns_data?.setting_obj?.not_withdraw_s_time || return_time <= dns_data?.setting_obj?.not_withdraw_e_time) {
+                    return response(req, res, -100, `풀금 불가 시간입니다. ${dns_data?.setting_obj?.not_withdraw_s_time} ~ ${dns_data?.setting_obj?.not_withdraw_e_time}`, {});
+                }
+            } else {
+                if (return_time >= dns_data?.setting_obj?.not_withdraw_s_time && return_time <= dns_data?.setting_obj?.not_withdraw_e_time) {
+                    return response(req, res, -100, `풀금 불가 시간입니다. ${dns_data?.setting_obj?.not_withdraw_s_time} ~ ${dns_data?.setting_obj?.not_withdraw_e_time}`, {});
+                }
+            }
 
             if (pay_type == 20 && user?.can_return_ago_pay == 1) {
                 let deposit_count = await pool.query(`SELECT COUNT(*) AS count FROM ${table_name} WHERE pay_type=0 AND virtual_account_id=${virtual_account_id}`);
@@ -394,6 +404,17 @@ const withdrawCtrl = {
             virtual_account = virtual_account?.result[0];
             let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
             dns_data = dns_data?.result[0];
+            dns_data['setting_obj'] = JSON.parse(dns_data?.setting_obj ?? '{}');
+            let return_time = returnMoment().substring(11, 16);
+            if (dns_data?.setting_obj?.not_withdraw_s_time >= dns_data?.setting_obj?.not_withdraw_e_time) {
+                if (return_time >= dns_data?.setting_obj?.not_withdraw_s_time || return_time <= dns_data?.setting_obj?.not_withdraw_e_time) {
+                    return response(req, res, -100, `풀금 불가 시간입니다. ${dns_data?.setting_obj?.not_withdraw_s_time} ~ ${dns_data?.setting_obj?.not_withdraw_e_time}`, {});
+                }
+            } else {
+                if (return_time >= dns_data?.setting_obj?.not_withdraw_s_time && return_time <= dns_data?.setting_obj?.not_withdraw_e_time) {
+                    return response(req, res, -100, `풀금 불가 시간입니다. ${dns_data?.setting_obj?.not_withdraw_s_time} ~ ${dns_data?.setting_obj?.not_withdraw_e_time}`, {});
+                }
+            }
 
             let mother_account = await getMotherDeposit(decode_dns);
             if (withdraw_amount > mother_account?.real_amount) {
