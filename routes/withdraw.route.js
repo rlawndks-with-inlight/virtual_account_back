@@ -14,6 +14,12 @@ router
     .route('/confirm')
     .post(withdrawCtrl.confirm)
 router
+    .route('/refuse')
+    .post(withdrawCtrl.refuse)
+router
+    .route('/fail')
+    .post(withdrawCtrl.fail)
+router
     .route('/:id')
     .get(withdrawCtrl.get)
     .put(withdrawCtrl.update)

@@ -120,7 +120,7 @@ const withdrawCtrl = {
 
 
             if (pay_type == 20 && user?.can_return_ago_pay == 1) {
-                let deposit_count = await pool.query(`SELECT COUNT(*) AS count FROM deposits WHERE pay_type=0 AND virtual_account_id=${virtual_account_id}`);
+                let deposit_count = await pool.query(`SELECT COUNT(*) AS count FROM ${table_name} WHERE pay_type=0 AND virtual_account_id=${virtual_account_id}`);
                 deposit_count = deposit_count?.result[0];
                 if (deposit_count?.count < 1) {
                     return response(req, res, -100, "결제한 이력이 없는 유저이므로 반환 불가합니다.", false)
@@ -142,12 +142,12 @@ const withdrawCtrl = {
 
             let settle_amount_sql = ``;
             if (user?.level == 10) {
-                settle_amount_sql = `SELECT SUM(mcht_amount) AS settle_amount FROM deposits WHERE mcht_id=${user?.id}`;
+                settle_amount_sql = `SELECT SUM(mcht_amount) AS settle_amount FROM ${table_name} WHERE mcht_id=${user?.id}`;
                 deposit_obj[`mcht_id`] = user?.id
                 deposit_obj[`mcht_amount`] = (-1) * amount;
             } else {
                 let find_oper_level = _.find(operatorLevelList, { level: parseInt(user?.level) });
-                settle_amount_sql = `SELECT SUM(sales${find_oper_level.num}_amount) AS settle_amount FROM deposits WHERE sales${find_oper_level.num}_id=${user?.id}`;
+                settle_amount_sql = `SELECT SUM(sales${find_oper_level.num}_amount) AS settle_amount FROM ${table_name} WHERE sales${find_oper_level.num}_id=${user?.id}`;
                 deposit_obj[`sales${find_oper_level.num}_id`] = user?.id
                 deposit_obj[`sales${find_oper_level.num}_amount`] = (-1) * amount;
             }
@@ -368,7 +368,7 @@ const withdrawCtrl = {
                 id,
             } = req.body;
 
-            let withdraw = await pool.query(`SELECT * FROM deposits WHERE id=${id} AND brand_id=${decode_dns?.id}`);
+            let withdraw = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id} AND brand_id=${decode_dns?.id}`);
             withdraw = withdraw?.result[0];
             if (!withdraw) {
                 return response(req, res, -100, "잘못된 출금 입니다.", false)
@@ -447,6 +447,126 @@ const withdrawCtrl = {
 
         }
     },
+    refuse: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_dns = checkDns(req.cookies.dns);
+            let {
+                id,
+            } = req.body;
+
+            let withdraw = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id} AND brand_id=${decode_dns?.id}`);
+            withdraw = withdraw?.result[0];
+            if (!withdraw) {
+                return response(req, res, -100, "잘못된 출금 입니다.", false)
+            }
+            let withdraw_amount = (withdraw?.expect_amount + withdraw?.withdraw_fee) * (-1);
+            let user = await pool.query(`SELECT * FROM users WHERE id=${withdraw?.user_id} AND brand_id=${decode_dns?.id}`);
+            user = user?.result[0];
+
+            if (!user) {
+                return response(req, res, -100, "잘못된 유저 입니다.", false)
+            }
+            let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE id=${withdraw?.virtual_account_id}`);
+            virtual_account = virtual_account?.result[0];
+            let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
+            dns_data = dns_data?.result[0];
+
+            let withdraw_id = withdraw?.id;
+
+            let result = await updateQuery(`${table_name}`, {
+                is_withdraw_hold: 0,
+                withdraw_status: 15
+            }, withdraw_id);
+            /*
+            let trx_id = `${new Date().getTime()}${decode_dns?.id}${user?.id}5`;
+            let deposit_obj = {
+                brand_id: decode_dns?.id,
+                pay_type,
+                amount: (-1) * (parseInt(withdraw_amount) + user?.withdraw_fee),
+                settle_bank_code: user?.settle_bank_code,
+                settle_acct_num: user?.settle_acct_num,
+                settle_acct_name: user?.settle_acct_name,
+                trx_id: trx_id,
+                withdraw_fee: user?.withdraw_fee,
+                user_id: user?.id,
+            }
+            */
+            return response(req, res, 100, "success", {})
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
+    fail: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_dns = checkDns(req.cookies.dns);
+            let {
+                id,
+            } = req.body;
+
+            let withdraw = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id} AND brand_id=${decode_dns?.id}`);
+            withdraw = withdraw?.result[0];
+            if (!withdraw) {
+                return response(req, res, -100, "잘못된 출금 입니다.", false)
+            }
+            let withdraw_amount = (withdraw?.expect_amount + withdraw?.withdraw_fee) * (-1);
+            let user = await pool.query(`SELECT * FROM users WHERE id=${withdraw?.user_id} AND brand_id=${decode_dns?.id}`);
+            user = user?.result[0];
+
+            if (!user) {
+                return response(req, res, -100, "잘못된 유저 입니다.", false)
+            }
+            let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE id=${withdraw?.virtual_account_id}`);
+            virtual_account = virtual_account?.result[0];
+            let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
+            dns_data = dns_data?.result[0];
+
+            let withdraw_id = withdraw?.id;
+            let mother_to_result = await corpApi.transfer.pass({
+                pay_type: 'deposit',
+                dns_data,
+                decode_user: user,
+                from_guid: virtual_account?.guid,
+                to_guid: dns_data[`deposit_guid`],
+                amount: withdraw_amount,
+            })
+            if (mother_to_result.code == 100) {
+                let update_mother_to_result = await updateQuery(`${table_name}`, {
+                    is_move_mother: 0,
+                }, deposit_id);
+            }
+            let result = await updateQuery(`${table_name}`, {
+                is_withdraw_hold: 0,
+                withdraw_status: 10
+            }, withdraw_id);
+            /*
+            let trx_id = `${new Date().getTime()}${decode_dns?.id}${user?.id}5`;
+            let deposit_obj = {
+                brand_id: decode_dns?.id,
+                pay_type,
+                amount: (-1) * (parseInt(withdraw_amount) + user?.withdraw_fee),
+                settle_bank_code: user?.settle_bank_code,
+                settle_acct_num: user?.settle_acct_num,
+                settle_acct_name: user?.settle_acct_name,
+                trx_id: trx_id,
+                withdraw_fee: user?.withdraw_fee,
+                user_id: user?.id,
+            }
+            */
+            return response(req, res, 100, "success", {})
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
 };
 
 const getMotherDeposit = async (decode_dns) => {
@@ -476,7 +596,7 @@ const getMotherDeposit = async (decode_dns) => {
     for (var i = 0; i < operator_list.length; i++) {
         sum_columns.push(`SUM(sales${operator_list[i].num}_amount) AS total_sales${operator_list[i].num}_amount`);
     }
-    let sum_sql = `SELECT ${sum_columns.join()} FROM deposits WHERE brand_id=${decode_dns?.id}`;
+    let sum_sql = `SELECT ${sum_columns.join()} FROM ${table_name} WHERE brand_id=${decode_dns?.id}`;
     let sql_list = [
         { table: 'brand', sql: brand_sql },
         { table: 'sum', sql: sum_sql },
