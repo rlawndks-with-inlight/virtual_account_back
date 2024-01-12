@@ -16,7 +16,7 @@ const withdrawCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
-            const { withdraw_status, search } = req.query;
+            const { withdraw_status, search, s_dt, e_dt } = req.query;
             let search_columns = [
                 `users.user_name`,
                 `users.nickname`,
@@ -57,9 +57,25 @@ const withdrawCtrl = {
             }
 
             sql = sql + where_sql;
+            let chart_columns = [
+                `SUM(${table_name}.expect_amount) AS expect_amount`,
+                `SUM(${table_name}.amount) AS amount`,
+                `SUM(${table_name}.withdraw_fee) AS withdraw_fee`,
+            ]
+            let chart_sql = sql;
+            if (s_dt) {
+                chart_sql += ` AND ${table_name}.created_at >= '${s_dt} 00:00:00' `;
+            }
+            if (e_dt) {
+                chart_sql += ` AND ${table_name}.created_at <= '${e_dt} 23:59:59' `;
+            }
+            chart_sql = chart_sql.replaceAll(process.env.SELECT_COLUMN_SECRET, chart_columns.join());
+            let chart_data = await pool.query(chart_sql);
+            chart_data = chart_data?.result[0];
+            console.log(chart_data)
             let data = await getSelectQuery(sql, columns, req.query);
 
-            return response(req, res, 100, "success", data);
+            return response(req, res, 100, "success", { ...data, chart: chart_data });
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)

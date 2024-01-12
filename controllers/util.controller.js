@@ -28,6 +28,26 @@ const utilCtrl = {
 
         }
     },
+    changeStatus: async (req, res, next) => {
+        try {
+
+            const decode_user = checkLevel(req.cookies.token, 10);
+            const decode_dns = checkDns(req.cookies.dns);
+            const { table, column_name } = req.params;
+            const { value, id } = req.body;
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
+            let result = await pool.query(`UPDATE ${table} SET ${column_name}=? WHERE id=?`, [value, id]);
+            return response(req, res, 100, "success", {});
+        } catch (err) {
+            console.log(err)
+            logger.error(JSON.stringify(err?.response?.data || err))
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
 };
 
 export default utilCtrl;
