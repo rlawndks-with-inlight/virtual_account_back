@@ -51,6 +51,7 @@ const authCtrl = {
                 phone_num: user.phone_num,
                 profile_img: user.profile_img,
                 brand_id: user.brand_id,
+                mid: user.mid,
                 withdraw_bank_code: user.withdraw_bank_code,
                 withdraw_acct_num: user.withdraw_acct_num,
                 withdraw_acct_name: user.withdraw_acct_name,
