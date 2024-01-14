@@ -17,9 +17,19 @@ const depositRequestCtrl = {
 
             let columns = [
                 `${table_name}.*`,
+                `users.user_name`,
+                `users.nickname`,
+                `users.level`,
             ]
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
+
+            sql += ` LEFT JOIN users ON users.id=${table_name}.user_id `;
+
             sql += ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
+
+            if (decode_user?.level < 40) {
+                sql += ` AND ${table_name}.user_id=${decode_user?.id} `;
+            }
 
             let data = await getSelectQuery(sql, columns, req.query);
 
@@ -56,10 +66,15 @@ const depositRequestCtrl = {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
             const {
+                amount,
+                note
             } = req.body;
             let files = settingFiles(req.files);
             let obj = {
-                brand_id, name, note, price, category_id
+                brand_id: decode_dns?.id,
+                user_id: decode_user?.id,
+                amount,
+                note,
             };
 
             obj = { ...obj, ...files };
