@@ -6,7 +6,7 @@ import { deleteQuery, getSelectQuery, insertQuery, updateQuery } from "../utils.
 import { checkDns, checkLevel, createHashedPassword, lowLevelException, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 import corpApi from "../utils.js/corp-util/index.js";
-
+import speakeasy from 'speakeasy';
 const table_name = 'brands';
 
 const brandCtrl = {
@@ -75,7 +75,7 @@ const brandCtrl = {
                 deposit_corp_type, deposit_guid, deposit_api_id, deposit_sign_key, deposit_encr_key, deposit_iv,
                 withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv, withdraw_virtual_bank_code, withdraw_virtual_acct_num, withdraw_trt_inst_code,
                 default_deposit_fee, default_withdraw_fee, deposit_head_office_fee = 0, withdraw_head_office_fee = 0, default_withdraw_max_price = 0, withdraw_type = 0, withdraw_fee_type = 0,
-                is_use_telegram_bot = 0, telegram_bot_token = "", telegram_bot_id = "",
+                is_use_telegram_bot = 0, telegram_bot_token = "", telegram_bot_id = "", is_use_otp = 0, otp_token = "",
                 is_use_deposit_operator = 1, is_use_withdraw_operator = 0,
             } = req.body;
             let files = settingFiles(req.files);
@@ -84,7 +84,7 @@ const brandCtrl = {
                 deposit_corp_type, deposit_guid, deposit_api_id, deposit_sign_key, deposit_encr_key, deposit_iv,
                 withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv, withdraw_virtual_bank_code, withdraw_virtual_acct_num, withdraw_trt_inst_code,
                 default_deposit_fee, default_withdraw_fee, deposit_head_office_fee, withdraw_head_office_fee, default_withdraw_max_price, withdraw_type, withdraw_fee_type,
-                is_use_telegram_bot, telegram_bot_token, telegram_bot_id,
+                is_use_telegram_bot, telegram_bot_token, telegram_bot_id, is_use_otp, otp_token,
                 is_use_deposit_operator, is_use_withdraw_operator,
             };
             obj['theme_css'] = JSON.stringify(obj.theme_css);
@@ -134,7 +134,7 @@ const brandCtrl = {
                 withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv, withdraw_virtual_bank_code, withdraw_virtual_acct_num, withdraw_trt_inst_code,
                 default_deposit_fee, default_withdraw_fee, deposit_head_office_fee = 0, withdraw_head_office_fee = 0, default_withdraw_max_price = 0,
                 deposit_noti_url, withdraw_noti_url, withdraw_fail_noti_url, api_url, withdraw_type = 0, withdraw_fee_type = 0, is_use_deposit_operator = 1, is_use_withdraw_operator = 0,
-                is_use_telegram_bot = 0, telegram_bot_token = "", telegram_bot_id = "",
+                is_use_telegram_bot = 0, telegram_bot_token = "", telegram_bot_id = "", is_use_otp = 0, otp_token = "",
                 guid = "",
             } = req.body;
             const { id } = req.params;
@@ -148,7 +148,7 @@ const brandCtrl = {
                 deposit_corp_type, deposit_guid, deposit_api_id, deposit_sign_key, deposit_encr_key, deposit_iv,
                 withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv, withdraw_virtual_bank_code, withdraw_virtual_acct_num, withdraw_trt_inst_code,
                 default_deposit_fee, default_withdraw_fee, deposit_head_office_fee, withdraw_head_office_fee, default_withdraw_max_price, api_url, withdraw_type, withdraw_fee_type,
-                is_use_telegram_bot, telegram_bot_token, telegram_bot_id,
+                is_use_telegram_bot, telegram_bot_token, telegram_bot_id, is_use_otp, otp_token,
                 is_use_deposit_operator, is_use_withdraw_operator,
             };
             obj['theme_css'] = JSON.stringify(obj.theme_css);
@@ -239,6 +239,26 @@ const brandCtrl = {
                 id
             })
             return response(req, res, 100, "success", {})
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
+    settingOtp: async (req, res, next) => {
+        try {
+            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_dns = checkDns(req.cookies.dns);
+            const { brand_id } = req.body;
+            let dns_data = await pool.query(`SELECT ${table_name}.* FROM ${table_name} WHERE id=${brand_id}`);
+            dns_data = dns_data?.result[0];
+            const secret = speakeasy.generateSecret({
+                length: 20, // 비밀키의 길이를 설정 (20자리)
+                name: dns_data?.dns, // 사용자 아이디를 비밀키의 이름으로 설정
+                algorithm: 'sha512' // 해시 알고리즘 지정 (SHA-512 사용)
+            })
+            return response(req, res, 100, "success", secret)
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)

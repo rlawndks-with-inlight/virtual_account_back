@@ -14,5 +14,8 @@ router
     .get(brandCtrl.get)
     .put(brandCtrl.update)
     .delete(brandCtrl.remove);
+router
+    .route('/otp')
+    .post(brandCtrl.settingOtp);
 
 export default router;

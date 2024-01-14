@@ -4,9 +4,13 @@ import { authCtrl } from '../controllers/index.js';
 
 const router = express.Router(); // eslint-disable-line new-cap
 
+
 router
     .route('/')
     .get(authCtrl.checkSign);
+router
+    .route('/setting')
+    .get(authCtrl.setting);
 router
     .route('/sign-in')
     .post(authCtrl.signIn);
