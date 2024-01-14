@@ -62,11 +62,11 @@ const userCtrl = {
                     let children_ids = [];
                     for (var i = 0; i < merchandise_columns.length; i++) {
                         for (var j = 0; j < operator_list.length; j++) {
-                            if (operator_list[i]?.value < decode_user?.level) {
+                            if (operator_list[i]?.value < decode_user?.level && merchandise_columns[i][`sales${operator_list[i]?.num}_id`] > 0) {
                                 children_ids.push(merchandise_columns[i][`sales${operator_list[i]?.num}_id`]);
                             }
                         }
-                        children_ids.push(merchandise_columns[i]?.mcht_id);
+                        children_ids.push(merchandise_columns[i]?.mcht_id ?? 0);
                     }
                     children_ids = new Set(children_ids);
                     children_ids = [...children_ids];
