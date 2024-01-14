@@ -13,6 +13,7 @@ import utilCtrl from './util.controller.js';
 import settleCtrl from './settle.controller.js';
 import dashboardCtrl from './dashboard.controller.js';
 import corpUtilCtrl from './corp_util.controller.js';
+import depositRequestCtrl from './deposit_request.controller.js';
 
 export {
     brandCtrl,
@@ -28,4 +29,5 @@ export {
     settleCtrl,
     dashboardCtrl,
     corpUtilCtrl,
+    depositRequestCtrl
 };

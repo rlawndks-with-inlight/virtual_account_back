@@ -74,7 +74,7 @@ const brandCtrl = {
                 user_name, user_pw,
                 deposit_corp_type, deposit_guid, deposit_api_id, deposit_sign_key, deposit_encr_key, deposit_iv,
                 withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv, withdraw_virtual_bank_code, withdraw_virtual_acct_num, withdraw_trt_inst_code,
-                default_deposit_fee, default_withdraw_fee, deposit_head_office_fee = 0, withdraw_head_office_fee = 0, default_withdraw_max_price = 0, withdraw_type = 0,
+                default_deposit_fee, default_withdraw_fee, deposit_head_office_fee = 0, withdraw_head_office_fee = 0, default_withdraw_max_price = 0, withdraw_type = 0, withdraw_fee_type = 0,
                 is_use_telegram_bot = 0, telegram_bot_token = "", telegram_bot_id = "",
                 is_use_deposit_operator = 1, is_use_withdraw_operator = 0,
             } = req.body;
@@ -83,7 +83,7 @@ const brandCtrl = {
                 name, dns, og_description, company_name, business_num, pvcy_rep_name, ceo_name, addr, addr_detail, resident_num, phone_num, fax_num, note, theme_css, setting_obj, level_obj, bizppurio_obj,
                 deposit_corp_type, deposit_guid, deposit_api_id, deposit_sign_key, deposit_encr_key, deposit_iv,
                 withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv, withdraw_virtual_bank_code, withdraw_virtual_acct_num, withdraw_trt_inst_code,
-                default_deposit_fee, default_withdraw_fee, deposit_head_office_fee, withdraw_head_office_fee, default_withdraw_max_price, withdraw_type,
+                default_deposit_fee, default_withdraw_fee, deposit_head_office_fee, withdraw_head_office_fee, default_withdraw_max_price, withdraw_type, withdraw_fee_type,
                 is_use_telegram_bot, telegram_bot_token, telegram_bot_id,
                 is_use_deposit_operator, is_use_withdraw_operator,
             };
@@ -133,7 +133,7 @@ const brandCtrl = {
                 deposit_corp_type, deposit_guid, deposit_api_id, deposit_sign_key, deposit_encr_key, deposit_iv,
                 withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv, withdraw_virtual_bank_code, withdraw_virtual_acct_num, withdraw_trt_inst_code,
                 default_deposit_fee, default_withdraw_fee, deposit_head_office_fee = 0, withdraw_head_office_fee = 0, default_withdraw_max_price = 0,
-                deposit_noti_url, withdraw_noti_url, withdraw_fail_noti_url, api_url, withdraw_type = 0, is_use_deposit_operator = 1, is_use_withdraw_operator = 0,
+                deposit_noti_url, withdraw_noti_url, withdraw_fail_noti_url, api_url, withdraw_type = 0, withdraw_fee_type = 0, is_use_deposit_operator = 1, is_use_withdraw_operator = 0,
                 is_use_telegram_bot = 0, telegram_bot_token = "", telegram_bot_id = "",
                 guid = "",
             } = req.body;
@@ -147,7 +147,7 @@ const brandCtrl = {
                 name, dns, og_description, company_name, business_num, pvcy_rep_name, ceo_name, addr, addr_detail, resident_num, phone_num, fax_num, note, theme_css, setting_obj, level_obj, bizppurio_obj,
                 deposit_corp_type, deposit_guid, deposit_api_id, deposit_sign_key, deposit_encr_key, deposit_iv,
                 withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv, withdraw_virtual_bank_code, withdraw_virtual_acct_num, withdraw_trt_inst_code,
-                default_deposit_fee, default_withdraw_fee, deposit_head_office_fee, withdraw_head_office_fee, default_withdraw_max_price, api_url, withdraw_type,
+                default_deposit_fee, default_withdraw_fee, deposit_head_office_fee, withdraw_head_office_fee, default_withdraw_max_price, api_url, withdraw_type, withdraw_fee_type,
                 is_use_telegram_bot, telegram_bot_token, telegram_bot_id,
                 is_use_deposit_operator, is_use_withdraw_operator,
             };

@@ -139,11 +139,12 @@ const withdrawCtrl = {
             if (!virtual_account) {
                 return response(req, res, -100, "가상계좌를 먼저 등록해 주세요.", false)
             }
-
-            let amount = parseInt(withdraw_amount) + user?.withdraw_fee;
             let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
             dns_data = dns_data?.result[0];
             dns_data['setting_obj'] = JSON.parse(dns_data?.setting_obj ?? '{}');
+
+            let amount = parseInt(withdraw_amount) + (dns_data?.withdraw_fee_type == 0 ? user?.withdraw_fee : 0);
+
             let return_time = returnMoment().substring(11, 16);
             if (dns_data?.setting_obj?.not_withdraw_s_time >= dns_data?.setting_obj?.not_withdraw_e_time) {
                 if (return_time >= dns_data?.setting_obj?.not_withdraw_s_time || return_time <= dns_data?.setting_obj?.not_withdraw_e_time) {
@@ -174,6 +175,7 @@ const withdrawCtrl = {
                 user_id: user?.id,
                 withdraw_status: 5,
                 note: note,
+                withdraw_fee_type: dns_data?.withdraw_fee_type,
             }
 
             let settle_amount_sql = ``;
@@ -224,7 +226,7 @@ const withdrawCtrl = {
                 decode_user: user,
                 from_guid: dns_data[`deposit_guid`],
                 to_guid: virtual_account?.guid,
-                amount: withdraw_amount,
+                amount: withdraw_amount - (dns_data?.withdraw_fee_type == 0 ? 0 : user?.withdraw_fee),
             })
 
             if (api_move_to_user_amount_result.code != 100) {
@@ -238,7 +240,7 @@ const withdrawCtrl = {
                 dns_data: decode_dns,
                 decode_user: user,
                 guid: virtual_account?.guid,
-                amount: withdraw_amount,
+                amount: withdraw_amount - (dns_data?.withdraw_fee_type == 0 ? 0 : user?.withdraw_fee),
             })
             if (api_withdraw_request_result.code != 100) {
                 return response(req, res, -100, (api_withdraw_request_result?.message || "서버 에러 발생"), api_withdraw_request_result?.data)
@@ -409,6 +411,10 @@ const withdrawCtrl = {
             if (!withdraw) {
                 return response(req, res, -100, "잘못된 출금 입니다.", false)
             }
+            let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
+            dns_data = dns_data?.result[0];
+            dns_data['setting_obj'] = JSON.parse(dns_data?.setting_obj ?? '{}');
+
             let withdraw_amount = (withdraw?.expect_amount + withdraw?.withdraw_fee) * (-1);
             let user = await pool.query(`SELECT * FROM users WHERE id=${withdraw?.user_id} AND brand_id=${decode_dns?.id}`);
             user = user?.result[0];
@@ -418,9 +424,7 @@ const withdrawCtrl = {
             }
             let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE id=${withdraw?.virtual_account_id}`);
             virtual_account = virtual_account?.result[0];
-            let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
-            dns_data = dns_data?.result[0];
-            dns_data['setting_obj'] = JSON.parse(dns_data?.setting_obj ?? '{}');
+
             let return_time = returnMoment().substring(11, 16);
             if (dns_data?.setting_obj?.not_withdraw_s_time >= dns_data?.setting_obj?.not_withdraw_e_time) {
                 if (return_time >= dns_data?.setting_obj?.not_withdraw_s_time || return_time <= dns_data?.setting_obj?.not_withdraw_e_time) {
