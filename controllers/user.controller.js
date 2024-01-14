@@ -51,7 +51,6 @@ const userCtrl = {
                 if (decode_user?.level == 10) {
                     where_sql += ` AND ${table_name}.id=${decode_user?.id} `;
                 } else {
-
                     let merchandise_columns = [];
                     for (var i = 0; i < operator_list.length; i++) {
                         if (operator_list[i]?.value == decode_user?.level) {
@@ -72,6 +71,7 @@ const userCtrl = {
                     children_ids = new Set(children_ids);
                     children_ids = [...children_ids];
                     children_ids.push(0);
+                    console.log(children_ids)
                     where_sql += ` AND ${table_name}.id IN (${children_ids.join()}) `;
                 }
 
