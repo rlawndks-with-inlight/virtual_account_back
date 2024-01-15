@@ -40,19 +40,9 @@ const authCtrl = {
             if (decode_dns?.is_use_otp == 1 && !otp_num) {
                 return response(req, res, -100, "OTP번호를 입력해주세요.", {})
             }
+            let dns_data = await pool.query(`SELECT brands.* FROM brands WHERE id=${decode_dns?.id}`);
+            dns_data = dns_data?.result[0];
 
-            if (decode_dns?.is_use_otp == 1) {
-                let dns_data = await pool.query(`SELECT brands.* FROM brands WHERE id=${decode_dns?.id}`);
-                dns_data = dns_data?.result[0];
-                var verified = speakeasy.totp.verify({
-                    secret: dns_data?.otp_token,
-                    encoding: 'base32',
-                    token: otp_num
-                });
-                if (!verified) {
-                    return response(req, res, -100, "OTP번호가 잘못되었습니다.", {})
-                }
-            }
 
             let user = await pool.query(`SELECT * FROM users WHERE user_name=? AND ( brand_id=${decode_dns?.id} OR level >=50 ) LIMIT 1`, user_name);
             user = user?.result[0];
@@ -81,6 +71,16 @@ const authCtrl = {
                 let add_login_fail_count = await updateQuery(`users`, login_fail_obj, user?.id);
                 return response(req, res, -100, err_message, {});
 
+            }
+            if (decode_dns?.is_use_otp == 1 && user?.level < 40) {
+                var verified = speakeasy.totp.verify({
+                    secret: dns_data?.otp_token,
+                    encoding: 'base32',
+                    token: otp_num
+                });
+                if (!verified) {
+                    return response(req, res, -100, "OTP번호가 잘못되었습니다.", {})
+                }
             }
             const token = makeUserToken({
                 id: user.id,
