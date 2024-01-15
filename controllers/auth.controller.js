@@ -108,6 +108,10 @@ const authCtrl = {
                 //sameSite: 'none', 
                 //secure: true 
             });
+            let insert_ip_log = await insertQuery(`connected_ips`, {
+                user_id: user?.id,
+                ip: requestIp,
+            })
             let check_last_login_time = await updateQuery('users', {
                 last_login_time: returnMoment(),
                 login_fail_count: 0,

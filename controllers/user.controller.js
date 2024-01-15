@@ -150,11 +150,14 @@ const userCtrl = {
 
             let data = await pool.query(sql)
             data = data?.result[0];
+
+            let ip_logs = await pool.query(`SELECT * FROM connected_ips WHERE user_id=${data?.id} ORDER BY id DESC`);
+            ip_logs = ip_logs?.result;
             if (!isItemBrandIdSameDnsId(decode_dns, data)) {
                 return lowLevelException(req, res);
             }
             data['telegram_chat_ids'] = JSON.parse(data?.telegram_chat_ids ?? '[]').join();
-            return response(req, res, 100, "success", data)
+            return response(req, res, 100, "success", { ...data, ip_logs })
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)
