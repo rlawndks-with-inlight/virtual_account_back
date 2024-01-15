@@ -3,7 +3,7 @@ import _ from "lodash";
 import { pool } from "../config/db.js";
 import { checkIsManagerUrl, returnMoment } from "../utils.js/function.js";
 import { insertQuery, updateQuery } from "../utils.js/query-util.js";
-import { createHashedPassword, checkLevel, makeUserToken, response, checkDns, lowLevelException, operatorLevelList } from "../utils.js/util.js";
+import { createHashedPassword, checkLevel, makeUserToken, response, checkDns, lowLevelException, operatorLevelList, getReqIp } from "../utils.js/util.js";
 import 'dotenv/config';
 import speakeasy from 'speakeasy';
 
@@ -101,6 +101,7 @@ const authCtrl = {
                 withdraw_acct_num: user.withdraw_acct_num,
                 withdraw_acct_name: user.withdraw_acct_name,
             })
+            let requestIp = getReqIp(req);
             res.cookie("token", token, {
                 httpOnly: true,
                 maxAge: (60 * 60 * 1000) * 12 * 2,
@@ -110,6 +111,7 @@ const authCtrl = {
             let check_last_login_time = await updateQuery('users', {
                 last_login_time: returnMoment(),
                 login_fail_count: 0,
+                connected_ip: requestIp,
             }, user.id)
 
             return response(req, res, 100, "success", user)
