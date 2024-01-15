@@ -74,8 +74,12 @@ const authCtrl = {
                 if (!otp_num) {
                     return response(req, res, -100, "OTP번호를 입력해주세요.", {})
                 }
+                if (!user?.otp_token) {
+                    return response(req, res, -100, "OTP키 발급이 필요합니다.", {})
+                }
+
                 var verified = speakeasy.totp.verify({
-                    secret: dns_data?.otp_token,
+                    secret: user?.otp_token,
                     encoding: 'base32',
                     token: otp_num
                 });
