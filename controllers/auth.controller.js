@@ -70,7 +70,7 @@ const authCtrl = {
                 return response(req, res, -100, err_message, {});
 
             }
-            if (decode_dns?.is_use_otp == 1 && user?.level < 40) {
+            if (decode_dns?.is_use_otp == 1) {
                 let otp_token = '';
                 if (!otp_num) {
                     return response(req, res, -100, "OTP번호를 입력해주세요.", {})
