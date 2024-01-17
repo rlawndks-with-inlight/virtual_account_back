@@ -71,15 +71,22 @@ const authCtrl = {
 
             }
             if (decode_dns?.is_use_otp == 1 && user?.level < 40) {
+                let otp_token = '';
                 if (!otp_num) {
                     return response(req, res, -100, "OTP번호를 입력해주세요.", {})
                 }
-                if (!user?.otp_token) {
-                    return response(req, res, -100, "OTP키 발급이 필요합니다.", {})
+
+                if (user?.level < 40) {
+                    if (!user?.otp_token) {
+                        return response(req, res, -100, "OTP키 발급이 필요합니다.", {})
+                    }
+                    otp_token = user?.otp_token;
+                } else {
+                    otp_token = dns_data?.otp_token;
                 }
 
                 var verified = speakeasy.totp.verify({
-                    secret: user?.otp_token,
+                    secret: otp_token,
                     encoding: 'base32',
                     token: otp_num
                 });

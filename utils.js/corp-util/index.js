@@ -241,6 +241,8 @@ const corpApi = {
                 result = await banknersApi.bank.list(data);
             } else if (corp_type == 2) {
                 result = await cooconApi.bank.list(data);
+            } else {
+                result.data = [];
             }
 
             return result;
