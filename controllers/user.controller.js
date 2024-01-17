@@ -512,6 +512,9 @@ const userCtrl = {
             user = user?.result[0];
 
             amount = parseFloat(amount);
+            if (amount < 0 || isNaN(amount)) {
+                return response(req, res, -100, "금액은 0 이상만 가능합니다.", false)
+            }
             if (pay_type == 25) {
                 amount = amount;
             } else if (pay_type == 30) {
