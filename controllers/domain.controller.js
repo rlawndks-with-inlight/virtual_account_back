@@ -44,6 +44,9 @@ const domainCtrl = {
                 'is_use_telegram_bot',
                 'is_use_otp',
                 'withdraw_fee_type',
+                'is_use_corp_account',
+                'corp_account_corp_type',
+                'is_can_add_deposit',
             ]
             let brand = await pool.query(`SELECT ${columns.join()} FROM brands WHERE dns='${dns}'`);
             if (brand?.result.length == 0) {

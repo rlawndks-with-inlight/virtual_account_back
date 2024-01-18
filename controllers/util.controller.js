@@ -13,14 +13,28 @@ const utilCtrl = {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
             const { id } = req.params;
-            let api_result = await corpApi.bank.list({
+
+            let deposit_api_result = await corpApi.bank.list({
                 dns_data: decode_dns,
                 decode_user,
+                pay_type: 'deposit',
             })
-            if (api_result.code != 100) {
-                return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
+            if (deposit_api_result.code != 100) {
+                return response(req, res, -100, (deposit_api_result?.message || "서버 에러 발생"), false)
             }
-            return response(req, res, 100, "success", api_result?.data)
+            let withdraw_api_result = await corpApi.bank.list({
+                dns_data: decode_dns,
+                decode_user,
+                pay_type: 'withdraw',
+            })
+            if (withdraw_api_result.code != 100) {
+                return response(req, res, -100, (withdraw_api_result?.message || "서버 에러 발생"), false)
+            }
+
+            return response(req, res, 100, "success", {
+                deposit: deposit_api_result?.data,
+                withdraw: withdraw_api_result?.data,
+            })
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)

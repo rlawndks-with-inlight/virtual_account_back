@@ -130,69 +130,24 @@ const depositCtrl = {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
             const {
-                virtual_acct_num, amount, deposit_bank_code, deposit_acct_num, deposit_acct_name, pay_type = 0,
+                mid, amount, deposit_bank_code, deposit_acct_num, deposit_acct_name
             } = req.body;
 
             let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
             dns_data = dns_data?.result[0];
             dns_data['operator_list'] = getOperatorList(dns_data);
-
-            let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE virtual_acct_num=? `, [virtual_acct_num]);
-            virtual_account = virtual_account?.result[0];
-            if (!virtual_account) {
-                return response(req, res, -100, "존재하지 않는 가상계좌 입니다.", false)
-            }
-
-            let mcht_columns = [
-                `users.*`,
-                `merchandise_columns.mcht_fee`
-            ]
-            for (var i = 0; i < dns_data?.operator_list.length; i++) {
-                mcht_columns.push(`merchandise_columns.sales${dns_data?.operator_list[i]?.num}_id`);
-                mcht_columns.push(`merchandise_columns.sales${dns_data?.operator_list[i]?.num}_fee`);
-            }
-            let mcht_sql = `SELECT ${mcht_columns.join()} FROM users `
-            mcht_sql += ` LEFT JOIN merchandise_columns ON merchandise_columns.mcht_id=users.id `;
-            mcht_sql += ` WHERE users.id=${virtual_account?.mcht_id} `;
-            let mcht = await pool.query(mcht_sql);
+            let mcht = await pool.query(`SELECT * FROM users WHERE mid=? AND level=10`, [mid]);
             mcht = mcht?.result[0];
-            if (!mcht) {
-                return response(req, res, -100, "존재하지 않는 가맹점 입니다.", false)
-            }
-            let trx_id = `${new Date().getTime()}${dns_data?.id}${mcht?.id}0`;
-            let obj = {
-                brand_id: mcht?.brand_id,
-                mcht_id: mcht?.id,
-                virtual_account_id: virtual_account?.id,
-                amount, deposit_bank_code, deposit_acct_num, deposit_acct_name, pay_type,
-                trx_id: trx_id,
-                deposit_head_office_fee: dns_data?.deposit_head_office_fee,
-                deposit_fee: mcht?.deposit_fee ?? 0
-            };
 
-            let is_use_sales = false;
-            let sales_depth_num = -1;
-            let minus_fee = dns_data?.deposit_head_office_fee;
-            for (var i = 0; i < dns_data?.operator_list.length; i++) {
-                if (mcht[`sales${dns_data?.operator_list[i]?.num}_id`] > 0) {
-                    is_use_sales = true;
-                } else {
-                    continue;
-                }
-                if (sales_depth_num >= 0) {
-                    obj[`sales${sales_depth_num}_amount`] = getNumberByPercent(amount, mcht[`sales${dns_data?.operator_list[i]?.num}_fee`] - minus_fee)
-                }
-                obj[`sales${dns_data?.operator_list[i]?.num}_id`] = mcht[`sales${dns_data?.operator_list[i]?.num}_id`];
-                obj[`sales${dns_data?.operator_list[i]?.num}_fee`] = mcht[`sales${dns_data?.operator_list[i]?.num}_fee`];
-                minus_fee = obj[`sales${dns_data?.operator_list[i]?.num}_fee`];
-                sales_depth_num = dns_data?.operator_list[i]?.num;
-            }
-            if (!is_use_sales) {
-                return response(req, res, -100, "사용하지 않는 가맹점 입니다.", false)
-            }
-            obj[`sales${sales_depth_num}_amount`] = getNumberByPercent(amount, mcht[`mcht_fee`] - minus_fee);
-            obj[`mcht_fee`] = mcht[`mcht_fee`];
-            obj[`mcht_amount`] = getNumberByPercent(amount, 100 - mcht[`mcht_fee`]) - (mcht?.deposit_fee ?? 0);
+            let obj = {
+                brand_id: dns_data?.id,
+                expect_amount: amount,
+                deposit_bank_code,
+                deposit_acct_num,
+                deposit_acct_name,
+                mcht_id: mcht?.id,
+                deposit_fee: mcht?.deposit_fee,
+            };
 
             let result = await insertQuery(table_name, obj);
             return response(req, res, 100, "success", {})
