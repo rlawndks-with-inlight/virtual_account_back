@@ -14,7 +14,7 @@ import settleCtrl from './settle.controller.js';
 import dashboardCtrl from './dashboard.controller.js';
 import corpUtilCtrl from './corp_util.controller.js';
 import depositRequestCtrl from './deposit_request.controller.js';
-
+import corpAccountCtrl from './corp_account.controller.js';
 export {
     brandCtrl,
     authCtrl,
@@ -29,5 +29,6 @@ export {
     settleCtrl,
     dashboardCtrl,
     corpUtilCtrl,
-    depositRequestCtrl
+    depositRequestCtrl,
+    corpAccountCtrl,
 };

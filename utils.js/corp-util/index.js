@@ -1,6 +1,7 @@
 import { selectQuerySimple } from "../query-util.js";
 import { banknersApi } from "./bankners.js";
 import { cooconApi } from "./coocon.js";
+import { paytusApi } from "./paytus.js";
 
 const getDnsData = async (dns_data_) => {
     let dns_data = await selectQuerySimple('brands', dns_data_?.id);
@@ -241,6 +242,8 @@ const corpApi = {
                 result = await banknersApi.bank.list(data);
             } else if (corp_type == 2) {
                 result = await cooconApi.bank.list(data);
+            } else if (corp_type == 3) {
+                result = await paytusApi.bank.list(data);
             } else {
                 result.data = [];
             }
