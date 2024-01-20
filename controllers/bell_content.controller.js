@@ -20,7 +20,9 @@ const bellContentCtrl = {
             ]
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
             sql += ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
-
+            if (decode_user?.level < 40) {
+                sql += ` AND mcht_id=${decode_user?.id} `;
+            }
             let data = await getSelectQuery(sql, columns, req.query);
 
             return response(req, res, 100, "success", data);
