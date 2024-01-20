@@ -14,6 +14,7 @@ import dashboardRoutes from './dashboard.route.js';
 import corpUtilRoutes from './corp_util.route.js';
 import depositRequestRoutes from './deposit_request.route.js';
 import corpAccountRoutes from './corp_account.route.js';
+import bellContentRoutes from './bell_content.route.js';
 
 const router = express.Router(); // eslint-disable-line new-cap
 
@@ -29,6 +30,7 @@ router.use('/settles', settleRoutes);
 router.use('/virtual-accounts', virtualAccountRoutes);
 router.use('/deposit-requests', depositRequestRoutes);
 router.use('/corp-accounts', corpAccountRoutes);
+router.use('/bell-contents', bellContentRoutes);
 
 
 //auth
