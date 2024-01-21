@@ -2,7 +2,7 @@
 import { pool } from "../config/db.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, makeSearchQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
-import { checkDns, checkLevel, getNumberByPercent, isItemBrandIdSameDnsId, response, settingFiles, operatorLevelList, getOperatorList } from "../utils.js/util.js";
+import { checkDns, checkLevel, getNumberByPercent, isItemBrandIdSameDnsId, response, settingFiles, operatorLevelList, getOperatorList, lowLevelException } from "../utils.js/util.js";
 import _ from 'lodash';
 import 'dotenv/config';
 
@@ -12,9 +12,12 @@ const depositCtrl = {
     list: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = checkLevel(req.cookies.token, 10);
             const decode_dns = checkDns(req.cookies.dns);
             const { is_mother, pay_type, s_dt, e_dt, search, is_delete } = req.query;
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
             let search_columns = [
                 `users.user_name`,
                 `users.nickname`,
