@@ -14,9 +14,12 @@ const withdrawCtrl = {
     list: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = checkLevel(req.cookies.token, 10);
             const decode_dns = checkDns(req.cookies.dns);
             const { withdraw_status, search, s_dt, e_dt } = req.query;
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
             let search_columns = [
                 `users.user_name`,
                 `users.nickname`,
@@ -105,8 +108,11 @@ const withdrawCtrl = {
     create: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = checkLevel(req.cookies.token, 10);
             const decode_dns = checkDns(req.cookies.dns);
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
             let {
                 withdraw_amount, user_id, pay_type = 5, note = "",
                 virtual_account_id,
@@ -400,12 +406,14 @@ const withdrawCtrl = {
     confirm: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = checkLevel(req.cookies.token, 40);
             const decode_dns = checkDns(req.cookies.dns);
             let {
                 id,
             } = req.body;
-
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
             let withdraw = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id} AND brand_id=${decode_dns?.id}`);
             withdraw = withdraw?.result[0];
             if (!withdraw) {
@@ -501,12 +509,14 @@ const withdrawCtrl = {
     refuse: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = checkLevel(req.cookies.token, 40);
             const decode_dns = checkDns(req.cookies.dns);
             let {
                 id,
             } = req.body;
-
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
             let withdraw = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id} AND brand_id=${decode_dns?.id}`);
             withdraw = withdraw?.result[0];
             if (!withdraw) {
@@ -555,12 +565,14 @@ const withdrawCtrl = {
     fail: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = checkLevel(req.cookies.token, 40);
             const decode_dns = checkDns(req.cookies.dns);
             let {
                 id,
             } = req.body;
-
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
             let withdraw = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id} AND brand_id=${decode_dns?.id}`);
             withdraw = withdraw?.result[0];
             if (!withdraw) {

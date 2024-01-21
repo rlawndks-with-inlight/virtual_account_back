@@ -110,10 +110,12 @@ const depositCtrl = {
     get: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = checkLevel(req.cookies.token, 10);
             const decode_dns = checkDns(req.cookies.dns);
             const { id } = req.params;
-
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
             let data = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id}`)
             data = data?.result[0];
             if (!isItemBrandIdSameDnsId(decode_dns, data)) {
