@@ -21,7 +21,6 @@ const authCtrl = {
                 encoding: 'base32',
                 token: '392861'
             });
-            console.log(verified)
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)

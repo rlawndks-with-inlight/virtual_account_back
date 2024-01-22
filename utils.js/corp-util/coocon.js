@@ -28,7 +28,6 @@ export const cooconApi = {
                     ...getDefaultBody(dns_data, pay_type),
                     ...query,
                 })
-                console.log(response)
                 response.data = {
                     BAL_AMT: 10000000,
                     WDRW_CAN_AMT: 10000000,

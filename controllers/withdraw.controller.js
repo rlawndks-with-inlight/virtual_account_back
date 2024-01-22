@@ -6,6 +6,7 @@ import { checkIsManagerUrl, returnMoment } from "../utils.js/function.js";
 import { deleteQuery, getMultipleQueryByWhen, getSelectQuery, insertQuery, makeSearchQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, commarNumber, getOperatorList, isItemBrandIdSameDnsId, lowLevelException, operatorLevelList, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
+import userCtrl from "./user.controller.js";
 
 const table_name = 'deposits';
 
@@ -75,7 +76,6 @@ const withdrawCtrl = {
             chart_sql = chart_sql.replaceAll(process.env.SELECT_COLUMN_SECRET, chart_columns.join());
             let chart_data = await pool.query(chart_sql);
             chart_data = chart_data?.result[0];
-            console.log(chart_data)
             let data = await getSelectQuery(sql, columns, req.query);
 
             return response(req, res, 100, "success", { ...data, chart: chart_data });
@@ -540,6 +540,15 @@ const withdrawCtrl = {
                 is_withdraw_hold: 0,
                 withdraw_status: 15
             }, withdraw_id);
+            //
+            let result2 = await userCtrl.changeUserDeposit({
+                ...req, IS_RETURN: true, body: {
+                    amount: withdraw_amount + withdraw?.withdraw_fee,
+                    pay_type: 25,
+                    user_id: user?.id,
+                    note: "출금 반려",
+                }
+            }, res, next);
             /*
             let trx_id = `${new Date().getTime()}${decode_dns?.id}${user?.id}5`;
             let deposit_obj = {

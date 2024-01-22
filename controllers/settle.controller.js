@@ -15,7 +15,6 @@ const settleCtrl = {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
             const { level } = req.query;
-            console.log(req.query);
             let columns = [
                 `${table_name}.*`,
                 `users.user_name`,

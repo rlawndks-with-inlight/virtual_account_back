@@ -71,7 +71,6 @@ const userCtrl = {
                     children_ids = new Set(children_ids);
                     children_ids = [...children_ids];
                     children_ids.push(0);
-                    console.log(children_ids)
                     where_sql += ` AND ${table_name}.id IN (${children_ids.join()}) `;
                 }
 

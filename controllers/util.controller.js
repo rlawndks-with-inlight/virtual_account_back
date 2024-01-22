@@ -14,6 +14,7 @@ const utilCtrl = {
             const decode_dns = checkDns(req.cookies.dns);
             const { id } = req.params;
 
+            let data = {};
             let deposit_api_result = await corpApi.bank.list({
                 dns_data: decode_dns,
                 decode_user,
@@ -22,6 +23,7 @@ const utilCtrl = {
             if (deposit_api_result.code != 100) {
                 return response(req, res, -100, (deposit_api_result?.message || "서버 에러 발생"), false)
             }
+            data['deposit'] = deposit_api_result?.data;
             let withdraw_api_result = await corpApi.bank.list({
                 dns_data: decode_dns,
                 decode_user,
@@ -30,11 +32,8 @@ const utilCtrl = {
             if (withdraw_api_result.code != 100) {
                 return response(req, res, -100, (withdraw_api_result?.message || "서버 에러 발생"), false)
             }
-
-            return response(req, res, 100, "success", {
-                deposit: deposit_api_result?.data,
-                withdraw: withdraw_api_result?.data,
-            })
+            data['withdraw'] = withdraw_api_result?.data;
+            return response(req, res, 100, "success", data);
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)
