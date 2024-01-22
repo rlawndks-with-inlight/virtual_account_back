@@ -2,7 +2,7 @@
 import _ from "lodash";
 import db, { pool } from "../config/db.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
-import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
+import { deleteQuery, getSelectQuery, insertQuery, makeSearchQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, createHashedPassword, getOperatorList, isItemBrandIdSameDnsId, lowLevelException, makeObjByList, makeUserChildrenList, makeUserTree, operatorLevelList, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 import corpApi from "../utils.js/corp-util/index.js";
@@ -16,7 +16,7 @@ const userCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
-            const { level, level_list = [] } = req.query;
+            const { level, level_list = [], search } = req.query;
             let columns = [
                 `${table_name}.*`,
                 `merchandise_columns.mcht_fee`,
@@ -90,6 +90,13 @@ const userCtrl = {
 
             if (level_list.length > 0) {
                 where_sql += ` AND ${table_name}.level IN (${level_list}) `;
+            }
+            if (search) {
+                let search_columns = [
+                    `${table_name}.user_name`,
+                    `${table_name}.nickname`,
+                ]
+                where_sql += makeSearchQuery(search_columns, search);
             }
             sql = sql + where_sql;
             let data = await getSelectQuery(sql, columns, req.query);
