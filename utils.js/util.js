@@ -287,7 +287,7 @@ export const getReqIp = (req) => {
     console.log(req.connection.remoteAddress)
     console.log(req.ip)
     try {
-        requestIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.ip || '0.0.0.0'
+        requestIp = (req.headers['x-forwarded-for'] ?? "").split(',')[0] || req.connection.remoteAddress || req.ip || '0.0.0.0'
     } catch (err) {
         requestIp = '0.0.0.0'
     }
