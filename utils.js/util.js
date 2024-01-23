@@ -283,6 +283,9 @@ export const homeItemsWithCategoriesSetting = (column_, products) => {
 }
 export const getReqIp = (req) => {
     let requestIp;
+    console.log(req.headers['x-forwarded-for'])
+    console.log(req.connection.remoteAddress)
+    console.log(req.ip)
     try {
         requestIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.ip || '0.0.0.0'
     } catch (err) {
