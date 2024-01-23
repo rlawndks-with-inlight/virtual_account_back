@@ -142,6 +142,7 @@ const userCtrl = {
                 `virtual_accounts.deposit_bank_code AS settle_bank_code`,
                 `virtual_accounts.deposit_acct_num AS settle_acct_num`,
                 `virtual_accounts.deposit_acct_name AS settle_acct_name`,
+                `children_brands.dns AS children_brand_dns`,
             ]
             let operator_list = decode_dns?.operator_list;
             for (var i = 0; i < operator_list.length; i++) {
@@ -152,6 +153,7 @@ const userCtrl = {
             let sql = `SELECT ${columns.join()} FROM ${table_name} `;
             sql += ` LEFT JOIN merchandise_columns ON merchandise_columns.mcht_id=${table_name}.id `;
             sql += ` LEFT JOIN virtual_accounts ON ${table_name}.virtual_account_id=virtual_accounts.id `;
+            sql += ` LEFT JOIN brands AS children_brands ON ${table_name}.children_brand_id=children_brands.id `;
             sql += ` WHERE ${table_name}.id=${id} `;
 
             let data = await pool.query(sql)
