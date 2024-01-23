@@ -157,13 +157,34 @@ const userCtrl = {
             let data = await pool.query(sql)
             data = data?.result[0];
 
-            let ip_logs = await pool.query(`SELECT * FROM connected_ips WHERE user_id=${data?.id} ORDER BY id DESC`);
-            ip_logs = ip_logs?.result;
             if (!isItemBrandIdSameDnsId(decode_dns, data)) {
                 return lowLevelException(req, res);
             }
             data['telegram_chat_ids'] = JSON.parse(data?.telegram_chat_ids ?? '[]').join();
-            return response(req, res, 100, "success", { ...data, ip_logs })
+            return response(req, res, 100, "success", data)
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
+    ipLogs: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_dns = checkDns(req.cookies.dns);
+            const { id } = req.query;
+            let columns = [
+                `connected_ips.*`,
+            ]
+
+            let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM connected_ips `;
+            sql += `  WHERE user_id=${id}  `;
+
+            let data = await getSelectQuery(sql, columns, req.query);
+
+            return response(req, res, 100, "success", data);
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)
@@ -199,6 +220,7 @@ const userCtrl = {
                 guid,
                 deposit_fee = 0, withdraw_fee = 0, min_withdraw_price = 0, min_withdraw_remain_price = 0, min_withdraw_hold_price = 0, is_withdraw_hold = 0, can_return_ago_pay = 1,
                 withdraw_bank_code, withdraw_acct_num, withdraw_acct_name, telegram_chat_ids = '[]', otp_token = '', deposit_noti_url = '', withdraw_noti_url = '',
+                children_brand_dns = '',
             } = req.body;
             let is_exist_user = await pool.query(`SELECT * FROM ${table_name} WHERE user_name=? AND brand_id=${brand_id}`, [user_name]);
             if (is_exist_user?.result.length > 0) {
@@ -224,7 +246,11 @@ const userCtrl = {
             } else {
                 obj['virtual_account_id'] = 0;
             }
-
+            if (children_brand_dns) {
+                let children_brand = await pool.query(`SELECT * FROM brands WHERE dns=?`, [children_brand_dns]);
+                children_brand = (children_brand?.result[0] ?? {});
+                obj['children_brand_id'] = children_brand?.id;
+            }
 
             obj = { ...obj, ...files };
 
@@ -298,6 +324,7 @@ const userCtrl = {
                 guid = "",
                 deposit_fee = 0, withdraw_fee = 0, min_withdraw_price = 0, min_withdraw_remain_price = 0, min_withdraw_hold_price = 0, is_withdraw_hold = 0, can_return_ago_pay = 1,
                 withdraw_bank_code, withdraw_acct_num, withdraw_acct_name, telegram_chat_ids = '[]', otp_token = '', deposit_noti_url = '', withdraw_noti_url = '',
+                children_brand_dns = "",
                 id
             } = req.body;
             let files = settingFiles(req.files);
@@ -317,7 +344,11 @@ const userCtrl = {
             } else {
                 obj['virtual_account_id'] = 0;
             }
-
+            if (children_brand_dns) {
+                let children_brand = await pool.query(`SELECT * FROM brands WHERE dns=?`, [children_brand_dns]);
+                children_brand = (children_brand?.result[0] ?? {});
+                obj['children_brand_id'] = children_brand?.id;
+            }
             await db.beginTransaction();
             // let ago_user = await pool.query(`SELECT * FROM users WHERE id=${id}`);
             // ago_user = ago_user?.result[0];

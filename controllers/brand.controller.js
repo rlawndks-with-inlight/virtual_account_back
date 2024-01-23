@@ -42,9 +42,11 @@ const brandCtrl = {
             let columns = [
                 `${table_name}.*`,
                 `virtual_accounts.guid`,
+                `parent_brands.dns AS parent_dns`,
             ]
             let sql = `SELECT ${columns.join()} FROM ${table_name} `;
             sql += ` LEFT JOIN virtual_accounts ON ${table_name}.virtual_account_id=virtual_accounts.id `;
+            sql += ` LEFT JOIN brands AS parent_brands ON ${table_name}.parent_id=parent_brands.id `;
             sql += ` WHERE ${table_name}.id=${id} `;
             let data = await pool.query(sql)
             data = data?.result[0];
@@ -52,7 +54,7 @@ const brandCtrl = {
             data['setting_obj'] = JSON.parse(data?.setting_obj ?? '{}');
             data['level_obj'] = JSON.parse(data?.level_obj ?? '{}');
             data['bizppurio_obj'] = JSON.parse(data?.bizppurio_obj ?? '{}');
-
+            console.log(data)
             return response(req, res, 100, "success", data)
         } catch (err) {
             console.log(err)
@@ -70,7 +72,7 @@ const brandCtrl = {
             }
             const decode_dns = checkDns(req.cookies.dns);
             const {
-                name, dns, og_description, company_name, business_num, pvcy_rep_name, ceo_name, addr, addr_detail, resident_num, phone_num, fax_num, note, theme_css = {}, setting_obj = {}, level_obj = {}, bizppurio_obj = {},
+                name, dns, parent_dns, og_description, company_name, business_num, pvcy_rep_name, ceo_name, addr, addr_detail, resident_num, phone_num, fax_num, note, theme_css = {}, setting_obj = {}, level_obj = {}, bizppurio_obj = {},
                 user_name, user_pw,
                 deposit_corp_type, deposit_guid, deposit_api_id, deposit_sign_key, deposit_encr_key, deposit_iv,
                 withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv, withdraw_virtual_bank_code, withdraw_virtual_acct_num, withdraw_trt_inst_code,
@@ -93,7 +95,11 @@ const brandCtrl = {
             obj['setting_obj'] = JSON.stringify(obj.setting_obj);
             obj['level_obj'] = JSON.stringify(obj.level_obj);
             obj['bizppurio_obj'] = JSON.stringify(obj.bizppurio_obj);
-
+            if (parent_dns) {
+                let parent_dns_data = await pool.query(`SELECT * FROM brands WHERE dns=?`, [parent_dns]);
+                parent_dns_data = (parent_dns_data?.result[0] ?? {});
+                obj['parent_id'] = parent_dns_data?.id ?? 0;
+            }
             let api_key = await createHashedPassword('dns');
             api_key = api_key.hashedPassword.substring(0, 40);
             obj['api_key'] = api_key;
@@ -131,7 +137,7 @@ const brandCtrl = {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
             const {
-                name, dns, og_description, company_name, business_num, pvcy_rep_name, ceo_name, addr, addr_detail, resident_num, phone_num, fax_num, note, theme_css = {}, setting_obj = {}, level_obj = {}, bizppurio_obj = {},
+                name, dns, parent_dns, og_description, company_name, business_num, pvcy_rep_name, ceo_name, addr, addr_detail, resident_num, phone_num, fax_num, note, theme_css = {}, setting_obj = {}, level_obj = {}, bizppurio_obj = {},
                 deposit_corp_type, deposit_guid, deposit_api_id, deposit_sign_key, deposit_encr_key, deposit_iv,
                 withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv, withdraw_virtual_bank_code, withdraw_virtual_acct_num, withdraw_trt_inst_code,
                 default_deposit_fee, default_withdraw_fee, deposit_head_office_fee = 0, withdraw_head_office_fee = 0, default_withdraw_max_price = 0,
@@ -161,7 +167,11 @@ const brandCtrl = {
             obj['level_obj'] = JSON.stringify(obj.level_obj);
             obj['bizppurio_obj'] = JSON.stringify(obj.bizppurio_obj);
             obj = { ...obj, ...files };
-
+            if (parent_dns) {
+                let parent_dns_data = await pool.query(`SELECT * FROM brands WHERE dns=?`, [parent_dns]);
+                parent_dns_data = (parent_dns_data?.result[0] ?? {});
+                obj['parent_id'] = parent_dns_data?.id ?? 0;
+            }
             await db.beginTransaction();
 
 

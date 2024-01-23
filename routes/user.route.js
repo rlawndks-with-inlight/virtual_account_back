@@ -9,6 +9,9 @@ router
     .get(userCtrl.list)
     .post(userCtrl.create)
 router
+    .route('/ip-logs')
+    .get(userCtrl.ipLogs)
+router
     .route('/organizational-chart')
     .get(userCtrl.organizationalChart)
 router
