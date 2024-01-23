@@ -15,6 +15,9 @@ router
     .route('/sign-in')
     .post(authCtrl.signIn);
 router
+    .route('/sign-in-another-user')
+    .post(authCtrl.signInAnotherUser);
+router
     .route('/sign-up')
     .post(authCtrl.signUp);
 router

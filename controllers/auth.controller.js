@@ -135,67 +135,21 @@ const authCtrl = {
     signInAnotherUser: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = checkLevel(req.cookies.token, 40);
             const decode_dns = checkDns(req.cookies.dns);
-            let { user_name, user_pw, otp_num } = req.body;
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
+            let { user_id } = req.body;
 
 
             let dns_data = await pool.query(`SELECT brands.* FROM brands WHERE id=${decode_dns?.id}`);
             dns_data = dns_data?.result[0];
 
 
-            let user = await pool.query(`SELECT * FROM users WHERE user_name=? AND ( brand_id=${decode_dns?.id} OR level >=50 ) LIMIT 1`, user_name);
+            let user = await pool.query(`SELECT * FROM users WHERE id=${user_id}`);
             user = user?.result[0];
-            if (!user) {
-                return response(req, res, -100, "가입되지 않은 회원입니다.", {})
-            }
-            if (is_manager && user.level <= 0) {
-                return response(req, res, -100, "가입되지 않은 회원입니다.", {})
-            }
-            if (user?.status == 1) {
-                return response(req, res, -100, "승인 대기중입니다.", {})
-            }
-            if (user?.status == 2) {
-                return response(req, res, -100, "로그인 차단 회원입니다. 관리자에게 문의하세요.", {})
-            }
-            user_pw = (await createHashedPassword(user_pw, user.user_salt)).hashedPassword;
-            if (user_pw != user.user_pw) {
-                let login_fail_obj = {
-                    login_fail_count: user?.login_fail_count + 1,
-                }
-                let err_message = '가입되지 않은 회원입니다.';
-                if (login_fail_obj.login_fail_count == 5) {
-                    login_fail_obj.status = 2;
-                    err_message = `로그인 5회실패, 관리자에게 문의해주세요.`
-                }
-                let add_login_fail_count = await updateQuery(`users`, login_fail_obj, user?.id);
-                return response(req, res, -100, err_message, {});
 
-            }
-            if (decode_dns?.is_use_otp == 1 && user?.level < 50) {
-                let otp_token = '';
-                if (!otp_num) {
-                    return response(req, res, -100, "OTP번호를 입력해주세요.", {})
-                }
-
-                if (user?.level < 40) {
-                    if (!user?.otp_token) {
-                        return response(req, res, -100, "OTP키 발급이 필요합니다.", {})
-                    }
-                    otp_token = user?.otp_token;
-                } else {
-                    otp_token = dns_data?.otp_token;
-                }
-
-                var verified = speakeasy.totp.verify({
-                    secret: otp_token,
-                    encoding: 'base32',
-                    token: otp_num
-                });
-                if (!verified) {
-                    return response(req, res, -100, "OTP번호가 잘못되었습니다.", {})
-                }
-            }
             const token = makeUserToken({
                 id: user.id,
                 user_name: user.user_name,
@@ -210,22 +164,12 @@ const authCtrl = {
                 withdraw_acct_num: user.withdraw_acct_num,
                 withdraw_acct_name: user.withdraw_acct_name,
             })
-            let requestIp = getReqIp(req);
             res.cookie("token", token, {
                 httpOnly: true,
                 maxAge: (60 * 60 * 1000) * 12 * 2,
                 //sameSite: 'none', 
                 //secure: true 
             });
-            let insert_ip_log = await insertQuery(`connected_ips`, {
-                user_id: user?.id,
-                ip: requestIp,
-            })
-            let check_last_login_time = await updateQuery('users', {
-                last_login_time: returnMoment(),
-                login_fail_count: 0,
-                connected_ip: requestIp,
-            }, user.id)
 
             return response(req, res, 100, "success", user)
         } catch (err) {
