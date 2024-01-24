@@ -208,6 +208,13 @@ export const makeChildren = (data_, parent_obj) => {
     return data;
 }
 
+export function findChildIds(data, id) {
+    const children = data.filter(item => item.parent_id == id).map(item => item.id);
+    children.forEach(child => {
+        children.push(...findChildIds(data, child));
+    });
+    return children;
+}
 export const makeUserTree = (user_list_ = [], decode_user) => {// 유저트리만들기
     let user_list = user_list_;
     let user_parent_obj = makeObjByList('parent_id', user_list);
@@ -356,4 +363,12 @@ export const getOperatorList = (brand_) => {
         }
     }
     return operator_list;
+}
+export const getChildrenBrands = async (brand = {}) => {
+    let brands = await pool.query(`SELECT id, parent_id, name, dns FROM brands`);
+    brands = brands?.result;
+
+    let childrens = findChildIds(brands, brand?.id);
+    console.log(childrens)
+    return childrens;
 }

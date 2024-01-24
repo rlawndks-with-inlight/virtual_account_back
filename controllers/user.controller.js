@@ -142,7 +142,6 @@ const userCtrl = {
                 `virtual_accounts.deposit_bank_code AS settle_bank_code`,
                 `virtual_accounts.deposit_acct_num AS settle_acct_num`,
                 `virtual_accounts.deposit_acct_name AS settle_acct_name`,
-                `children_brands.dns AS children_brand_dns`,
             ]
             let operator_list = decode_dns?.operator_list;
             for (var i = 0; i < operator_list.length; i++) {
@@ -153,17 +152,18 @@ const userCtrl = {
             let sql = `SELECT ${columns.join()} FROM ${table_name} `;
             sql += ` LEFT JOIN merchandise_columns ON merchandise_columns.mcht_id=${table_name}.id `;
             sql += ` LEFT JOIN virtual_accounts ON ${table_name}.virtual_account_id=virtual_accounts.id `;
-            sql += ` LEFT JOIN brands AS children_brands ON ${table_name}.children_brand_id=children_brands.id `;
             sql += ` WHERE ${table_name}.id=${id} `;
 
             let data = await pool.query(sql)
             data = data?.result[0];
 
+            let ip_logs = await pool.query(`SELECT * FROM connected_ips WHERE user_id=${data?.id} ORDER BY id DESC`);
+            ip_logs = ip_logs?.result;
             if (!isItemBrandIdSameDnsId(decode_dns, data)) {
                 return lowLevelException(req, res);
             }
             data['telegram_chat_ids'] = JSON.parse(data?.telegram_chat_ids ?? '[]').join();
-            return response(req, res, 100, "success", data)
+            return response(req, res, 100, "success", { ...data, ip_logs })
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)
@@ -252,6 +252,11 @@ const userCtrl = {
                 let children_brand = await pool.query(`SELECT * FROM brands WHERE dns=?`, [children_brand_dns]);
                 children_brand = (children_brand?.result[0] ?? {});
                 obj['children_brand_id'] = children_brand?.id;
+                if (children_brand?.id > 0) {
+                    let update_children_brand_fee = await updateQuery(`brands`, {
+                        deposit_head_office_fee: mcht_fee,
+                    }, children_brand?.id)
+                }
             }
 
             obj = { ...obj, ...files };
@@ -350,6 +355,11 @@ const userCtrl = {
                 let children_brand = await pool.query(`SELECT * FROM brands WHERE dns=?`, [children_brand_dns]);
                 children_brand = (children_brand?.result[0] ?? {});
                 obj['children_brand_id'] = children_brand?.id;
+                if (children_brand?.id > 0) {
+                    let update_children_brand_fee = await updateQuery(`brands`, {
+                        deposit_head_office_fee: mcht_fee,
+                    }, children_brand?.id)
+                }
             }
             await db.beginTransaction();
             // let ago_user = await pool.query(`SELECT * FROM users WHERE id=${id}`);

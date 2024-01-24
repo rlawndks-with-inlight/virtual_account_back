@@ -2,7 +2,7 @@
 import { pool } from "../config/db.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, makeSearchQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
-import { checkDns, checkLevel, getNumberByPercent, isItemBrandIdSameDnsId, response, settingFiles, operatorLevelList, getOperatorList, lowLevelException } from "../utils.js/util.js";
+import { checkDns, checkLevel, getNumberByPercent, isItemBrandIdSameDnsId, response, settingFiles, operatorLevelList, getOperatorList, lowLevelException, getChildrenBrands } from "../utils.js/util.js";
 import _ from 'lodash';
 import 'dotenv/config';
 
@@ -26,15 +26,17 @@ const depositCtrl = {
             ]
             let columns = [
                 `${table_name}.*`,
-                `virtual_accounts.virtual_bank_code`,
-                `virtual_accounts.virtual_acct_num`,
-                `virtual_accounts.virtual_acct_name`,
+                `CASE WHEN ${table_name}.virtual_account_id > 0  THEN virtual_accounts.virtual_bank_code ELSE ${table_name}.virtual_bank_code END AS virtual_bank_code`,
+                `CASE WHEN ${table_name}.virtual_account_id > 0  THEN virtual_accounts.virtual_acct_num ELSE ${table_name}.virtual_acct_num END AS virtual_acct_num`,
+                `CASE WHEN ${table_name}.virtual_account_id > 0  THEN virtual_accounts.virtual_acct_name ELSE ${table_name}.virtual_acct_name END AS virtual_acct_name`,
                 `mchts.user_name AS mcht_user_name`,
                 `mchts.nickname AS mcht_nickname`,
+                `mchts.brand_id AS mcht_brand_id`,
                 `users.user_name`,
                 `users.nickname`,
                 `users.level`,
             ]
+
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
             sql += ` LEFT JOIN virtual_accounts ON ${table_name}.virtual_account_id=virtual_accounts.id `;
             sql += ` LEFT JOIN users ON ${table_name}.mcht_id=users.id `;
@@ -46,6 +48,7 @@ const depositCtrl = {
                     sql += ` LEFT JOIN users AS sales${decode_dns?.operator_list[i]?.num} ON sales${decode_dns?.operator_list[i]?.num}.id=${table_name}.sales${decode_dns?.operator_list[i]?.num}_id `;
                 }
             }
+
             let where_sql = ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
             if (is_mother) {
                 where_sql += ` AND (${table_name}.amount > 0 OR ${table_name}.amount < 0) `
