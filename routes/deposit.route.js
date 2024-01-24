@@ -12,6 +12,8 @@ router
     .get(depositCtrl.get)
     .put(depositCtrl.update)
     .delete(depositCtrl.remove);
-
+router
+    .route('/change-note')
+    .post(depositCtrl.changeNote);
 
 export default router;
