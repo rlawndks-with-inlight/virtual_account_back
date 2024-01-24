@@ -83,7 +83,7 @@ const authCtrl = {
                 } else {
                     otp_token = dns_data?.otp_token;
                 }
-
+                console.log(otp_token)
                 var verified = speakeasy.totp.verify({
                     secret: otp_token,
                     encoding: 'base32',
