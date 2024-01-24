@@ -372,3 +372,26 @@ export const getChildrenBrands = async (brand = {}) => {
     console.log(childrens)
     return childrens;
 }
+export const getUserDepositFee = (item, user_level, operator_list = [], deposit_head_office_fee) => {
+    let top_fee = deposit_head_office_fee;
+
+    let level = 40;
+    let result = 0;
+
+    for (var i = 0; i < operator_list.length; i++) {
+        if (item[`sales${operator_list[i].num}_id`] > 0) {
+            if (user_level == level) {
+                return (parseFloat(item[`sales${operator_list[i].num}_deposit_fee`] ?? 0) - parseFloat(top_fee)).toFixed(3);
+            }
+            top_fee = item[`sales${operator_list[i].num}_deposit_fee`];
+            level = operator_list[i].value;
+        }
+    }
+    if (user_level == level) {
+        return (parseFloat(item[`deposit_fee`] ?? 0) - parseFloat(top_fee)).toFixed(3);
+    }
+    // if (user_level == 10) {
+    //   return (100 - parseFloat(item[`withdraw_fee`] ?? 0)).toFixed(3);
+    // }
+    return result;
+}

@@ -3,7 +3,7 @@ import _ from "lodash";
 import db, { pool } from "../config/db.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, makeSearchQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
-import { checkDns, checkLevel, createHashedPassword, getOperatorList, isItemBrandIdSameDnsId, lowLevelException, makeObjByList, makeUserChildrenList, makeUserTree, operatorLevelList, response, settingFiles } from "../utils.js/util.js";
+import { checkDns, checkLevel, createHashedPassword, getOperatorList, getUserDepositFee, isItemBrandIdSameDnsId, lowLevelException, makeObjByList, makeUserChildrenList, makeUserTree, operatorLevelList, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 import corpApi from "../utils.js/corp-util/index.js";
 import axios from "axios";
@@ -40,6 +40,7 @@ const userCtrl = {
                 columns.push(`merchandise_columns.sales${operator_list[i]?.num}_id`);
                 columns.push(`merchandise_columns.sales${operator_list[i]?.num}_fee`);
                 columns.push(`merchandise_columns.sales${operator_list[i]?.num}_withdraw_fee`);
+                columns.push(`merchandise_columns.sales${operator_list[i]?.num}_deposit_fee`);
                 columns.push(`sales${operator_list[i]?.num}.user_name AS sales${operator_list[i]?.num}_user_name`);
                 columns.push(`sales${operator_list[i]?.num}.nickname AS sales${operator_list[i]?.num}_nickname`);
                 sql += ` LEFT JOIN users AS sales${operator_list[i]?.num} ON sales${operator_list[i]?.num}.id=merchandise_columns.sales${operator_list[i]?.num}_id `;
@@ -148,6 +149,7 @@ const userCtrl = {
                 columns.push(`merchandise_columns.sales${operator_list[i]?.num}_id`);
                 columns.push(`merchandise_columns.sales${operator_list[i]?.num}_fee`);
                 columns.push(`merchandise_columns.sales${operator_list[i]?.num}_withdraw_fee`);
+                columns.push(`merchandise_columns.sales${operator_list[i]?.num}_deposit_fee`);
             }
             let sql = `SELECT ${columns.join()} FROM ${table_name} `;
             sql += ` LEFT JOIN merchandise_columns ON merchandise_columns.mcht_id=${table_name}.id `;
@@ -271,6 +273,7 @@ const userCtrl = {
             if (level == 10) {//가맹점
                 let mother_fee = decode_dns?.head_office_fee;
                 let mother_withdraw_fee = decode_dns?.withdraw_head_office_fee;
+                let mother_deposit_fee = decode_dns?.deposit_head_office_fee;
                 let up_user = '본사';
                 let down_user = '';
                 let mcht_obj = {
@@ -289,14 +292,19 @@ const userCtrl = {
                             await db.rollback();
                             return response(req, res, -200, `${up_user} 출금수수료가 ${down_user} 출금수수료보다 높습니다.`, false)
                         }
+                        if (req.body[`sales${operator_list[i]?.num}_deposit_fee`] < mother_deposit_fee && decode_dns?.is_use_deposit_operator == 1) {
+                            await db.rollback();
+                            return response(req, res, -200, `${up_user} 입금수수료가 ${down_user} 입금수수료보다 높습니다.`, false)
+                        }
                         up_user = operator_list[i]?.label;
                         mother_fee = req.body[`sales${operator_list[i]?.num}_fee`];
                         mother_withdraw_fee = req.body[`sales${operator_list[i]?.num}_withdraw_fee`];
-
-                        mcht_obj[`sales${operator_list[i]?.num}_id`] = req.body[`sales${operator_list[i]?.num}_id`];
-                        mcht_obj[`sales${operator_list[i]?.num}_fee`] = req.body[`sales${operator_list[i]?.num}_fee`] ?? 0;
-                        mcht_obj[`sales${operator_list[i]?.num}_withdraw_fee`] = req.body[`sales${operator_list[i]?.num}_withdraw_fee`] ?? 0;
+                        mother_deposit_fee = req.body[`sales${operator_list[i]?.num}_deposit_fee`];
                     }
+                    mcht_obj[`sales${operator_list[i]?.num}_id`] = req.body[`sales${operator_list[i]?.num}_id`];
+                    mcht_obj[`sales${operator_list[i]?.num}_fee`] = req.body[`sales${operator_list[i]?.num}_fee`] ?? 0;
+                    mcht_obj[`sales${operator_list[i]?.num}_withdraw_fee`] = req.body[`sales${operator_list[i]?.num}_withdraw_fee`] ?? 0;
+                    mcht_obj[`sales${operator_list[i]?.num}_deposit_fee`] = req.body[`sales${operator_list[i]?.num}_deposit_fee`] ?? 0;
                 }
                 down_user = '가맹점';
                 if (mcht_fee < mother_fee && decode_dns?.is_use_fee_operator == 1) {
@@ -306,6 +314,10 @@ const userCtrl = {
                 if (withdraw_fee < mother_withdraw_fee && decode_dns?.is_use_withdraw_operator == 1) {
                     await db.rollback();
                     return response(req, res, -200, `${up_user} 출금수수료가 ${down_user} 출금수수료보다 높습니다.`, false)
+                }
+                if (deposit_fee < mother_deposit_fee && decode_dns?.is_use_deposit_operator == 1) {
+                    await db.rollback();
+                    return response(req, res, -200, `${up_user} 입금수수료가 ${down_user} 입금수수료보다 높습니다.`, false)
                 }
                 let mcht_result = await insertQuery(`merchandise_columns`, mcht_obj);
             }
@@ -398,15 +410,13 @@ const userCtrl = {
             if (level == 10) {//가맹점
                 let mother_fee = decode_dns?.head_office_fee;
                 let mother_withdraw_fee = decode_dns?.withdraw_head_office_fee;
+                let mother_deposit_fee = decode_dns?.deposit_head_office_fee;
                 let up_user = '본사';
                 let down_user = '';
                 let mcht_obj = {
                     mcht_fee,
                 };
                 for (var i = 0; i < operator_list.length; i++) {
-                    mcht_obj[`sales${operator_list[i]?.num}_id`] = req.body[`sales${operator_list[i]?.num}_id`] || 0;
-                    mcht_obj[`sales${operator_list[i]?.num}_fee`] = req.body[`sales${operator_list[i]?.num}_fee`] || 0;
-                    mcht_obj[`sales${operator_list[i]?.num}_withdraw_fee`] = req.body[`sales${operator_list[i]?.num}_withdraw_fee`] || 0;
                     if (req.body[`sales${operator_list[i]?.num}_id`] > 0) {
                         down_user = operator_list[i]?.label;
                         if (req.body[`sales${operator_list[i]?.num}_fee`] < mother_fee && decode_dns?.is_use_fee_operator == 1) {
@@ -417,9 +427,19 @@ const userCtrl = {
                             await db.rollback();
                             return response(req, res, -200, `${up_user} 출금수수료가 ${down_user} 출금수수료보다 높습니다.`, false)
                         }
+                        if (req.body[`sales${operator_list[i]?.num}_deposit_fee`] < mother_deposit_fee && decode_dns?.is_use_deposit_operator == 1) {
+                            await db.rollback();
+                            return response(req, res, -200, `${up_user} 입금수수료가 ${down_user} 입금수수료보다 높습니다.`, false)
+                        }
                         up_user = operator_list[i]?.label;
                         mother_fee = req.body[`sales${operator_list[i]?.num}_fee`];
+                        mother_withdraw_fee = req.body[`sales${operator_list[i]?.num}_withdraw_fee`];
+                        mother_deposit_fee = req.body[`sales${operator_list[i]?.num}_deposit_fee`];
                     }
+                    mcht_obj[`sales${operator_list[i]?.num}_id`] = req.body[`sales${operator_list[i]?.num}_id`];
+                    mcht_obj[`sales${operator_list[i]?.num}_fee`] = req.body[`sales${operator_list[i]?.num}_fee`] ?? 0;
+                    mcht_obj[`sales${operator_list[i]?.num}_withdraw_fee`] = req.body[`sales${operator_list[i]?.num}_withdraw_fee`] ?? 0;
+                    mcht_obj[`sales${operator_list[i]?.num}_deposit_fee`] = req.body[`sales${operator_list[i]?.num}_deposit_fee`] ?? 0;
                 }
                 down_user = '가맹점';
                 if (mcht_fee < mother_fee && decode_dns?.is_use_fee_operator == 1) {
@@ -429,6 +449,10 @@ const userCtrl = {
                 if (withdraw_fee < mother_withdraw_fee && decode_dns?.is_use_withdraw_operator == 1) {
                     await db.rollback();
                     return response(req, res, -200, `${up_user} 출금수수료가 ${down_user} 출금수수료보다 높습니다.`, false)
+                }
+                if (deposit_fee < mother_deposit_fee && decode_dns?.is_use_deposit_operator == 1) {
+                    await db.rollback();
+                    return response(req, res, -200, `${up_user} 입금수수료가 ${down_user} 입금수수료보다 높습니다.`, false)
                 }
                 let mcht_result = await updateQuery(`merchandise_columns`, mcht_obj, id, 'mcht_id');
             }
@@ -478,7 +502,6 @@ const userCtrl = {
             const { id } = req.params
             let { status } = req.body;
             let user = await selectQuerySimple(table_name, id);
-            console.log(status)
             user = user?.result[0];
             if (!user || decode_user?.level < user?.level) {
                 return response(req, res, -100, "잘못된 접근입니다.", false)
@@ -553,13 +576,14 @@ const userCtrl = {
     changeUserDeposit: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = checkLevel(req.cookies.token, 40);
             const decode_dns = checkDns(req.cookies.dns);
-            let { amount, pay_type, user_id, note = "" } = req.body;
-
+            let { amount, pay_type, user_id, note = "", is_use_deposit_fee = 0, } = req.body;
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
             let user = await selectQuerySimple(table_name, user_id);
             user = user?.result[0];
-
             amount = parseFloat(amount);
             if (amount < 0 || isNaN(amount)) {
                 return response(req, res, -100, "금액은 0 이상만 가능합니다.", false)
@@ -584,7 +608,26 @@ const userCtrl = {
             if (user?.level == 10) {
                 obj[`mcht_id`] = user?.id
                 obj[`mcht_amount`] = amount;
+                if (is_use_deposit_fee == 1 && decode_dns?.is_use_deposit_operator == 1) {
+                    obj['deposit_fee'] = user?.deposit_fee;
+                    obj['mcht_amount'] = amount - user?.deposit_fee;
+                    let mcht_column = await pool.query(`SELECT * FROM merchandise_columns WHERE mcht_id=${user_id}`);
+                    mcht_column = mcht_column?.result[0];
+                    delete mcht_column['id'];
+                    user = {
+                        ...user,
+                        ...mcht_column,
+                    }
+                    for (var i = 0; i < operator_list.length; i++) {
+                        obj['head_office_fee'] = parseFloat(getUserDepositFee(user, 40, operator_list, decode_dns?.deposit_head_office_fee));
+                        if (user[`sales${operator_list[i].num}_id`] > 0) {
+                            obj[`sales${operator_list[i].num}_amount`] = parseFloat(getUserDepositFee(user, operator_list[i].value, operator_list, decode_dns?.deposit_head_office_fee));
+                            obj[`sales${operator_list[i].num}_id`] = user[`sales${operator_list[i].num}_id`];
+                        }
+                    }
+                }
             }
+
             for (var i = 0; i < operator_list.length; i++) {
                 if (user?.level == operator_list[i].value) {
                     obj[`sales${operator_list[i].num}_id`] = user?.id
