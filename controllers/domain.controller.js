@@ -38,7 +38,7 @@ const domainCtrl = {
                 'api_key',
                 'virtual_account_id',
                 'withdraw_type',
-                'is_use_deposit_operator',
+                'is_use_fee_operator',
                 'is_use_withdraw_operator',
                 'telegram_bot_id',
                 'is_use_telegram_bot',

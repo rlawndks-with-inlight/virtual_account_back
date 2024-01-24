@@ -78,7 +78,7 @@ const brandCtrl = {
                 withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv, withdraw_virtual_bank_code, withdraw_virtual_acct_num, withdraw_trt_inst_code,
                 default_deposit_fee, default_withdraw_fee, head_office_fee = 0, withdraw_head_office_fee = 0, default_withdraw_max_price = 0, withdraw_type = 0, withdraw_fee_type = 0,
                 is_use_telegram_bot = 0, telegram_bot_token = "", telegram_bot_id = "", is_use_otp = 0, otp_token = "",
-                is_use_deposit_operator = 1, is_use_withdraw_operator = 0,
+                is_use_fee_operator = 1, is_use_withdraw_operator = 0,
                 is_use_corp_account = 0, corp_account_corp_type = 0, is_can_add_deposit = 0,
             } = req.body;
             let files = settingFiles(req.files);
@@ -88,7 +88,7 @@ const brandCtrl = {
                 withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv, withdraw_virtual_bank_code, withdraw_virtual_acct_num, withdraw_trt_inst_code,
                 default_deposit_fee, default_withdraw_fee, head_office_fee, withdraw_head_office_fee, default_withdraw_max_price, withdraw_type, withdraw_fee_type,
                 is_use_telegram_bot, telegram_bot_token, telegram_bot_id, is_use_otp, otp_token,
-                is_use_deposit_operator, is_use_withdraw_operator,
+                is_use_fee_operator, is_use_withdraw_operator,
                 is_use_corp_account, corp_account_corp_type, is_can_add_deposit,
             };
             obj['theme_css'] = JSON.stringify(obj.theme_css);
@@ -143,7 +143,7 @@ const brandCtrl = {
                 default_deposit_fee, default_withdraw_fee, head_office_fee = 0, withdraw_head_office_fee = 0, default_withdraw_max_price = 0,
                 deposit_noti_url, withdraw_noti_url, withdraw_fail_noti_url, api_url, withdraw_type = 0, withdraw_fee_type = 0,
                 is_use_telegram_bot = 0, telegram_bot_token = "", telegram_bot_id = "", is_use_otp = 0, otp_token = "",
-                is_use_deposit_operator = 1, is_use_withdraw_operator = 0,
+                is_use_fee_operator = 1, is_use_withdraw_operator = 0,
                 is_use_corp_account = 0, corp_account_corp_type = 0, is_can_add_deposit = 0,
                 guid = "",
             } = req.body;
@@ -159,7 +159,7 @@ const brandCtrl = {
                 withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv, withdraw_virtual_bank_code, withdraw_virtual_acct_num, withdraw_trt_inst_code,
                 default_deposit_fee, default_withdraw_fee, head_office_fee, withdraw_head_office_fee, default_withdraw_max_price, api_url, withdraw_type, withdraw_fee_type,
                 is_use_telegram_bot, telegram_bot_token, telegram_bot_id, is_use_otp, otp_token,
-                is_use_deposit_operator, is_use_withdraw_operator,
+                is_use_fee_operator, is_use_withdraw_operator,
                 is_use_corp_account, corp_account_corp_type, is_can_add_deposit,
             };
             obj['theme_css'] = JSON.stringify(obj.theme_css);

@@ -281,7 +281,7 @@ const userCtrl = {
                 for (var i = 0; i < operator_list.length; i++) {
                     if (req.body[`sales${operator_list[i]?.num}_id`] > 0) {
                         down_user = operator_list[i]?.label;
-                        if (req.body[`sales${operator_list[i]?.num}_fee`] < mother_fee && decode_dns?.is_use_deposit_operator == 1) {
+                        if (req.body[`sales${operator_list[i]?.num}_fee`] < mother_fee && decode_dns?.is_use_fee_operator == 1) {
                             await db.rollback();
                             return response(req, res, -200, `${up_user} 요율이 ${down_user} 요율보다 높습니다.`, false)
                         }
@@ -299,7 +299,7 @@ const userCtrl = {
                     }
                 }
                 down_user = '가맹점';
-                if (mcht_fee < mother_fee && decode_dns?.is_use_deposit_operator == 1) {
+                if (mcht_fee < mother_fee && decode_dns?.is_use_fee_operator == 1) {
                     await db.rollback();
                     return response(req, res, -200, `${up_user} 요율이 ${down_user} 요율보다 높습니다.`, false)
                 }
@@ -409,7 +409,7 @@ const userCtrl = {
                     mcht_obj[`sales${operator_list[i]?.num}_withdraw_fee`] = req.body[`sales${operator_list[i]?.num}_withdraw_fee`] || 0;
                     if (req.body[`sales${operator_list[i]?.num}_id`] > 0) {
                         down_user = operator_list[i]?.label;
-                        if (req.body[`sales${operator_list[i]?.num}_fee`] < mother_fee && decode_dns?.is_use_deposit_operator == 1) {
+                        if (req.body[`sales${operator_list[i]?.num}_fee`] < mother_fee && decode_dns?.is_use_fee_operator == 1) {
                             await db.rollback();
                             return response(req, res, -200, `${up_user} 요율이 ${down_user} 요율보다 높습니다.`, false)
                         }
@@ -422,7 +422,7 @@ const userCtrl = {
                     }
                 }
                 down_user = '가맹점';
-                if (mcht_fee < mother_fee && decode_dns?.is_use_deposit_operator == 1) {
+                if (mcht_fee < mother_fee && decode_dns?.is_use_fee_operator == 1) {
                     await db.rollback();
                     return response(req, res, -200, `${up_user} 요율이 ${down_user} 요율보다 높습니다.`, false)
                 }
