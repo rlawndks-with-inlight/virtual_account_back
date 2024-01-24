@@ -32,7 +32,7 @@ const domainCtrl = {
                 'fax_num',
                 'default_deposit_fee',
                 'default_withdraw_fee',
-                'deposit_head_office_fee',
+                'head_office_fee',
                 'withdraw_head_office_fee',
                 'deposit_corp_type',
                 'api_key',

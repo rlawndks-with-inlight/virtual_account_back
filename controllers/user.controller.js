@@ -254,7 +254,7 @@ const userCtrl = {
                 obj['children_brand_id'] = children_brand?.id;
                 if (children_brand?.id > 0) {
                     let update_children_brand_fee = await updateQuery(`brands`, {
-                        deposit_head_office_fee: mcht_fee,
+                        head_office_fee: mcht_fee,
                     }, children_brand?.id)
                 }
             }
@@ -269,7 +269,7 @@ const userCtrl = {
                 mid: `${decode_dns?.id}${user_id}${new Date().getTime()}`,
             }, user_id)
             if (level == 10) {//가맹점
-                let mother_fee = decode_dns?.deposit_head_office_fee;
+                let mother_fee = decode_dns?.head_office_fee;
                 let mother_withdraw_fee = decode_dns?.withdraw_head_office_fee;
                 let up_user = '본사';
                 let down_user = '';
@@ -357,7 +357,7 @@ const userCtrl = {
                 obj['children_brand_id'] = children_brand?.id;
                 if (children_brand?.id > 0) {
                     let update_children_brand_fee = await updateQuery(`brands`, {
-                        deposit_head_office_fee: mcht_fee,
+                        head_office_fee: mcht_fee,
                     }, children_brand?.id)
                 }
             }
@@ -396,7 +396,7 @@ const userCtrl = {
             let operator_list = decode_dns?.operator_list;
             let result = await updateQuery(`${table_name}`, obj, id);
             if (level == 10) {//가맹점
-                let mother_fee = decode_dns?.deposit_head_office_fee;
+                let mother_fee = decode_dns?.head_office_fee;
                 let mother_withdraw_fee = decode_dns?.withdraw_head_office_fee;
                 let up_user = '본사';
                 let down_user = '';
