@@ -215,15 +215,15 @@ const withdrawCtrl = {
             if (user?.is_withdraw_hold == 1) {
                 deposit_obj['is_withdraw_hold'] = 1;
             }
-            let result = await insertQuery(`${table_name}`, deposit_obj);
-            if (user?.is_withdraw_hold == 1) {
-                return response(req, res, 100, "출금 요청이 완료되었습니다.", {});
-            }
+
             let mother_account = await getMotherDeposit(decode_dns);
             if (withdraw_amount > mother_account?.real_amount) {
                 return response(req, res, -100, "출금 요청금이 모계좌잔액보다 많습니다.", false)
             }
-
+            let result = await insertQuery(`${table_name}`, deposit_obj);
+            if (user?.is_withdraw_hold == 1) {
+                return response(req, res, 100, "출금 요청이 완료되었습니다.", {});
+            }
             let withdraw_id = result?.result?.insertId;
 
             let api_move_to_user_amount_result = await corpApi.transfer.pass({
@@ -684,6 +684,7 @@ const getMotherDeposit = async (decode_dns) => {
         data: {},
     }
     if (decode_dns?.parent_id > 0) {
+        data['sum'].total_oper_amount;
         let columns = [
             `SUM(${table_name}.amount) AS amount`,
         ]
