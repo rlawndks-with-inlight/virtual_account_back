@@ -6,6 +6,7 @@ import 'dotenv/config';
 import { readSync } from 'fs';
 import when from 'when';
 import _ from 'lodash';
+import { returnMoment } from './function.js';
 
 const randomBytesPromise = util.promisify(crypto.randomBytes);
 const pbkdf2Promise = util.promisify(crypto.pbkdf2);
@@ -394,4 +395,16 @@ export const getUserDepositFee = (item, user_level, operator_list = [], deposit_
     //   return (100 - parseFloat(item[`withdraw_fee`] ?? 0)).toFixed(3);
     // }
     return result;
+}
+export const getDailyWithdrawAmount = async (user) => {
+    let return_moment = returnMoment().substring(0, 10);
+    let s_dt = return_moment + ` 00:00:00`;
+    let e_dt = return_moment + ` 23:59:59`;
+    let sql = `SELECT SUM(mcht_fee) AS withdraw_amount FROM deposits `;
+    sql += ` WHERE mcht_id=${user?.id} `;
+    sql += ` AND pay_type IN (5, 20) `;
+    sql += ` created_at >='${s_dt}' AND created_at <='${e_dt}' `;
+    let result = await pool.query(sql);
+    result = result?.result[0];
+    console.log(result);
 }
