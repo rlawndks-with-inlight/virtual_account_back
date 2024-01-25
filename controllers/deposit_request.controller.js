@@ -2,6 +2,7 @@
 import { pool } from "../config/db.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
+import { emitSocket } from "../utils.js/socket/index.js";
 import { checkDns, checkLevel, isItemBrandIdSameDnsId, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 
@@ -80,7 +81,15 @@ const depositRequestCtrl = {
             obj = { ...obj, ...files };
 
             let result = await insertQuery(`${table_name}`, obj);
-
+            let bell_data = {
+                amount,
+                nickname: decode_user?.nickname,
+            }
+            emitSocket({
+                method: 'settle_request',
+                brand_id: decode_dns?.id,
+                data: bell_data
+            })
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
