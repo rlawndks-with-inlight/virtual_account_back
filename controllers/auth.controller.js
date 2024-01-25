@@ -67,7 +67,6 @@ const authCtrl = {
                 }
                 let add_login_fail_count = await updateQuery(`users`, login_fail_obj, user?.id);
                 return response(req, res, -100, err_message, {});
-
             }
             if (decode_dns?.is_use_otp == 1 && user?.level < 45) {
                 let otp_token = '';

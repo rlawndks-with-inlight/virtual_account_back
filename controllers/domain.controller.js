@@ -51,6 +51,7 @@ const domainCtrl = {
                 'is_can_add_deposit',
                 'deposit_corp_type',
                 'withdraw_corp_type',
+                'parent_id',
             ]
             let brand = await pool.query(`SELECT ${columns.join()} FROM brands WHERE dns='${dns}'`);
             if (brand?.result.length == 0) {
