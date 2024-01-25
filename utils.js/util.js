@@ -216,6 +216,14 @@ export function findChildIds(data, id) {
     });
     return children;
 }
+export function findParents(data, item) {
+    if (!(item?.parent_id > 0)) {
+        return [];
+    } else {
+        const parent = data.filter(itm => itm.id == item.parent_id);
+        return [...findParents(data, parent[0]), ...parent]
+    }
+}
 export const makeUserTree = (user_list_ = [], decode_user) => {// 유저트리만들기
     let user_list = user_list_;
     let user_parent_obj = makeObjByList('parent_id', user_list);

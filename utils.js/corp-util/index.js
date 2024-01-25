@@ -1,9 +1,11 @@
+import { pool } from "../../config/db.js";
 import { selectQuerySimple } from "../query-util.js";
+import { findChildIds, findParents } from "../util.js";
 import { banknersApi } from "./bankners.js";
 import { cooconApi } from "./coocon.js";
 import { paytusApi } from "./paytus.js";
 
-const getDnsData = async (dns_data_) => {
+export const getDnsData = async (dns_data_) => {
     let dns_data = await selectQuerySimple('brands', dns_data_?.id);
 
     dns_data = dns_data?.result[0];
@@ -12,6 +14,13 @@ const getDnsData = async (dns_data_) => {
     dns_data['level_obj'] = JSON.parse(dns_data?.level_obj ?? '{}');
     dns_data['bizppurio_obj'] = JSON.parse(dns_data?.bizppurio_obj ?? '{}');
 
+    let brands = await pool.query(`SELECT id, parent_id FROM brands `);
+    brands = brands?.result;
+    let childrens = findChildIds(brands, dns_data?.id);
+    childrens.push(dns_data?.id)
+    let parents = findParents(brands, dns_data)
+    dns_data['childrens'] = childrens;
+    dns_data['parents'] = parents;
     return dns_data;
 }
 const default_result = {
