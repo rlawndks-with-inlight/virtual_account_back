@@ -680,12 +680,21 @@ const getMotherDeposit = async (decode_dns) => {
     for (var i = 0; i < operator_list.length; i++) {
         data['sum'].total_oper_amount += data['sum'][`total_sales${operator_list[i].num}_amount`];
     }
-    let real_amount = await corpApi.balance.info({
-        pay_type: 'deposit',
-        dns_data: data['brand'],
-        decode_user: {},
-        guid: data['brand']?.deposit_guid,
-    })
+    let real_amount = {
+        data: {},
+    }
+    if (decode_dns?.parent_id > 0) {
+        let columns = [
+            `SUM(${table_name}.amount) AS amount`,
+        ]
+    } else {
+        real_amount = await corpApi.balance.info({
+            pay_type: 'deposit',
+            dns_data: data['brand'],
+            decode_user: {},
+            guid: data['brand']?.deposit_guid,
+        })
+    }
     data['real_amount'] = real_amount.data?.amount ?? 0;
 
     return data;

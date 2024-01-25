@@ -2,7 +2,7 @@
 import { pool } from "../config/db.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
-import { checkDns, checkLevel, isItemBrandIdSameDnsId, response, settingFiles } from "../utils.js/util.js";
+import { checkDns, checkLevel, isItemBrandIdSameDnsId, lowLevelException, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 
 const table_name = 'bell_contents';
@@ -22,6 +22,9 @@ const bellContentCtrl = {
             sql += ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
             if (decode_user?.level < 40) {
                 sql += ` AND ${table_name}.user_id=${decode_user?.id} `;
+                sql += ` AND ${table_name}.is_user_delete=0 `;
+            } else {
+                sql += ` AND ${table_name}.is_manager_delete=0 `;
             }
             let data = await getSelectQuery(sql, columns, req.query);
 
@@ -102,12 +105,19 @@ const bellContentCtrl = {
     remove: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = checkLevel(req.cookies.token, 10);
             const decode_dns = checkDns(req.cookies.dns);
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
             const { id } = req.params;
-            let result = await deleteQuery(`${table_name}`, {
-                id
-            })
+            let obj = {};
+            if (decode_user?.level >= 40) {
+                obj['is_manager_delete'] = 1;
+            } else {
+                obj['is_user_delete'] = 1;
+            }
+            let result = await updateQuery(`${table_name}`, obj, id);
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)

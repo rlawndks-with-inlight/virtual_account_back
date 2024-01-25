@@ -92,7 +92,7 @@ const authCtrl = {
                     return response(req, res, -100, "OTP번호가 잘못되었습니다.", {})
                 }
             }
-            const token = makeUserToken({
+            let user_obj = {
                 id: user.id,
                 user_name: user.user_name,
                 name: user.name,
@@ -105,7 +105,8 @@ const authCtrl = {
                 withdraw_bank_code: user.withdraw_bank_code,
                 withdraw_acct_num: user.withdraw_acct_num,
                 withdraw_acct_name: user.withdraw_acct_name,
-            })
+            }
+            const token = makeUserToken(user_obj);
             let requestIp = getReqIp(req);
             res.cookie("token", token, {
                 httpOnly: true,
@@ -267,7 +268,6 @@ const authCtrl = {
                 `virtual_accounts.deposit_acct_num AS settle_acct_num`,
                 `virtual_accounts.deposit_acct_name AS settle_acct_name`,
             ];
-
             if (decode_user?.level >= 40) {
                 return response(req, res, 100, "success", {})
             } else {
