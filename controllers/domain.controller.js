@@ -1,7 +1,7 @@
 'use strict';
 import { pool } from "../config/db.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
-import { checkLevel, getOperatorList, makeUserToken, operatorLevelList, response } from "../utils.js/util.js";
+import { checkLevel, findChildIds, getOperatorList, makeUserToken, operatorLevelList, response } from "../utils.js/util.js";
 import 'dotenv/config';
 
 const domainCtrl = {
@@ -65,7 +65,13 @@ const domainCtrl = {
 
             brand['operator_list'] = getOperatorList(brand);
 
+            let brands = await pool.query(`SELECT id, parent_id FROM brands `);
+            brands = brands?.result;
+            let childrens = findChildIds(brands, brand?.id);
+            childrens.push(brand?.id)
+            brand['childrens'] = childrens;
             const token = await makeUserToken(brand);
+
             res.cookie("dns", token, {
                 httpOnly: true,
                 maxAge: (60 * 60 * 1000) * 3,

@@ -684,10 +684,7 @@ const getMotherDeposit = async (decode_dns) => {
         data: {},
     }
     if (decode_dns?.parent_id > 0) {
-        data['sum'].total_oper_amount;
-        let columns = [
-            `SUM(${table_name}.amount) AS amount`,
-        ]
+        real_amount.data.amount = data['sum'].total_amount
     } else {
         real_amount = await corpApi.balance.info({
             pay_type: 'deposit',
