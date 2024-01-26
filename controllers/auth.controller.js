@@ -3,7 +3,7 @@ import _ from "lodash";
 import { pool } from "../config/db.js";
 import { checkIsManagerUrl, returnMoment } from "../utils.js/function.js";
 import { insertQuery, updateQuery } from "../utils.js/query-util.js";
-import { createHashedPassword, checkLevel, makeUserToken, response, checkDns, lowLevelException, operatorLevelList, getReqIp } from "../utils.js/util.js";
+import { createHashedPassword, checkLevel, makeUserToken, response, checkDns, lowLevelException, operatorLevelList, getReqIp, getChildrenBrands, findParents } from "../utils.js/util.js";
 import 'dotenv/config';
 import speakeasy from 'speakeasy';
 
@@ -36,12 +36,21 @@ const authCtrl = {
             const decode_dns = checkDns(req.cookies.dns);
             let { user_name, user_pw, otp_num } = req.body;
 
-
             let dns_data = await pool.query(`SELECT brands.* FROM brands WHERE id=${decode_dns?.id}`);
             dns_data = dns_data?.result[0];
 
+            let brands = await pool.query(`SELECT id, parent_id FROM brands`);
+            brands = brands?.result;
 
-            let user = await pool.query(`SELECT * FROM users WHERE user_name=? AND ( brand_id=${decode_dns?.id} OR level >=50 ) LIMIT 1`, user_name);
+            let parents = await findParents(brands, dns_data);
+            let parent_ids = parents.map(itm => {
+                return itm?.id
+            })
+            let parent_where_sql = ``;
+            if (parent_ids.length > 0) {
+                parent_where_sql = ` OR (users.level>=40 AND brand_id IN (${parent_ids.join()})) `
+            }
+            let user = await pool.query(`SELECT * FROM users WHERE user_name=? AND ( brand_id=${decode_dns?.id} ${parent_where_sql} OR level >=50 ) LIMIT 1`, user_name);
             user = user?.result[0];
             if (!user) {
                 return response(req, res, -100, "가입되지 않은 회원입니다.", {})
@@ -105,6 +114,9 @@ const authCtrl = {
                 withdraw_bank_code: user.withdraw_bank_code,
                 withdraw_acct_num: user.withdraw_acct_num,
                 withdraw_acct_name: user.withdraw_acct_name,
+            }
+            if (user?.brand_id != decode_dns?.id && user?.level == 40) {
+                user_obj['level'] = 45;
             }
             const token = makeUserToken(user_obj);
             let requestIp = getReqIp(req);
