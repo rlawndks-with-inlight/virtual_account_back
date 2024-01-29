@@ -126,6 +126,35 @@ const bellContentCtrl = {
 
         }
     },
+    removeAll: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = checkLevel(req.cookies.token, 10);
+            const decode_dns = checkDns(req.cookies.dns);
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
+            let obj = {};
+            let id_column = '';
+            let id = '';
+            if (decode_user?.level >= 40) {
+                obj['is_manager_delete'] = 1;
+                id_column = 'brand_id';
+                id = decode_dns?.id;
+            } else {
+                obj['is_user_delete'] = 1;
+                id_column = 'user_id';
+                id = decode_user?.id;
+            }
+            let result = await updateQuery(`${table_name}`, obj, id, id_column);
+            return response(req, res, 100, "success", {})
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
 };
 
 export default bellContentCtrl;
