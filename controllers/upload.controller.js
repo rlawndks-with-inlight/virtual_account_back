@@ -22,7 +22,6 @@ const uploadCtrl = {
     muiltiple: async (req, res, next) => {
         try {
             let files = req.files;
-            console.log(files)
             return response(req, res, 100, "success", []);
         } catch (err) {
             console.log(err)
