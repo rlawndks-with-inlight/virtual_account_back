@@ -32,6 +32,7 @@ const withdrawCtrl = {
                 `users.user_name`,
                 `users.nickname`,
                 `users.level`,
+                `users.mid`,
             ]
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
             sql += ` LEFT JOIN users ON ${table_name}.mcht_id=users.id `;

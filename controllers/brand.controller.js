@@ -54,7 +54,6 @@ const brandCtrl = {
             data['setting_obj'] = JSON.parse(data?.setting_obj ?? '{}');
             data['level_obj'] = JSON.parse(data?.level_obj ?? '{}');
             data['bizppurio_obj'] = JSON.parse(data?.bizppurio_obj ?? '{}');
-            console.log(data)
             return response(req, res, 100, "success", data)
         } catch (err) {
             console.log(err)
