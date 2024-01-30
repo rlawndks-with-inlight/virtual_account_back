@@ -63,7 +63,6 @@ const dashboardCtrl = {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
             const { s_dt, e_dt, time_type } = req.query;
-            let sub_query = ` SELECT SUM(amount) FROM deposits WHERE mcht_id=users.id AND pay_type=0 `;
 
             let columns = [
                 `deposits.amount`,
@@ -71,7 +70,7 @@ const dashboardCtrl = {
             ]
             let sql = `SELECT ${columns.join()} FROM deposits `;
             sql += ` WHERE pay_type=0 `;
-            sql += ` AND amount > 0 `;
+            sql += ` AND amount > 0 AND deposits.brand_id=${decode_dns?.id} `;
             let operator_list = getOperatorList(decode_dns);
             for (var i = 0; i < operator_list.length; i++) {
                 if (operator_list[i].value == decode_user?.level) {
