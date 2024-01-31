@@ -15,5 +15,8 @@ router
 router
     .route('/balance/:id')
     .get(virtualAccountCtrl.getBalance)
+router
+    .route('/mother')
+    .post(virtualAccountCtrl.moveMother)
 
 export default router;
