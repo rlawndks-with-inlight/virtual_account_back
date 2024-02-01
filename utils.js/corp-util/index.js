@@ -3,6 +3,7 @@ import { selectQuerySimple } from "../query-util.js";
 import { findChildIds, findParents } from "../util.js";
 import { banknersApi } from "./bankners.js";
 import { cooconApi } from "./coocon.js";
+import { doznApi } from "./dozn.js";
 import { paytusApi } from "./paytus.js";
 
 export const getDnsData = async (dns_data_) => {
@@ -253,6 +254,8 @@ const corpApi = {
                 result = await cooconApi.bank.list(data);
             } else if (corp_type == 3) {
                 result = await paytusApi.bank.list(data);
+            } else if (corp_type == 4) {
+                result = await doznApi.bank.list(data);
             } else {
                 result.data = [];
             }
