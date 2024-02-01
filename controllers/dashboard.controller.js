@@ -62,15 +62,25 @@ const dashboardCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
-            const { s_dt, e_dt, time_type } = req.query;
+            const { s_dt, e_dt, time_type, pay_type = 'deposit' } = req.query;
 
+            let pay_type_join = '';
+            let where_sql = '';
+            if (pay_type == 'deposit') {
+                pay_type_join = '(0)';
+                where_sql = ` AND amount > 0 `;
+            } else if (pay_type == 'withdraw') {
+                pay_type_join = '(5, 20)';
+                where_sql = ` AND amount < 0 `;
+            }
             let columns = [
                 `deposits.amount`,
                 `deposits.created_at`,
+                `deposits.withdraw_fee`,
             ]
             let sql = `SELECT ${columns.join()} FROM deposits `;
-            sql += ` WHERE pay_type=0 `;
-            sql += ` AND amount > 0 AND deposits.brand_id=${decode_dns?.id} `;
+            sql += ` WHERE pay_type IN ${pay_type_join} AND deposits.brand_id=${decode_dns?.id} `;
+            sql += where_sql;
             let operator_list = getOperatorList(decode_dns);
             for (var i = 0; i < operator_list.length; i++) {
                 if (operator_list[i].value == decode_user?.level) {
@@ -105,10 +115,11 @@ const dashboardCtrl = {
                 if (!chart_obj[date_format]) {
                     chart_obj[date_format] = {
                         amount: 0,
+                        withdraw_fee: 0,
                         count: 0,
                     };
                 }
-                chart_obj[date_format].amount += parseFloat(data[i]?.amount);
+                chart_obj[date_format].amount += parseFloat(data[i]?.amount) + data[i]?.withdraw_fee;
                 chart_obj[date_format].count++;
             }
             let result = [];
