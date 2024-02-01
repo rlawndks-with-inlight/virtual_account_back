@@ -525,6 +525,12 @@ export const banknersApi = {
                         bank_en_nm: 'TOSS Bank',
                         swift_cd: ''
                     },
+                    {
+                        bank_id: '035',
+                        bank_nm: '제주은행',
+                        bank_en_nm: 'Jeju Bank',
+                        swift_cd: 'JJBKKR22'
+                    },
                 ]
                 let result = {
                     code: 100,
