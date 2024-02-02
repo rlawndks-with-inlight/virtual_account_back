@@ -10,8 +10,12 @@ export const checkIsManagerUrl = async (req) => {//관리자 url 인지
     }
     return false;
 }
-export const returnMoment = (d) => {
+export const returnMoment = (d, num) => {
     var today = new Date();
+    if (num) {
+        let new_date = new Date(today.setDate(today.getDate() + num));
+        today = new_date;
+    }
     if (d) {
         today = new Date(d);
     }
