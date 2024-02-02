@@ -14,7 +14,7 @@ const settleCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
-            const { level } = req.query;
+            const { level, pay_type } = req.query;
             let columns = [
                 `${table_name}.*`,
                 `users.user_name`,
@@ -59,7 +59,9 @@ const settleCtrl = {
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
             sql += ` LEFT JOIN users ON ${table_name}.${user_id_column}=users.id `;
             let where_sql = ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
-
+            if (pay_type) {
+                where_sql += ` AND ${table_name}.pay_type=${pay_type} `
+            }
 
             if (decode_user?.level >= 40) {
                 where_sql += ` AND ${table_name}.${user_id_column} > 0 `;
