@@ -15,6 +15,7 @@ import corpUtilRoutes from './corp_util.route.js';
 import depositRequestRoutes from './deposit_request.route.js';
 import corpAccountRoutes from './corp_account.route.js';
 import bellContentRoutes from './bell_content.route.js';
+import brandPayRoutes from './brand_pay.route.js';
 
 const router = express.Router(); // eslint-disable-line new-cap
 
@@ -31,6 +32,7 @@ router.use('/virtual-accounts', virtualAccountRoutes);
 router.use('/deposit-requests', depositRequestRoutes);
 router.use('/corp-accounts', corpAccountRoutes);
 router.use('/bell-contents', bellContentRoutes);
+router.use('/brand-pays', brandPayRoutes);
 
 
 //auth
