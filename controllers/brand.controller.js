@@ -23,9 +23,18 @@ const brandCtrl = {
             if (decode_dns?.is_main_dns != 1) {
                 sql += `WHERE id=${decode_dns?.id}`;
             }
+
+            let chart_columns = [
+                `SUM(${table_name}.pay_amount) AS pay_amount`,
+            ]
+            let chart_sql = sql;
+            chart_sql = chart_sql.replaceAll(process.env.SELECT_COLUMN_SECRET, chart_columns.join());
+            let chart_data = await pool.query(chart_sql);
+            chart_data = chart_data?.result[0];
+
             let data = await getSelectQuery(sql, columns, req.query);
 
-            return response(req, res, 100, "success", data);
+            return response(req, res, 100, "success", { ...data, chart: chart_data });
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)
