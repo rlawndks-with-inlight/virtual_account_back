@@ -7,6 +7,8 @@ import { readSync } from 'fs';
 import when from 'when';
 import _ from 'lodash';
 import { returnMoment } from './function.js';
+import { updateQuery } from './query-util.js';
+import axios from 'axios';
 
 const randomBytesPromise = util.promisify(crypto.randomBytes);
 const pbkdf2Promise = util.promisify(crypto.pbkdf2);
@@ -415,4 +417,22 @@ export const getDailyWithdrawAmount = async (user) => {
     let result = await pool.query(sql);
     result = result?.result[0];
     console.log(result);
+}
+export const sendNotiPush = async (user = {}, pay_type, data = {}, id) => {
+    try {
+        if (user[`${pay_type}_noti_url`]) {
+            for (var i = 0; i < 5; i++) {
+                let { data: result } = await axios.post(user[`${pay_type}_noti_url`], data);
+                if (result == '0000') {
+                    await updateQuery(`deposits`, {
+                        [`${pay_type}_noti_status`]: 0,
+                    }, id)
+                    break;
+                }
+                await new Promise((r) => setTimeout(r, 10000));
+            }
+        }
+    } catch (err) {
+        console.log(err);
+    }
 }
