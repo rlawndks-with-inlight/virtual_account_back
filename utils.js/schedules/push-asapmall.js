@@ -3,7 +3,12 @@ import { pool } from '../../config/db.js';
 import axios from 'axios';
 import { updateQuery } from '../query-util.js';
 
-export const pushAsapMall = async () => {
+export const pushAsapMall = async (return_moment = "") => {
+    if (return_moment.includes(':00:00') || return_moment.includes(':30:00')) {
+
+    } else {
+        return;
+    }
     let sql = ` SELECT deposits.*, brands.asapmall_dns FROM deposits `;
     sql += ` LEFT JOIN brands ON deposits.brand_id=brands.id `;
     sql += ` WHERE brands.is_use_asapmall_noti=1 AND deposits.send_asapmall_noti=5 AND pay_type IN (0, 5, 20) `;
