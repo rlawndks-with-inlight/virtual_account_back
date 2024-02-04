@@ -20,12 +20,14 @@ export const pushAsapMall = async () => {
             deposit_acct_name,
             settle_acct_name,
             id,
+            created_at
         } = data[i];
         if (amount > 0 || amount < 0) {
             let obj = {
                 dns: asapmall_dns,
                 amount: amount,
                 tid: trx_id,
+                created_at,
             };
             if (pay_type == 0) {
                 obj['pay_type'] = 'deposit';
@@ -41,7 +43,6 @@ export const pushAsapMall = async () => {
                 obj['pay_type'] = 'return';
                 obj['amount'] = amount + withdraw_fee;
                 obj['acct_name'] = settle_acct_name;
-
             }
             let { data: response } = await axios.post(`${process.env.SHOPPING_MALL_BACK_URL}/api/pays/virtual-acct/noti`, obj);
             if (response?.result > 0) {
