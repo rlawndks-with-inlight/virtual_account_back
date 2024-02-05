@@ -70,7 +70,6 @@ export const pushAsapMall = async (return_moment = "") => {
                     send_asapmall_noti: 0,
                 }, id)
             }
-            break;
         }
     }
 }
