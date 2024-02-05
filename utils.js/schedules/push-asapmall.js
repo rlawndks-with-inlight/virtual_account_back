@@ -2,16 +2,31 @@ import 'dotenv/config';
 import { pool } from '../../config/db.js';
 import axios from 'axios';
 import { updateQuery } from '../query-util.js';
+import { returnMoment } from '../function.js';
 
 export const pushAsapMall = async (return_moment = "") => {
-    if (return_moment.includes(':00:00') || return_moment.includes(':30:00')) {
-
-    } else {
+    let moment_list = [
+        ':00:00',
+        ':10:00',
+        ':20:00',
+        ':30:00',
+        ':40:00',
+        ':50:00',
+    ];
+    let is_process_func = false;
+    for (var i = 0; i < moment_list.length; i++) {
+        if (return_moment.includes(moment_list[i])) {
+            is_process_func = true;
+            break;
+        }
+    }
+    if (!is_process_func) {
         return;
     }
     let sql = ` SELECT deposits.*, brands.asapmall_dns FROM deposits `;
     sql += ` LEFT JOIN brands ON deposits.brand_id=brands.id `;
-    sql += ` WHERE brands.is_use_asapmall_noti=1 AND deposits.send_asapmall_noti=5 AND pay_type IN (0, 5, 20) `;
+    sql += ` WHERE brands.is_use_asapmall_noti=1 AND pay_type IN (0, 5, 20) `;
+    // sql += ` AND deposits.send_asapmall_noti=5 `;
     sql += ` ORDER BY deposits.id ASC `;
     let data = await pool.query(sql);
     data = data?.result;
@@ -55,6 +70,7 @@ export const pushAsapMall = async (return_moment = "") => {
                     send_asapmall_noti: 0,
                 }, id)
             }
+            break;
         }
     }
 }
