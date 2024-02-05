@@ -20,6 +20,10 @@ router
     .route('/fail')
     .post(withdrawCtrl.fail)
 router
+    .route('/trx-id/:id')
+    .put(withdrawCtrl.updateTrxId);
+
+router
     .route('/:id')
     .get(withdrawCtrl.get)
     .put(withdrawCtrl.update)

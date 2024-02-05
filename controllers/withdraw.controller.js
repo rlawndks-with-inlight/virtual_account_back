@@ -300,6 +300,34 @@ const withdrawCtrl = {
 
         }
     },
+    updateTrxId: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_dns = checkDns(req.cookies.dns);
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
+            const {
+                id
+            } = req.params;
+            const {
+                trx_id
+            } = req.body;
+            let obj = {
+                trx_id
+            };
+
+            let result = await updateQuery(`${table_name}`, obj, id);
+
+            return response(req, res, 100, "success", {})
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
     remove: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
@@ -461,7 +489,6 @@ const withdrawCtrl = {
                     to_guid: virtual_account?.guid,
                     amount: withdraw_amount,
                 })
-
                 if (api_move_to_user_amount_result.code != 100) {
                     return response(req, res, -100, (api_move_to_user_amount_result?.message || "서버 에러 발생"), api_move_to_user_amount_result?.data)
                 }

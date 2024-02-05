@@ -55,7 +55,6 @@ const utilCtrl = {
             return response(req, res, 100, "success", {});
         } catch (err) {
             console.log(err)
-            logger.error(JSON.stringify(err?.response?.data || err))
             return response(req, res, -200, "서버 에러 발생", false)
         } finally {
 
