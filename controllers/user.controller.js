@@ -20,6 +20,7 @@ const userCtrl = {
             let columns = [
                 `${table_name}.*`,
                 `merchandise_columns.mcht_fee`,
+                `brands.name AS brand_name`
             ]
             if (decode_dns?.withdraw_type == 0) {
                 columns = [...columns, ...[
@@ -34,6 +35,7 @@ const userCtrl = {
             }
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
             sql += ` LEFT JOIN merchandise_columns ON merchandise_columns.mcht_id=${table_name}.id `;
+            sql += ` LEFT JOIN brands ON brands.id=${table_name}.brand_id `;
             sql += ` LEFT JOIN virtual_accounts ON ${table_name}.virtual_account_id=virtual_accounts.id `;
             let operator_list = decode_dns?.operator_list;
             for (var i = 0; i < operator_list.length; i++) {
@@ -45,7 +47,7 @@ const userCtrl = {
                 columns.push(`sales${operator_list[i]?.num}.nickname AS sales${operator_list[i]?.num}_nickname`);
                 sql += ` LEFT JOIN users AS sales${operator_list[i]?.num} ON sales${operator_list[i]?.num}.id=merchandise_columns.sales${operator_list[i]?.num}_id `;
             }
-            let where_sql = ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
+            let where_sql = ` WHERE ${decode_dns?.is_main_dns == 1 ? '1=1' : `${table_name}.brand_id=${decode_dns?.id}`}  `;
             where_sql += ` AND ${table_name}.level <= ${decode_user?.level} `;
 
             if (decode_user?.level < 40) {
