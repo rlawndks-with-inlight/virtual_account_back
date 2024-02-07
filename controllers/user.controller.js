@@ -20,7 +20,8 @@ const userCtrl = {
             let columns = [
                 `${table_name}.*`,
                 `merchandise_columns.mcht_fee`,
-                `brands.name AS brand_name`
+                `brands.name AS brand_name`,
+                `brands.dns`,
             ]
             if (decode_dns?.withdraw_type == 0) {
                 columns = [...columns, ...[
