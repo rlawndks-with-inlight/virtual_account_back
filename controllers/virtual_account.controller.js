@@ -22,6 +22,7 @@ const virtualAccountCtrl = {
                 `${table_name}.deposit_acct_num`,
                 `${table_name}.deposit_acct_name`,
                 `${table_name}.guid`,
+                `${table_name}.virtual_acct_num`,
             ]
             let columns = [
                 `${table_name}.*`,
