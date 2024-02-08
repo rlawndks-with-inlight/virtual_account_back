@@ -48,7 +48,7 @@ const userCtrl = {
                 columns.push(`sales${operator_list[i]?.num}.nickname AS sales${operator_list[i]?.num}_nickname`);
                 sql += ` LEFT JOIN users AS sales${operator_list[i]?.num} ON sales${operator_list[i]?.num}.id=merchandise_columns.sales${operator_list[i]?.num}_id `;
             }
-            let where_sql = ` WHERE ${decode_dns?.is_main_dns == 1 ? '1=1' : `${table_name}.brand_id=${decode_dns?.id}`}  `;
+            let where_sql = ` WHERE ${(decode_dns?.is_main_dns == 1 && level == 40) ? '1=1' : `${table_name}.brand_id=${decode_dns?.id}`}  `;
             where_sql += ` AND ${table_name}.level <= ${decode_user?.level} `;
 
             if (decode_user?.level < 40) {
