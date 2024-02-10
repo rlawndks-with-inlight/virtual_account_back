@@ -13,7 +13,6 @@ const table_name = 'users';
 const userCtrl = {
     list: async (req, res, next) => {
         try {
-            let is_manager = await checkIsManagerUrl(req);
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
             const { level, level_list = [], search } = req.query;
