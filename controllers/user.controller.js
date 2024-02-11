@@ -540,6 +540,9 @@ const userCtrl = {
             let obj = {
                 status
             }
+            if (decode_user?.level >= 40) {
+                obj['login_fail_count'] = 0;
+            }
             let result = await updateQuery(`${table_name}`, obj, id);
             return response(req, res, 100, "success", {})
         } catch (err) {
