@@ -2,7 +2,7 @@
 import axios from "axios";
 import { pool } from "../config/db.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
-import { deleteQuery, getSelectQuery, insertQuery, updateQuery } from "../utils.js/query-util.js";
+import { deleteQuery, getSelectQuery, insertQuery, makeSearchQuery, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, createHashedPassword, isItemBrandIdSameDnsId, lowLevelException, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 
@@ -13,10 +13,14 @@ const logCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
-            const { response_result_type } = req.query;
+            const { response_result_type, search } = req.query;
             let columns = [
                 `${table_name}.*`,
                 'users.user_name',
+            ]
+            let search_columns = [
+                `${table_name}.request`,
+                `${table_name}.response_data`,
             ]
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
             sql += ` LEFT JOIN users ON users.id=${table_name}.user_id `
@@ -31,7 +35,9 @@ const logCtrl = {
             if (response_result_type) {
                 sql += ` AND ${table_name}.response_result ${response_result_type == 1 ? '>=' : '<'} 0 `
             }
-
+            if (search) {
+                sql += makeSearchQuery(search_columns, search);
+            }
             let data = await getSelectQuery(sql, columns, req.query, sql_list);
             return response(req, res, 100, "success", data);
         } catch (err) {
