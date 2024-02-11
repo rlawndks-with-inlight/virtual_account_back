@@ -10,7 +10,7 @@ const getDefaultBody = (dns_data, pay_type) => {
         "SECR_KEY": dns_data[`${pay_type}_sign_key`],
         "TRT_INST_CD": '08945816',
         "BANK_CD": '089',
-        "TRSC_SEQ_NO": (new Date().getTime()).toString().substring(0, 12)
+        "TRSC_SEQ_NO": (new Date().getTime()).toString().substring(1, 13)
     }
 }
 export const cooconApi = {
