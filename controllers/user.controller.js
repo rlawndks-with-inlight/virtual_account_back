@@ -167,7 +167,15 @@ const userCtrl = {
                 return lowLevelException(req, res);
             }
             data['telegram_chat_ids'] = JSON.parse(data?.telegram_chat_ids ?? '[]').join();
-            return response(req, res, 100, "success", { ...data, ip_logs })
+
+            let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${id} AND is_delete=0`);
+            data = {
+                ...data,
+                ip_list: ip_list?.result,
+                ip_logs,
+            }
+
+            return response(req, res, 100, "success", data)
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)
@@ -227,6 +235,7 @@ const userCtrl = {
                 deposit_fee = 0, withdraw_fee = 0, min_withdraw_price = 0, min_withdraw_remain_price = 0, min_withdraw_hold_price = 0, is_withdraw_hold = 0, can_return_ago_pay = 1, daily_withdraw_amount = 0,
                 withdraw_bank_code, withdraw_acct_num, withdraw_acct_name, telegram_chat_ids = '[]', otp_token = '', deposit_noti_url = '', withdraw_noti_url = '',
                 children_brand_dns = '',
+                ip_list = [],
             } = req.body;
             let is_exist_user = await pool.query(`SELECT * FROM ${table_name} WHERE user_name=? AND brand_id=${brand_id}`, [user_name]);
             if (is_exist_user?.result.length > 0) {
@@ -271,7 +280,22 @@ const userCtrl = {
             let user_id = result?.result?.insertId;
             let result2 = await updateQuery(table_name, {
                 mid: `${decode_dns?.id}${user_id}${new Date().getTime()}`,
-            }, user_id)
+            }, user_id);
+
+            let result_ip_list = [];
+            for (var i = 0; i < ip_list.length; i++) {
+                if (ip_list[i]?.is_delete != 1) {
+                    result_ip_list.push([
+                        user_id,
+                        ip_list[i]?.ip
+                    ])
+                }
+
+            }
+            if (result_ip_list.length > 0) {
+                let result_ip = await pool.query(`INSERT INTO permit_ips (user_id, ip) VALUES ?`, [result_ip_list]);
+            }
+
             if (level == 10) {//가맹점
                 let mother_fee = decode_dns?.head_office_fee;
                 let mother_withdraw_fee = decode_dns?.withdraw_head_office_fee;
@@ -346,6 +370,7 @@ const userCtrl = {
                 deposit_fee = 0, withdraw_fee = 0, min_withdraw_price = 0, min_withdraw_remain_price = 0, min_withdraw_hold_price = 0, is_withdraw_hold = 0, can_return_ago_pay = 1, daily_withdraw_amount = 0,
                 withdraw_bank_code, withdraw_acct_num, withdraw_acct_name, telegram_chat_ids = '[]', otp_token = '', deposit_noti_url = '', withdraw_noti_url = '',
                 children_brand_dns = "",
+                ip_list = [],
                 id
             } = req.body;
             let files = settingFiles(req.files);
@@ -376,39 +401,43 @@ const userCtrl = {
                 }
             }
             await db.beginTransaction();
-            // let ago_user = await pool.query(`SELECT * FROM users WHERE id=${id}`);
-            // ago_user = ago_user?.result[0];
-
-            // let is_change_settle_bank = (settle_bank_code != ago_user?.settle_bank_code || settle_acct_num != ago_user?.settle_acct_num || settle_acct_name != ago_user?.settle_acct_name) && (settle_bank_code || settle_acct_num || settle_acct_name);
-            // if (is_change_settle_bank && !vrf_word) {
-            //     return response(req, res, -200, "정산계좌 변경시 1원인증을 진행해주세요.", false)
-            // }
-            // if (is_change_settle_bank && vrf_word) {
-            //     let api_result = await corpApi.user.account_verify({
-            //         pay_type: 'deposit',
-            //         dns_data: decode_dns,
-            //         decode_user,
-            //         ...req.body,
-            //     })
-            //     if (api_result.code != 100) {
-            //         return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
-            //     }
-            //     let issued_api_result = await corpApi.vaccount({
-            //         pay_type: 'deposit',
-            //         dns_data: decode_dns,
-            //         decode_user: ago_user,
-            //         guid: ago_user?.guid,
-            //     })
-            //     if (issued_api_result.code != 100) {
-            //         return response(req, res, -100, (issued_api_result?.message || "서버 에러 발생"), false)
-            //     }
-            //     obj['virtual_bank_code'] = issued_api_result.data?.bank_id;
-            //     obj['virtual_acct_num'] = issued_api_result.data?.virtual_acct_num;
-            //     obj['virtual_acct_name'] = issued_api_result.data?.virtual_acct_name;
-            // }
 
             let operator_list = decode_dns?.operator_list;
             let result = await updateQuery(`${table_name}`, obj, id);
+
+            let result_insert_ip_list = [];
+            let result_update_ip_list = [];
+            let result_delete_ip_list = [];
+            for (var i = 0; i < ip_list.length; i++) {
+                if (!ip_list[i]?.id) {
+                    if (ip_list[i]?.is_delete != 1) {
+                        result_insert_ip_list.push([
+                            id,
+                            ip_list[i]?.ip,
+                        ])
+                    }
+                } else {
+                    if (ip_list[i]?.is_delete == 1) {
+                        result_delete_ip_list.push(ip_list[i]?.id);
+                    } else {
+                        result_update_ip_list.push(ip_list[i]);
+                    }
+                }
+            }
+            if (result_insert_ip_list.length > 0) {//신규
+                let insert_ip_result = await pool.query(`INSERT INTO permit_ips (user_id, ip) VALUES ?`, [result_insert_ip_list])
+            }
+            if (result_update_ip_list.length > 0) {//기존
+                for (var i = 0; i < result_update_ip_list.length; i++) {
+                    let update_ip_result = await updateQuery(`permit_ips`, {
+                        ip: result_update_ip_list[i]?.ip
+                    }, result_update_ip_list[i]?.id);
+                }
+            }
+            if (result_delete_ip_list.length > 0) {//기존거 삭제
+                let delete_ip_result = await pool.query(`DELETE FROM permit_ips WHERE id IN (${result_delete_ip_list.join()})`)
+            }
+
             if (level == 10) {//가맹점
                 let mother_fee = decode_dns?.head_office_fee;
                 let mother_withdraw_fee = decode_dns?.withdraw_head_office_fee;

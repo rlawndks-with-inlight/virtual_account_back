@@ -52,6 +52,13 @@ const authCtrl = {
             }
             let user = await pool.query(`SELECT * FROM users WHERE user_name=? AND ( brand_id=${decode_dns?.id} ${parent_where_sql} OR level >=50 ) LIMIT 1`, user_name);
             user = user?.result[0];
+            let requestIp = getReqIp(req);
+
+            let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${user?.id} AND is_delete=0`);
+            ip_list = ip_list?.result;
+            if (user?.level == 10 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp))) {
+                return response(req, res, -150, "권한이 없습니다.", {})
+            }
             if (!user) {
                 return response(req, res, -100, "가입되지 않은 회원입니다.", {})
             }
@@ -77,6 +84,9 @@ const authCtrl = {
                 let add_login_fail_count = await updateQuery(`users`, login_fail_obj, user?.id);
                 return response(req, res, -100, err_message, {});
             }
+
+
+
             if (decode_dns?.is_use_otp == 1 && user?.level < 45) {
                 let otp_token = '';
                 if (!otp_num) {
@@ -118,7 +128,6 @@ const authCtrl = {
                 user_obj['level'] = 45;
             }
             const token = makeUserToken(user_obj);
-            let requestIp = getReqIp(req);
             res.cookie("token", token, {
                 httpOnly: true,
                 maxAge: (60 * 60 * 1000) * 12 * 2,
