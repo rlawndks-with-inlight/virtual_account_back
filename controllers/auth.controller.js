@@ -56,7 +56,7 @@ const authCtrl = {
 
             let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${user?.id} AND is_delete=0`);
             ip_list = ip_list?.result;
-            if (user?.level == 10 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp))) {
+            if (user?.level == 10 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp)) && ip_list.length > 0) {
                 return response(req, res, -150, "권한이 없습니다.", {})
             }
             if (!user) {
