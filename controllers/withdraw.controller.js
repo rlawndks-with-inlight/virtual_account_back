@@ -712,7 +712,7 @@ const getMotherDeposit = async (decode_dns) => {
         data: {},
     }
     if (decode_dns?.parent_id > 0) {
-        real_amount.data.amount = data['sum'].total_amount
+        real_amount.data.amount = data['sum'].total_amount + data['sum'].total_withdraw_fee;
     } else {
         real_amount = await corpApi.balance.info({
             pay_type: 'deposit',
