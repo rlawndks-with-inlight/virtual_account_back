@@ -272,7 +272,7 @@ const virtualAccountCtrl = {
                 bank_id: virtual_account?.deposit_bank_code,
                 deposit_acct_num: virtual_account?.deposit_acct_num,
             })
-            console.log(api_result)
+            console.log(api_result_account_delete)
             // if (api_result.code != 100 && api_result.message != '출금계좌 불일치로 진행 불가') {
             //     return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
             // }
