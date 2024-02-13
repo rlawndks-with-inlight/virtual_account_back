@@ -238,6 +238,7 @@ const virtualAccountCtrl = {
                     to_guid: dns_data[`deposit_guid`],
                     amount: amount,
                 })
+                console.log(mother_to_result)
                 let obj = {
                     brand_id: decode_dns?.id,
                     virtual_account_id: virtual_account?.id,
