@@ -52,16 +52,16 @@ const authCtrl = {
             }
             let user = await pool.query(`SELECT * FROM users WHERE user_name=? AND ( brand_id=${decode_dns?.id} ${parent_where_sql} OR level >=50 ) LIMIT 1`, user_name);
             user = user?.result[0];
+            if (!user) {
+                return response(req, res, -100, "가입되지 않은 회원입니다.", {})
+            }
             let requestIp = getReqIp(req);
-
             let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${user?.id} AND is_delete=0`);
             ip_list = ip_list?.result;
             if (user?.level == 10 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp)) && ip_list.length > 0) {
                 return response(req, res, -150, "권한이 없습니다.", {})
             }
-            if (!user) {
-                return response(req, res, -100, "가입되지 않은 회원입니다.", {})
-            }
+
             if (is_manager && user.level <= 0) {
                 return response(req, res, -100, "가입되지 않은 회원입니다.", {})
             }
