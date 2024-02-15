@@ -233,7 +233,7 @@ const userCtrl = {
                 mcht_fee = 0,
                 guid,
                 deposit_fee = 0, withdraw_fee = 0, min_withdraw_price = 0, min_withdraw_remain_price = 0, min_withdraw_hold_price = 0, is_withdraw_hold = 0, can_return_ago_pay = 1, daily_withdraw_amount = 0,
-                withdraw_bank_code, withdraw_acct_num, withdraw_acct_name, telegram_chat_ids = '[]', otp_token = '', deposit_noti_url = '', withdraw_noti_url = '',
+                withdraw_bank_code, withdraw_acct_num, withdraw_acct_name, telegram_chat_ids = '[]', otp_token = '', sign_key = '', deposit_noti_url = '', withdraw_noti_url = '',
                 children_brand_dns = '',
                 ip_list = [],
             } = req.body;
@@ -249,7 +249,7 @@ const userCtrl = {
             let obj = {
                 brand_id, user_name, user_pw, user_salt, name, nickname, level, phone_num, profile_img, note,
                 deposit_fee, withdraw_fee, min_withdraw_price, min_withdraw_remain_price, min_withdraw_hold_price, is_withdraw_hold, can_return_ago_pay, daily_withdraw_amount,
-                withdraw_bank_code, withdraw_acct_num, withdraw_acct_name, telegram_chat_ids, otp_token, deposit_noti_url, withdraw_noti_url,
+                withdraw_bank_code, withdraw_acct_num, withdraw_acct_name, telegram_chat_ids, otp_token, sign_key, deposit_noti_url, withdraw_noti_url,
             };
             if (guid) {
                 let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE guid=? AND brand_id=${decode_dns?.id}`, [guid]);
@@ -368,7 +368,7 @@ const userCtrl = {
                 mcht_fee = 0,
                 guid = "",
                 deposit_fee = 0, withdraw_fee = 0, min_withdraw_price = 0, min_withdraw_remain_price = 0, min_withdraw_hold_price = 0, is_withdraw_hold = 0, can_return_ago_pay = 1, daily_withdraw_amount = 0,
-                withdraw_bank_code, withdraw_acct_num, withdraw_acct_name, telegram_chat_ids = '[]', otp_token = '', deposit_noti_url = '', withdraw_noti_url = '',
+                withdraw_bank_code, withdraw_acct_num, withdraw_acct_name, telegram_chat_ids = '[]', otp_token = '', sign_key = '', deposit_noti_url = '', withdraw_noti_url = '',
                 children_brand_dns = "",
                 ip_list = [],
                 id
@@ -377,7 +377,7 @@ const userCtrl = {
             let obj = {
                 brand_id, user_name, name, nickname, level, phone_num, profile_img, note,
                 deposit_fee, withdraw_fee, min_withdraw_price, min_withdraw_remain_price, min_withdraw_hold_price, is_withdraw_hold, can_return_ago_pay, daily_withdraw_amount,
-                withdraw_bank_code, withdraw_acct_num, withdraw_acct_name, telegram_chat_ids, otp_token, deposit_noti_url, withdraw_noti_url,
+                withdraw_bank_code, withdraw_acct_num, withdraw_acct_name, telegram_chat_ids, otp_token, sign_key, deposit_noti_url, withdraw_noti_url,
             };
             obj = { ...obj, ...files };
             if (guid) {

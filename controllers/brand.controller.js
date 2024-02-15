@@ -86,7 +86,7 @@ const brandCtrl = {
                 auth_mcht_id, auth_corp_type, auth_api_id, auth_iv,
                 withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv, withdraw_virtual_bank_code, withdraw_virtual_acct_num, withdraw_trt_inst_code,
                 default_deposit_fee, default_withdraw_fee, head_office_fee = 0, deposit_head_office_fee = 0, withdraw_head_office_fee = 0, default_withdraw_max_price = 0, withdraw_type = 0, withdraw_fee_type = 0,
-                is_use_telegram_bot = 0, telegram_bot_token = "", telegram_bot_id = "", is_use_otp = 0, otp_token = "",
+                is_use_telegram_bot = 0, telegram_bot_token = "", telegram_bot_id = "", is_use_otp = 0, otp_token = "", is_use_sign_key = 0,
                 is_use_fee_operator = 1, is_use_deposit_operator = 0, is_use_withdraw_operator = 0,
                 is_use_corp_account = 0, corp_account_corp_type = 0, is_can_add_deposit = 0, is_use_asapmall_noti = 0, asapmall_dns = "",
             } = req.body;
@@ -97,7 +97,7 @@ const brandCtrl = {
                 auth_mcht_id, auth_corp_type, auth_api_id, auth_iv,
                 withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv, withdraw_virtual_bank_code, withdraw_virtual_acct_num, withdraw_trt_inst_code,
                 default_deposit_fee, default_withdraw_fee, head_office_fee, deposit_head_office_fee, withdraw_head_office_fee, default_withdraw_max_price, withdraw_type, withdraw_fee_type,
-                is_use_telegram_bot, telegram_bot_token, telegram_bot_id, is_use_otp, otp_token,
+                is_use_telegram_bot, telegram_bot_token, telegram_bot_id, is_use_otp, otp_token, is_use_sign_key,
                 is_use_fee_operator, is_use_deposit_operator, is_use_withdraw_operator,
                 is_use_corp_account, corp_account_corp_type, is_can_add_deposit, is_use_asapmall_noti, asapmall_dns,
             };
@@ -153,7 +153,7 @@ const brandCtrl = {
                 withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv, withdraw_virtual_bank_code, withdraw_virtual_acct_num, withdraw_trt_inst_code,
                 default_deposit_fee, default_withdraw_fee, head_office_fee = 0, deposit_head_office_fee = 0, withdraw_head_office_fee = 0, default_withdraw_max_price = 0,
                 deposit_noti_url, withdraw_noti_url, withdraw_fail_noti_url, api_url, withdraw_type = 0, withdraw_fee_type = 0,
-                is_use_telegram_bot = 0, telegram_bot_token = "", telegram_bot_id = "", is_use_otp = 0, otp_token = "",
+                is_use_telegram_bot = 0, telegram_bot_token = "", telegram_bot_id = "", is_use_otp = 0, otp_token = "", is_use_sign_key = 0,
                 is_use_fee_operator = 1, is_use_deposit_operator = 0, is_use_withdraw_operator = 0,
                 is_use_corp_account = 0, corp_account_corp_type = 0, is_can_add_deposit = 0, is_use_asapmall_noti = 0, asapmall_dns = "",
                 guid = "",
@@ -170,7 +170,7 @@ const brandCtrl = {
                 auth_mcht_id, auth_corp_type, auth_api_id, auth_iv,
                 withdraw_corp_type, withdraw_guid, withdraw_api_id, withdraw_sign_key, withdraw_encr_key, withdraw_iv, withdraw_virtual_bank_code, withdraw_virtual_acct_num, withdraw_trt_inst_code,
                 default_deposit_fee, default_withdraw_fee, head_office_fee, deposit_head_office_fee, withdraw_head_office_fee, default_withdraw_max_price, api_url, withdraw_type, withdraw_fee_type,
-                is_use_telegram_bot, telegram_bot_token, telegram_bot_id, is_use_otp, otp_token,
+                is_use_telegram_bot, telegram_bot_token, telegram_bot_id, is_use_otp, otp_token, is_use_sign_key,
                 is_use_fee_operator, is_use_deposit_operator, is_use_withdraw_operator,
                 is_use_corp_account, corp_account_corp_type, is_can_add_deposit, is_use_asapmall_noti, asapmall_dns,
             };
@@ -293,6 +293,34 @@ const brandCtrl = {
 
         }
     },
-};
+    settingSignKey: async (req, res, next) => {
+        try {
+            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_dns = checkDns(req.cookies.dns);
+            const { brand_id } = req.body;
+            let dns_data = await pool.query(`SELECT ${table_name}.* FROM ${table_name} WHERE id=${brand_id}`);
+            dns_data = dns_data?.result[0];
+            let rand_text = generateRandomString();
+            return response(req, res, 100, "success", {
+                rand_text
+            })
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
 
+        }
+    },
+};
+function generateRandomString() {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let randomString = '';
+
+    for (let i = 0; i < 30; i++) {
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        randomString += characters.charAt(randomIndex);
+    }
+
+    return randomString;
+}
 export default brandCtrl;

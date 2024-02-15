@@ -45,6 +45,7 @@ const domainCtrl = {
                 'telegram_bot_id',
                 'is_use_telegram_bot',
                 'is_use_otp',
+                'is_use_sign_key',
                 'withdraw_fee_type',
                 'is_use_corp_account',
                 'corp_account_corp_type',

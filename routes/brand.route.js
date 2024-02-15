@@ -17,5 +17,8 @@ router
 router
     .route('/otp')
     .post(brandCtrl.settingOtp);
+router
+    .route('/sign-key')
+    .post(brandCtrl.settingSignKey);
 
 export default router;
