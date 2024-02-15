@@ -3,8 +3,6 @@ import { sendNotiPush } from "../util.js";
 
 export const pushDepositNoti = async () => {
     try {
-        let brands = await pool.query(`SELECT * FROM brands`);
-        brands = brands?.result;
         let columns = [
             `deposits.*`,
             `users.deposit_noti_url`,
