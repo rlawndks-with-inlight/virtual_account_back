@@ -183,6 +183,47 @@ const userCtrl = {
 
         }
     },
+    getByMID: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_dns = checkDns(req.cookies.dns);
+            const { mid } = req.params;
+            let columns = [
+                `${table_name}.*`,
+                `merchandise_columns.mcht_fee`,
+                `virtual_accounts.guid`,
+                `virtual_accounts.virtual_bank_code`,
+                `virtual_accounts.virtual_acct_num`,
+                `virtual_accounts.virtual_acct_name`,
+                `virtual_accounts.deposit_bank_code AS settle_bank_code`,
+                `virtual_accounts.deposit_acct_num AS settle_acct_num`,
+                `virtual_accounts.deposit_acct_name AS settle_acct_name`,
+            ]
+            let operator_list = decode_dns?.operator_list;
+            for (var i = 0; i < operator_list.length; i++) {
+                columns.push(`merchandise_columns.sales${operator_list[i]?.num}_id`);
+                columns.push(`merchandise_columns.sales${operator_list[i]?.num}_fee`);
+                columns.push(`merchandise_columns.sales${operator_list[i]?.num}_withdraw_fee`);
+                columns.push(`merchandise_columns.sales${operator_list[i]?.num}_deposit_fee`);
+            }
+            let sql = `SELECT ${columns.join()} FROM ${table_name} `;
+            sql += ` LEFT JOIN merchandise_columns ON merchandise_columns.mcht_id=${table_name}.id `;
+            sql += ` LEFT JOIN virtual_accounts ON ${table_name}.virtual_account_id=virtual_accounts.id `;
+            sql += ` WHERE ${table_name}.mid=${mid} `;
+
+            let data = await pool.query(sql)
+            data = data?.result[0];
+
+
+            return response(req, res, 100, "success", data)
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
     ipLogs: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);

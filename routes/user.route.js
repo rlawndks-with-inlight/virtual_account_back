@@ -26,6 +26,9 @@ router
     .put(userCtrl.update)
     .delete(userCtrl.remove)
 router
+    .route('/mid/:mid')
+    .get(userCtrl.getByMID)
+router
     .route('/change-deposit')
     .post(userCtrl.changeUserDeposit)
 router
