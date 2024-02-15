@@ -26,5 +26,7 @@ router
 router
     .route('/deposit')
     .get(authCtrl.deposit);
-
+router
+    .route('/sign-key')
+    .get(authCtrl.getMySignKey);
 export default router;

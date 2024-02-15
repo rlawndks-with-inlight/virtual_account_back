@@ -6,6 +6,7 @@ import { insertQuery, updateQuery } from "../utils.js/query-util.js";
 import { createHashedPassword, checkLevel, makeUserToken, response, checkDns, lowLevelException, operatorLevelList, getReqIp, getChildrenBrands, findParents } from "../utils.js/util.js";
 import 'dotenv/config';
 import speakeasy from 'speakeasy';
+import crypto from 'crypto';
 
 const authCtrl = {
     setting: async (req, res, next) => {
@@ -305,6 +306,25 @@ const authCtrl = {
                 return response(req, res, 100, "success", deposit)
             }
 
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
+    getMySignKey: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_dns = checkDns(req.cookies.dns);
+
+            let user = await pool.query(`SELECT * FROM users WHERE id=${decode_user?.id}`);
+            user = user?.result[0];
+            let api_sign_val = crypto.createHash('sha256').update(`${decode_dns?.api_key}${user?.mid ?? ""}${user?.sign_key ?? ""}`).digest('hex');
+            return response(req, res, 100, "success", {
+                api_sign_val
+            })
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)
