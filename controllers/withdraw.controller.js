@@ -65,7 +65,7 @@ const withdrawCtrl = {
             let chart_columns = [
                 `SUM(${table_name}.expect_amount) AS expect_amount`,
                 `SUM(${table_name}.amount) AS amount`,
-                `SUM(${table_name}.withdraw_fee) AS withdraw_fee`,
+                `SUM(CASE WHEN ${table_name}.withdraw_status=0 THEN ${table_name}.withdraw_fee ELSE 0 END) AS withdraw_fee`,
             ]
             let chart_sql = sql;
             if (s_dt) {
