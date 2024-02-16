@@ -57,11 +57,11 @@ const brandPayCtrl = {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
             const {
-                brand_id, amount, date,
+                brand_id, amount, date, note,
             } = req.body;
             let files = settingFiles(req.files);
             let obj = {
-                brand_id, amount, date,
+                brand_id, amount, date, note,
             };
             let result = await insertQuery(`${table_name}`, obj);
 
@@ -79,11 +79,11 @@ const brandPayCtrl = {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
             const {
-                id, brand_id, amount, date,
+                id, brand_id, amount, date, note,
             } = req.body;
             let files = settingFiles(req.files);
             let obj = {
-                brand_id, amount, date,
+                brand_id, amount, date, note,
             };
 
             let result = await updateQuery(`${table_name}`, obj, id);
