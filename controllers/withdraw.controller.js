@@ -688,7 +688,7 @@ const getMotherDeposit = async (decode_dns) => {
     let operator_list = getOperatorList(decode_dns);
 
     let sum_columns = [
-        `SUM(amount) AS total_amount`,
+        `SUM(CASE WHEN pay_type=15 THEN 0 ELSE amount END) AS total_amount`,
         `SUM(CASE WHEN withdraw_status=0 THEN withdraw_fee ELSE 0 END) AS total_withdraw_fee`,
         `SUM(deposit_fee) AS total_deposit_fee`,
         `SUM(mcht_amount) AS total_mcht_amount`,
@@ -696,7 +696,7 @@ const getMotherDeposit = async (decode_dns) => {
     for (var i = 0; i < operator_list.length; i++) {
         sum_columns.push(`SUM(sales${operator_list[i].num}_amount) AS total_sales${operator_list[i].num}_amount`);
     }
-    let sum_sql = `SELECT ${sum_columns.join()} FROM ${table_name} WHERE brand_id=${decode_dns?.id} AND pay_type IN (0, 5, 20)  `;
+    let sum_sql = `SELECT ${sum_columns.join()} FROM ${table_name} WHERE brand_id=${decode_dns?.id} `;
     let sql_list = [
         { table: 'brand', sql: brand_sql },
         { table: 'sum', sql: sum_sql },
