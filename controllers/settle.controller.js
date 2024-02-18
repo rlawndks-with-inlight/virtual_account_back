@@ -52,8 +52,7 @@ const settleCtrl = {
                     }
                 }
             }
-            columns.push(`SUM(${table_name}.${user_amount_column}) OVER (PARTITION BY ${table_name}.${user_id_column} ORDER BY ${table_name}.id) AS new_amount`);
-
+            columns.push(`(SELECT SUM(${user_amount_column}) FROM ${table_name} AS d2 WHERE d2.id<=${table_name}.id AND d2.${user_id_column}=${table_name}.${user_id_column}) AS new_amount`);
 
 
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
