@@ -23,7 +23,7 @@ export const pushAsapMall = async (return_moment = "") => {
     if (!is_process_func) {
         return;
     }
-    let sql = ` SELECT deposits.*, brands.asapmall_dns FROM deposits `;
+    let sql = ` SELECT deposits.*, brands.asapmall_dns, brands.asapmall_back_dns FROM deposits `;
     sql += ` LEFT JOIN brands ON deposits.brand_id=brands.id `;
     sql += ` WHERE brands.is_use_asapmall_noti=1 AND pay_type IN (0, 5, 20) `;
     sql += ` AND deposits.send_asapmall_noti=5 `;
@@ -33,6 +33,7 @@ export const pushAsapMall = async (return_moment = "") => {
     for (var i = 0; i < data.length; i++) {
         let {
             asapmall_dns,
+            asapmall_back_dns,
             pay_type,
             amount,
             withdraw_fee,
@@ -64,7 +65,7 @@ export const pushAsapMall = async (return_moment = "") => {
                 obj['amount'] = amount + withdraw_fee;
                 obj['acct_name'] = settle_acct_name;
             }
-            let { data: response } = await axios.post(`${process.env.SHOPPING_MALL_BACK_URL}/api/pays/virtual-acct/noti`, obj);
+            let { data: response } = await axios.post(`${asapmall_back_dns || process.env.SHOPPING_MALL_BACK_URL}/api/pays/virtual-acct/noti`, obj);
             if (response?.result > 0) {
                 let result = await updateQuery(`deposits`, {
                     send_asapmall_noti: 0,
