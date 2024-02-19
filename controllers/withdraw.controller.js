@@ -34,8 +34,22 @@ const withdrawCtrl = {
                 `users.level`,
                 `users.mid`,
             ]
+            let operator_list = getOperatorList(decode_dns);
+
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
             sql += ` LEFT JOIN users ON ${table_name}.mcht_id=users.id `;
+            for (var i = 0; i < operator_list.length; i++) {
+                if (decode_user?.level >= operator_list[i]?.value) {
+                    columns = [...columns, ...[
+                        `sales${operator_list[i]?.num}.user_name AS sales${operator_list[i]?.num}_user_name`,
+                        `sales${operator_list[i]?.num}.nickname AS sales${operator_list[i]?.num}_nickname`,
+                        `sales${operator_list[i]?.num}.level AS sales${operator_list[i]?.num}_level`,
+                        `sales${operator_list[i]?.num}.mid AS sales${operator_list[i]?.num}_mid`,
+                    ]]
+                    sql += ` LEFT JOIN users AS sales${operator_list[i]?.num} ON ${table_name}.sales${operator_list[i]?.num}_id=sales${operator_list[i]?.num}.id `;
+                }
+            }
+
             let where_sql = ` WHERE ${table_name}.brand_id=${decode_dns?.id} AND pay_type IN (5, 20) `;
             if (decode_user?.level < 40) {
                 if (decode_user?.level == 10) {
@@ -45,7 +59,6 @@ const withdrawCtrl = {
                     where_sql += ` AND ${table_name}.sales${sales_num}_id=${decode_user?.id} `;
                 }
             }
-            let operator_list = getOperatorList(decode_dns);
             for (var i = 0; i < operator_list.length; i++) {
                 if (req.query[`sales${operator_list[i]?.num}_id`] > 0) {
                     where_sql += ` AND ${table_name}.sales${operator_list[i]?.num}_id=${req.query[`sales${operator_list[i]?.num}_id`]} `;
