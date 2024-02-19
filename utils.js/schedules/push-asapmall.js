@@ -14,9 +14,11 @@ export const pushAsapMall = async (return_moment = "") => {
         ':50:00',
     ];
     let is_process_func = false;
+    let minute = '';
     for (var i = 0; i < moment_list.length; i++) {
         if (return_moment.includes(moment_list[i])) {
             is_process_func = true;
+            minute = moment_list[i].split(':')[1];
             break;
         }
     }
@@ -30,7 +32,19 @@ export const pushAsapMall = async (return_moment = "") => {
     sql += ` ORDER BY deposits.id ASC `;
     let data = await pool.query(sql);
     data = data?.result;
+    let is_stop_func = false;
     for (var i = 0; i < data.length; i++) {
+        let cur_minute = returnMoment().split(' ')[1].split(':')[1];
+        for (var j = 0; j < moment_list.length; j++) {
+            let side_minute = moment_list[j].split(':')[1];
+            if (cur_minute == side_minute && cur_minute != minute) {
+                is_stop_func = true;
+                break;
+            }
+        }
+        if (is_stop_func) {
+            break;
+        }
         let {
             asapmall_dns,
             asapmall_back_dns,
