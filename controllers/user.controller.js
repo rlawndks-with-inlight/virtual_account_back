@@ -5,8 +5,6 @@ import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, makeSearchQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, createHashedPassword, getOperatorList, getUserDepositFee, isItemBrandIdSameDnsId, lowLevelException, makeObjByList, makeUserChildrenList, makeUserTree, operatorLevelList, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
-import corpApi from "../utils.js/corp-util/index.js";
-import axios from "axios";
 
 const table_name = 'users';
 
@@ -586,61 +584,6 @@ const userCtrl = {
             }
             let result = await updateQuery(`${table_name}`, obj, id);
             return response(req, res, 100, "success", {})
-        } catch (err) {
-            console.log(err)
-            return response(req, res, -200, "서버 에러 발생", false)
-        } finally {
-
-        }
-    },
-    oneWonCertification: async (req, res, next) => {
-        try {
-            let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
-            const decode_dns = checkDns(req.cookies.dns);
-            let { birth, settle_bank_code, settle_acct_num, settle_acct_name, guid } = req.body;
-
-            let result = await corpApi.user.account.create({
-                pay_type: 'deposit',
-                dns_data: decode_dns,
-                decode_user: decode_user,
-                settle_bank_code,
-                settle_acct_num,
-                settle_acct_name,
-                guid,
-                birth,
-            })
-            if (result.code != 100) {
-                return response(req, res, -100, (result?.message || "서버 에러 발생"), result?.data)
-            }
-
-            return response(req, res, 100, "success", result?.data)
-
-
-        } catch (err) {
-            console.log(err)
-            return response(req, res, -200, "서버 에러 발생", false)
-        } finally {
-
-        }
-    },
-    oneWonCertificationCheck: async (req, res, next) => {
-        try {
-            let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
-            const decode_dns = checkDns(req.cookies.dns);
-            let { tid, vrf_word } = req.body;
-            let result = await corpApi.user.account_verify({
-                pay_type: 'deposit',
-                dns_data: decode_dns,
-                decode_user: decode_user,
-                tid,
-                vrf_word
-            })
-            if (result.code != 100) {
-                return response(req, res, -100, (result?.message || "서버 에러 발생"), {})
-            }
-            return response(req, res, 100, "success", result.data)
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)

@@ -29,6 +29,9 @@ const depositCtrl = {
                 `CASE WHEN ${table_name}.virtual_account_id > 0  THEN virtual_accounts.virtual_bank_code ELSE ${table_name}.virtual_bank_code END AS virtual_bank_code`,
                 `CASE WHEN ${table_name}.virtual_account_id > 0  THEN virtual_accounts.virtual_acct_num ELSE ${table_name}.virtual_acct_num END AS virtual_acct_num`,
                 `CASE WHEN ${table_name}.virtual_account_id > 0  THEN virtual_accounts.virtual_acct_name ELSE ${table_name}.virtual_acct_name END AS virtual_acct_name`,
+                `corp_accounts.bank_code AS corp_bank_code`,
+                `corp_accounts.acct_num AS corp_acct_num`,
+                `corp_accounts.acct_name AS corp_acct_name`,
                 `mchts.user_name AS mcht_user_name`,
                 `mchts.nickname AS mcht_nickname`,
                 `mchts.brand_id AS mcht_brand_id`,
@@ -39,6 +42,7 @@ const depositCtrl = {
 
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
             sql += ` LEFT JOIN virtual_accounts ON ${table_name}.virtual_account_id=virtual_accounts.id `;
+            sql += ` LEFT JOIN corp_accounts ON ${table_name}.corp_account_id=corp_accounts.id `;
             sql += ` LEFT JOIN users ON ${table_name}.mcht_id=users.id `;
             sql += ` LEFT JOIN users AS mchts ON ${table_name}.mcht_id=mchts.id `;
             for (var i = 0; i < decode_dns?.operator_list.length; i++) {
