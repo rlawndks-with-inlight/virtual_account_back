@@ -81,7 +81,7 @@ export const cooconApi = {
                     { value: '088', label: '신한은행', },
                     { value: '089', label: '케이뱅크', },
                     { value: '090', label: '카카오뱅크', },
-                    { value: '092', label: '토스혁신준비법인', },
+                    { value: '092', label: '토스뱅크', },
                     { value: '209', label: '유안타증권', },
                     { value: '218', label: 'KB증권', },
                     { value: '238', label: '미래에셋대우', },
