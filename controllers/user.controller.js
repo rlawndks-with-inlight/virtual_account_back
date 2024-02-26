@@ -637,7 +637,7 @@ const userCtrl = {
                         ...mcht_column,
                     }
                     for (var i = 0; i < operator_list.length; i++) {
-                        obj['head_office_fee'] = parseFloat(getUserDepositFee(user, 40, operator_list, decode_dns?.deposit_head_office_fee));
+                        obj['head_office_amount'] = parseFloat(getUserDepositFee(user, 40, operator_list, decode_dns?.deposit_head_office_fee));
                         if (user[`sales${operator_list[i].num}_id`] > 0) {
                             obj[`sales${operator_list[i].num}_amount`] = parseFloat(getUserDepositFee(user, operator_list[i].value, operator_list, decode_dns?.deposit_head_office_fee));
                             obj[`sales${operator_list[i].num}_id`] = user[`sales${operator_list[i].num}_id`];
