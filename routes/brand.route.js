@@ -20,5 +20,8 @@ router
 router
     .route('/sign-key')
     .post(brandCtrl.settingSignKey);
+router
+    .route('/change-deposit')
+    .post(brandCtrl.changeMotherDeposit);
 
 export default router;

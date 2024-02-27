@@ -315,10 +315,12 @@ const brandCtrl = {
         try {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
-            const { brand_id, pay_type } = req.body;
-            return response(req, res, 100, "success", {
-                rand_text
-            })
+            const { brand_id, pay_type, amount, note } = req.body;
+            let obj = {
+                brand_id, pay_type, amount, note
+            }
+            let result = await insertQuery(`deposits`, obj);
+            return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)
