@@ -4,7 +4,7 @@ import db, { pool } from "../config/db.js";
 import corpApi from "../utils.js/corp-util/index.js";
 import { checkIsManagerUrl, returnMoment } from "../utils.js/function.js";
 import { deleteQuery, getMultipleQueryByWhen, getSelectQuery, insertQuery, makeSearchQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
-import { checkDns, checkLevel, commarNumber, getOperatorList, isItemBrandIdSameDnsId, lowLevelException, operatorLevelList, response, settingFiles } from "../utils.js/util.js";
+import { checkDns, checkLevel, commarNumber, getMotherDeposit, getOperatorList, isItemBrandIdSameDnsId, lowLevelException, operatorLevelList, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 import userCtrl from "./user.controller.js";
 
@@ -26,6 +26,7 @@ const withdrawCtrl = {
                 `users.nickname`,
                 `${table_name}.settle_acct_num`,
                 `${table_name}.settle_acct_name`,
+                `${table_name}.trx_id`,
             ]
             let columns = [
                 `${table_name}.*`,
@@ -682,60 +683,5 @@ const withdrawCtrl = {
     },
 };
 
-const getMotherDeposit = async (decode_dns) => {
 
-    let brand_columns = [
-        `brands.*`,
-        `virtual_accounts.guid`,
-        `virtual_accounts.virtual_bank_code`,
-        `virtual_accounts.virtual_acct_num`,
-        `virtual_accounts.virtual_acct_name`,
-        `virtual_accounts.deposit_bank_code AS settle_bank_code`,
-        `virtual_accounts.deposit_acct_num AS settle_acct_num`,
-        `virtual_accounts.deposit_acct_name AS settle_acct_name`,
-    ]
-    let brand_sql = `SELECT ${brand_columns.join()} FROM brands `;
-    brand_sql += ` LEFT JOIN virtual_accounts ON brands.virtual_account_id=virtual_accounts.id `;
-    brand_sql += ` WHERE brands.id=${decode_dns?.id} `;
-
-    let operator_list = getOperatorList(decode_dns);
-
-    let sum_columns = [
-        `SUM(CASE WHEN pay_type=15 THEN 0 ELSE amount END) AS total_amount`,
-        `SUM(CASE WHEN withdraw_status=0 THEN withdraw_fee ELSE 0 END) AS total_withdraw_fee`,
-        `SUM(deposit_fee) AS total_deposit_fee`,
-        `SUM(mcht_amount) AS total_mcht_amount`,
-    ]
-    for (var i = 0; i < operator_list.length; i++) {
-        sum_columns.push(`SUM(sales${operator_list[i].num}_amount) AS total_sales${operator_list[i].num}_amount`);
-    }
-    let sum_sql = `SELECT ${sum_columns.join()} FROM ${table_name} WHERE brand_id=${decode_dns?.id} `;
-    let sql_list = [
-        { table: 'brand', sql: brand_sql },
-        { table: 'sum', sql: sum_sql },
-    ]
-    let data = await getMultipleQueryByWhen(sql_list);
-    data['brand'] = data['brand'][0];
-    data['sum'] = data['sum'][0];
-    data['sum'].total_oper_amount = 0;
-    for (var i = 0; i < operator_list.length; i++) {
-        data['sum'].total_oper_amount += data['sum'][`total_sales${operator_list[i].num}_amount`];
-    }
-    let real_amount = {
-        data: {},
-    }
-    if (decode_dns?.parent_id > 0) {
-        real_amount.data.amount = data['sum'].total_amount + data['sum'].total_withdraw_fee;
-    } else {
-        real_amount = await corpApi.balance.info({
-            pay_type: 'deposit',
-            dns_data: data['brand'],
-            decode_user: {},
-            guid: data['brand']?.deposit_guid,
-        })
-    }
-    data['real_amount'] = real_amount.data?.amount ?? 0;
-
-    return data;
-}
 export default withdrawCtrl;

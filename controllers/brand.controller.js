@@ -311,6 +311,21 @@ const brandCtrl = {
 
         }
     },
+    changeMotherDeposit: async (req, res, next) => {
+        try {
+            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_dns = checkDns(req.cookies.dns);
+            const { brand_id, pay_type } = req.body;
+            return response(req, res, 100, "success", {
+                rand_text
+            })
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
 };
 function generateRandomString() {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
