@@ -30,7 +30,7 @@ export const cooconApi = {
 
                 let query = new URLSearchParams()
                 query.append('JSONData', JSON.stringify({
-                    ...getDefaultBody(dns_data, pay_type),
+                    ...getDefaultBody(dns_data, 'withdraw'),
                     KEY: '6140',
                 }))
                 let { data: response } = await axios.post(`${API_URL}/sol/gateway/vapg_wapi.jsp`, query, {
