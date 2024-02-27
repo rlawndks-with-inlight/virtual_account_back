@@ -653,7 +653,7 @@ const userCtrl = {
                     break;
                 }
             }
-            let result = insertQuery(`deposits`, obj);
+            let result = await insertQuery(`deposits`, obj);
 
 
             return response(req, res, 100, "success", {})

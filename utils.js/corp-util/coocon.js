@@ -8,9 +8,15 @@ const API_URL = process.env.NODE_ENV == 'production' ? "https://apigw.coocon.co.
 const getDefaultBody = (dns_data, pay_type) => {
     return {
         "SECR_KEY": dns_data[`${pay_type}_sign_key`],
-        "TRT_INST_CD": '08945816',
-        "BANK_CD": '089',
+        "TRT_INST_CD": dns_data[`${pay_type}_trt_inst_code`],
+        "BANK_CD": dns_data[`${pay_type}_virtual_bank_code`],
         "TRSC_SEQ_NO": (new Date().getTime()).toString().substring(1, 13)
+    }
+}
+
+const getDefaultHeader = () => {
+    return {
+        'Content-Type': 'application/x-www-form-urlencoded',
     }
 }
 export const cooconApi = {
@@ -21,26 +27,33 @@ export const cooconApi = {
                     dns_data, pay_type, decode_user,
                     guid, amount,
                 } = data;
-                let query = {
-                    KEY: '6140',
-                }
-                let { data: response } = await axios.post(`${API_URL}/sol/gateway/vapg_wapi.jsp`, {
+
+                let query = new URLSearchParams()
+                query.append('JSONData', JSON.stringify({
                     ...getDefaultBody(dns_data, pay_type),
-                    ...query,
-                })
-                response.data = {
-                    BAL_AMT: 10000000,
-                    WDRW_CAN_AMT: 10000000,
+                    KEY: '6140',
+                }))
+                let { data: response } = await axios.post(`${API_URL}/sol/gateway/vapg_wapi.jsp`, query, {
+                    headers: getDefaultHeader(),
+                });
+                if (response?.RESP_CD == '0000') {
+                    return {
+                        code: 100,
+                        message: '',
+                        data: {
+                            amount: response?.WDRW_CAN_AMT,
+                        },
+                    };
+                } else {
+                    return {
+                        code: -100,
+                        message: response?.RESP_MSG,
+                        data: {},
+                    };
                 }
-                return {
-                    code: 100,
-                    message: '',
-                    data: {
-                        amount: response.data?.WDRW_CAN_AMT,
-                    },
-                };
+
             } catch (err) {
-                console.log(err?.response?.data)
+                console.log(err)
                 return {
                     code: -100,
                     message: '',

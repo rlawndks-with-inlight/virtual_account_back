@@ -488,6 +488,7 @@ export const getMotherDeposit = async (decode_dns) => {
             decode_user: {},
             guid: data['brand']?.deposit_guid,
         })
+        console.log(real_amount)
     }
     data['real_amount'] = real_amount.data?.amount ?? 0;
 

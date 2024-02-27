@@ -229,6 +229,9 @@ const corpApi = {
             if (corp_type == 1) {
                 result = await banknersApi.balance.info(data);
             }
+            if (corp_type == 2) {
+                result = await cooconApi.balance.info(data);
+            }
             return result;
         },
     },
