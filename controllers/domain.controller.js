@@ -67,7 +67,7 @@ const domainCtrl = {
             brand['bizppurio_obj'] = JSON.parse(brand?.bizppurio_obj ?? '{}');
 
             brand['operator_list'] = getOperatorList(brand);
-
+            console.log(brand)
             let brands = await pool.query(`SELECT id, parent_id FROM brands `);
             brands = brands?.result;
             let childrens = findChildIds(brands, brand?.id);
