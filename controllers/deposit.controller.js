@@ -14,7 +14,8 @@ const depositCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = checkLevel(req.cookies.token, 10);
             const decode_dns = checkDns(req.cookies.dns);
-            const { is_mother, pay_type, s_dt, e_dt, search, is_delete } = req.query;
+            const { is_mother, pay_type, s_dt, e_dt, search, is_delete, corp_account_id } = req.query;
+
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
@@ -61,6 +62,13 @@ const depositCtrl = {
             }
             if (pay_type) {
                 where_sql += ` AND ${table_name}.pay_type=${pay_type} `
+            }
+            if (corp_account_id) {
+                if (corp_account_id == -1) {
+                    where_sql += ` AND (${table_name}.corp_account_id IS NULL OR ${table_name}.corp_account_id=0) `
+                } else if (corp_account_id > 0) {
+                    where_sql += ` AND ${table_name}.corp_account_id=${corp_account_id} `
+                }
             }
             if (decode_user?.level < 40) {
                 if (decode_user?.level == 10) {
