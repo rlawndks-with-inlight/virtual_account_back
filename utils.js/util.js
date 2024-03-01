@@ -460,6 +460,8 @@ export const getMotherDeposit = async (decode_dns) => {
         `SUM(CASE WHEN withdraw_status=0 THEN withdraw_fee ELSE 0 END) AS total_withdraw_fee`,
         `SUM(deposit_fee) AS total_deposit_fee`,
         `SUM(mcht_amount) AS total_mcht_amount`,
+        `(SELECT COUNT(*) FROM deposits WHERE pay_type=0 AND deposit_status=0 AND brand_id=${decode_dns?.id}) AS total_deposit_count`,
+        `(SELECT COUNT(*) FROM deposits WHERE pay_type IN (5, 20) AND withdraw_status=0 AND brand_id=${decode_dns?.id}) AS total_withdraw_count`,
     ]
     for (var i = 0; i < operator_list.length; i++) {
         sum_columns.push(`SUM(sales${operator_list[i].num}_amount) AS total_sales${operator_list[i].num}_amount`);
@@ -488,7 +490,6 @@ export const getMotherDeposit = async (decode_dns) => {
             decode_user: {},
             guid: data['brand']?.deposit_guid,
         })
-        console.log(real_amount)
     }
     data['real_amount'] = real_amount.data?.amount ?? 0;
     data['childrens'] = [];
