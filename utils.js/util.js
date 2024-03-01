@@ -491,6 +491,12 @@ export const getMotherDeposit = async (decode_dns) => {
         console.log(real_amount)
     }
     data['real_amount'] = real_amount.data?.amount ?? 0;
-
+    data['childrens'] = [];
+    let children_brands = await pool.query(`SELECT * FROM brands WHERE parent_id=${decode_dns?.id}`);
+    children_brands = children_brands?.result;
+    for (var i = 0; i < children_brands.length; i++) {
+        let children_mother_deposit = await getMotherDeposit(children_brands[i]);
+        data['childrens'].push(children_mother_deposit);
+    }
     return data;
 }
