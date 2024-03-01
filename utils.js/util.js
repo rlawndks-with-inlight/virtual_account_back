@@ -460,6 +460,8 @@ export const getMotherDeposit = async (decode_dns) => {
         `SUM(CASE WHEN withdraw_status=0 THEN withdraw_fee ELSE 0 END) AS total_withdraw_fee`,
         `SUM(deposit_fee) AS total_deposit_fee`,
         `SUM(mcht_amount) AS total_mcht_amount`,
+        `SUM(mcht_amount) AS total_mcht_amount`,
+        `(SELECT SUM(amoount) FROM deposits WHERE pay_type=0 AND deposit_status=0 AND brand_id=${decode_dns?.id}) AS total_deposit_amount`,
         `(SELECT COUNT(*) FROM deposits WHERE pay_type=0 AND deposit_status=0 AND brand_id=${decode_dns?.id}) AS total_deposit_count`,
         `(SELECT COUNT(*) FROM deposits WHERE pay_type IN (5, 20) AND withdraw_status=0 AND brand_id=${decode_dns?.id}) AS total_withdraw_count`,
     ]
