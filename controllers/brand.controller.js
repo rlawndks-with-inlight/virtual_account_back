@@ -195,6 +195,7 @@ const brandCtrl = {
                 let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE guid=? AND brand_id=${id}`, [guid]);
                 virtual_account = virtual_account?.result[0];
                 if (!virtual_account) {
+                    await db.rollback();
                     return response(req, res, -100, "가상계좌가 존재하지 않습니다.", false)
                 }
                 obj['virtual_account_id'] = virtual_account?.id;
