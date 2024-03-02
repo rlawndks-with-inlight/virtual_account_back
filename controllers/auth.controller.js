@@ -264,7 +264,12 @@ const authCtrl = {
         try {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = checkLevel(req.cookies.token, is_manager ? 1 : 0);
-            const decode_dns = checkDns(req.cookies.dns);
+            let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${decode_user?.id} AND is_delete=0`);
+            ip_list = ip_list?.result;
+            let requestIp = getReqIp(req);
+            if (decode_user?.level == 10 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp)) && ip_list.length > 0) {
+                return response(req, res, -150, "권한이 없습니다.", false)
+            }
 
             return response(req, res, 100, "success", decode_user)
         } catch (err) {
