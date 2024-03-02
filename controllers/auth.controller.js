@@ -292,18 +292,22 @@ const authCtrl = {
             if (decode_user?.level >= 40) {
                 return response(req, res, 100, "success", {})
             } else {
-                if (decode_user?.level == 10) {
-                    deposit_column.push(`(SELECT SUM(mcht_amount) FROM deposits WHERE mcht_id=${decode_user?.id}) AS settle_amount`);
+                if (decode_user?.level >= 0) {
+                    if (decode_user?.level == 10) {
+                        deposit_column.push(`(SELECT SUM(mcht_amount) FROM deposits WHERE mcht_id=${decode_user?.id}) AS settle_amount`);
+                    } else {
+                        let find_oper_level = _.find(operatorLevelList, { level: parseInt(decode_user?.level) });
+                        deposit_column.push(`(SELECT SUM(sales${find_oper_level.num}_amount) FROM deposits WHERE sales${find_oper_level.num}_id=${decode_user?.id}) AS settle_amount`);
+                    }
+                    let deposit_sql = ` SELECT ${deposit_column.join()} FROM users `;
+                    deposit_sql += ` LEFT JOIN virtual_accounts ON users.virtual_account_id=virtual_accounts.id `;
+                    deposit_sql += ` WHERE users.id=${decode_user?.id} `;
+                    let deposit = await pool.query(deposit_sql);
+                    deposit = deposit?.result[0];
+                    return response(req, res, 100, "success", deposit)
                 } else {
-                    let find_oper_level = _.find(operatorLevelList, { level: parseInt(decode_user?.level) });
-                    deposit_column.push(`(SELECT SUM(sales${find_oper_level.num}_amount) FROM deposits WHERE sales${find_oper_level.num}_id=${decode_user?.id}) AS settle_amount`);
+                    return response(req, res, 100, "success", {})
                 }
-                let deposit_sql = ` SELECT ${deposit_column.join()} FROM users `;
-                deposit_sql += ` LEFT JOIN virtual_accounts ON users.virtual_account_id=virtual_accounts.id `;
-                deposit_sql += ` WHERE users.id=${decode_user?.id} `;
-                let deposit = await pool.query(deposit_sql);
-                deposit = deposit?.result[0];
-                return response(req, res, 100, "success", deposit)
             }
 
         } catch (err) {
