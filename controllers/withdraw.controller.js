@@ -16,8 +16,7 @@ const withdrawCtrl = {
         try {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = checkLevel(req.cookies.token, 10);
-            let decode_dns = checkDns(req.cookies.dns);
-            decode_dns.id = 72
+            const decode_dns = checkDns(req.cookies.dns);
             const { withdraw_status, search, s_dt, e_dt } = req.query;
             if (!decode_user) {
                 return lowLevelException(req, res);
