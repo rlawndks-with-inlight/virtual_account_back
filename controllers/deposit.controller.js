@@ -30,6 +30,8 @@ const depositCtrl = {
                 `CASE WHEN ${table_name}.virtual_account_id > 0  THEN virtual_accounts.virtual_bank_code ELSE ${table_name}.virtual_bank_code END AS virtual_bank_code`,
                 `CASE WHEN ${table_name}.virtual_account_id > 0  THEN virtual_accounts.virtual_acct_num ELSE ${table_name}.virtual_acct_num END AS virtual_acct_num`,
                 `CASE WHEN ${table_name}.virtual_account_id > 0  THEN virtual_accounts.virtual_acct_name ELSE ${table_name}.virtual_acct_name END AS virtual_acct_name`,
+                `virtual_accounts.birth AS virtual_birth`,
+                `virtual_accounts.created_at AS virtual_created_at`,
                 `corp_accounts.bank_code AS corp_bank_code`,
                 `corp_accounts.acct_num AS corp_acct_num`,
                 `corp_accounts.acct_name AS corp_acct_name`,
@@ -53,7 +55,6 @@ const depositCtrl = {
                     sql += ` LEFT JOIN users AS sales${decode_dns?.operator_list[i]?.num} ON sales${decode_dns?.operator_list[i]?.num}.id=${table_name}.sales${decode_dns?.operator_list[i]?.num}_id `;
                 }
             }
-
             let where_sql = ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
             if (is_mother) {
                 where_sql += ` AND (${table_name}.amount > 0 OR ${table_name}.amount < 0) `
