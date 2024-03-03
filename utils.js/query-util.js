@@ -107,7 +107,19 @@ export const getSelectQuery = async (sql_, columns, query, add_sql_list = []) =>
     for (var i = 0; i < result.length; i++) {
         obj[result[i].table] = result[i]?.content?.result
     }
-    return settingSelectQueryObj(obj);
+    let return_result = settingSelectQueryObj(obj);
+    return_result.page = parseInt(return_result.page);
+    return_result.page_size = parseInt(return_result.page_size);
+    for (var i = 0; i < return_result.content.length; i++) {
+        return_result.content[i]['No_'] = getNumberByTable(return_result.total, return_result.page, return_result.page_size, i);
+    }
+    return return_result;
+}
+const getNumberByTable = (total = 0, page = 1, page_size = 10, idx = 0) => {
+    let result = total;
+    result -= (page - 1) * page_size;
+    result -= idx;
+    return result;
 }
 const settingSelectQueryWhere = (sql_, query, table) => {
     let sql = sql_;

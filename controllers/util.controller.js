@@ -13,8 +13,6 @@ const utilCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
-            const { id } = req.params;
-
             let data = {};
             let deposit_api_result = await corpApi.bank.list({
                 dns_data: decode_dns,

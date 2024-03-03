@@ -37,6 +37,7 @@ app.get('/', (req, res) => {
 });
 
 app.use((req, res, next) => {
+  console.log(req.originalUrl)
   const err = new APIError('API not found', httpStatus.NOT_FOUND);
   return next(err);
 });

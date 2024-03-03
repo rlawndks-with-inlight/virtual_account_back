@@ -75,7 +75,6 @@ export const checkDns = (token) => { //dns 정보 뿌려주기
             }
             else return decoded;
         })
-        const user_level = decoded.level
         if (decoded?.id)
             return decoded
         else

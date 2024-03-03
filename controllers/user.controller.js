@@ -154,16 +154,13 @@ const userCtrl = {
             let sql = `SELECT ${columns.join()} FROM ${table_name} `;
             sql += ` LEFT JOIN merchandise_columns ON merchandise_columns.mcht_id=${table_name}.id `;
             sql += ` LEFT JOIN virtual_accounts ON ${table_name}.virtual_account_id=virtual_accounts.id `;
-            sql += ` WHERE ${table_name}.id=${id} `;
+            sql += ` WHERE ${table_name}.id=${id} AND (level < ${decode_user?.level} OR ${table_name}.id=${decode_user?.id})  `;
 
             let data = await pool.query(sql)
             data = data?.result[0];
 
             let ip_logs = await pool.query(`SELECT * FROM connected_ips WHERE user_id=${data?.id} ORDER BY id DESC`);
             ip_logs = ip_logs?.result;
-            if (!isItemBrandIdSameDnsId(decode_dns, data)) {
-                return lowLevelException(req, res);
-            }
             data['telegram_chat_ids'] = JSON.parse(data?.telegram_chat_ids ?? '[]').join();
 
             let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${id} AND is_delete=0`);

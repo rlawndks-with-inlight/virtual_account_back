@@ -35,6 +35,8 @@ const authCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
+            console.log(decode_dns)
+
             let { user_name, user_pw, otp_num } = req.body;
 
             let dns_data = await pool.query(`SELECT brands.* FROM brands WHERE id=${decode_dns?.id}`);
@@ -124,6 +126,7 @@ const authCtrl = {
                 withdraw_bank_code: user.withdraw_bank_code,
                 withdraw_acct_num: user.withdraw_acct_num,
                 withdraw_acct_name: user.withdraw_acct_name,
+                ip: requestIp,
             }
             if (user?.brand_id != decode_dns?.id && user?.level == 40) {
                 user_obj['level'] = 45;
@@ -264,10 +267,8 @@ const authCtrl = {
         try {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = checkLevel(req.cookies.token, is_manager ? 1 : 0);
-            let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${decode_user?.id} AND is_delete=0`);
-            ip_list = ip_list?.result;
             let requestIp = getReqIp(req);
-            if (decode_user?.level == 10 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp)) && ip_list.length > 0) {
+            if (requestIp != decode_user?.ip) {
                 return response(req, res, -150, "권한이 없습니다.", false)
             }
 
