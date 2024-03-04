@@ -267,6 +267,9 @@ const authCtrl = {
         try {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = checkLevel(req.cookies.token, is_manager ? 1 : 0);
+            if (!decode_user) {
+                return response(req, res, -150, "권한이 없습니다.", {})
+            }
             let requestIp = getReqIp(req);
             let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${decode_user?.id} AND is_delete=0`);
             ip_list = ip_list?.result;
