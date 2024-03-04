@@ -21,6 +21,9 @@ router
     .route('/sign-up')
     .post(authCtrl.signUp);
 router
+    .route('/change-pw')
+    .put(authCtrl.changePassword);
+router
     .route('/sign-out')
     .post(authCtrl.signOut);
 router
