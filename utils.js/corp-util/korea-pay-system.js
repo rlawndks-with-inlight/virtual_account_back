@@ -1,15 +1,66 @@
 import axios from "axios";
 import { returnMoment } from "../function.js";
 
-const API_URL = `https://api.cashes.co.kr`;
+const API_URL = `https://api.kp-pay.com`;
 
-const getDefaultBody = (dns_data, pay_type) => {
-
+const makeHeaderData = (dns_data, pay_type) => {
     return {
-        compUuid: dns_data[`${pay_type}_guid`],
+        'Content-Type': 'application/json; charset=utf-8',
+        'Authorization': `${dns_data[`${pay_type}_sign_key`]}`,
     }
 }
+
+const processBodyObj = (obj_ = {}, dns_data, pay_type) => {
+    let obj = obj_;
+    obj = {
+        ...obj,
+        mchtId: dns_data[`${pay_type}_api_id`]
+    }
+    obj = {
+        "vact": obj,
+    }
+    return obj;
+}
+
 export const koreaPaySystemApi = {
+    balance: {
+        info: async (data) => {
+            try {
+                let { dns_data, pay_type, decode_user,
+                    tid, vrf_word,
+                } = data;
+                let query = {
+                    authNo: tid,
+                    oneCertiInNo: vrf_word,
+                }
+                query = processBodyObj(query, dns_data, pay_type);
+                let { data: result } = await axios.get(`${API_URL}/api/settle/balance`, {
+                    headers: makeHeaderData(dns_data, pay_type)
+                });
+                if (result?.result?.resultCd != '0000') {
+                    return {
+                        code: -100,
+                        message: result?.result?.advanceMsg,
+                        data: {},
+                    };
+                }
+                return {
+                    code: 100,
+                    message: result?.message,
+                    data: {
+                        amount: result.balance?.balance,
+                    },
+                };
+            } catch (err) {
+                console.log(err);
+                return {
+                    code: -100,
+                    message: '',
+                    data: {},
+                };
+            }
+        },
+    },
     bank: {
         list: async (data) => {
             try {
