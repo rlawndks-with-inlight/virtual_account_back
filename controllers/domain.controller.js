@@ -53,6 +53,7 @@ const domainCtrl = {
                 'deposit_corp_type',
                 'withdraw_corp_type',
                 'parent_id',
+                'deposit_virtual_bank_code',
                 'withdraw_virtual_bank_code',
                 'withdraw_virtual_acct_num',
             ]

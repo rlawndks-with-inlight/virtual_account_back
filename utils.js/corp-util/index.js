@@ -4,6 +4,7 @@ import { findChildIds, findParents } from "../util.js";
 import { banknersApi } from "./bankners.js";
 import { cooconApi } from "./coocon.js";
 import { doznApi } from "./dozn.js";
+import { koreaPaySystemApi } from "./korea-pay-system.js";
 import { paytusApi } from "./paytus.js";
 
 export const getDnsData = async (dns_data_) => {
@@ -259,6 +260,8 @@ const corpApi = {
                 result = await paytusApi.bank.list(data);
             } else if (corp_type == 4) {
                 result = await doznApi.bank.list(data);
+            } else if (corp_type == 6) {
+                result = await koreaPaySystemApi.bank.list(data);
             } else {
                 result.data = [];
             }
