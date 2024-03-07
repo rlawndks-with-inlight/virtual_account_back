@@ -130,7 +130,9 @@ export const response = async (req, res, code, message, data) => { //응답 포�
     }
     const decode_user = checkLevel(req.cookies.token, 0, res)
     const decode_dns = checkDns(req.cookies.dns, 0)
-    let save_log = await logRequestResponse(req, resDict, decode_user, decode_dns);
+    if (req.originalUrl?.includes('/auth') || req.originalUrl?.includes('/withdraw')) {
+        let save_log = await logRequestResponse(req, resDict, decode_user, decode_dns);
+    }
     if (req?.IS_RETURN) {
         return resDict;
     } else {
