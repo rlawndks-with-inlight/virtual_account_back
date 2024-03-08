@@ -428,7 +428,9 @@ export const sendNotiPush = async (user = {}, pay_type, data = {}, id) => {
     try {
         if (user[`${pay_type}_noti_url`]) {
             for (var i = 0; i < 5; i++) {
-                let { data: result } = await axios.post(user[`${pay_type}_noti_url`], data);
+                let { data: result } = await axios.post(user[`${pay_type}_noti_url`], data, {
+                    timeout: 3000,
+                });
                 if (result == '0000') {
                     await updateQuery(`deposits`, {
                         [`${pay_type}_noti_status`]: 0,
