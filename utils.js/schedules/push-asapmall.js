@@ -80,18 +80,33 @@ export const pushAsapMall = async (return_moment = "") => {
                     obj['amount'] = amount + withdraw_fee;
                     obj['acct_name'] = settle_acct_name;
                 }
-                let { data: response } = await axios.post(`${asapmall_back_dns || process.env.SHOPPING_MALL_BACK_URL}/api/pays/virtual-acct/noti`, obj, {
-                    timeout: 5000
-                });
-                if (response?.result > 0) {
-                    let result = await updateQuery(`deposits`, {
-                        send_asapmall_noti: 0,
-                    }, id)
-                }
+                sendNotiPushAsapMall(data[i], obj, id)
             }
         }
     } catch (err) {
         console.log(err);
     }
 
+}
+const sendNotiPushAsapMall = async (data, obj, id) => {
+    let {
+        asapmall_dns,
+        asapmall_back_dns,
+        pay_type,
+        amount,
+        withdraw_fee,
+        trx_id,
+        deposit_acct_name,
+        settle_acct_name,
+        id,
+        created_at
+    } = data;
+    let { data: response } = await axios.post(`${asapmall_back_dns || process.env.SHOPPING_MALL_BACK_URL}/api/pays/virtual-acct/noti`, obj, {
+        timeout: 5000
+    });
+    if (response?.result > 0) {
+        let result = await updateQuery(`deposits`, {
+            send_asapmall_noti: 0,
+        }, id)
+    }
 }
