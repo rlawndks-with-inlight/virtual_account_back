@@ -80,7 +80,9 @@ export const pushAsapMall = async (return_moment = "") => {
                     obj['amount'] = amount + withdraw_fee;
                     obj['acct_name'] = settle_acct_name;
                 }
-                let { data: response } = await axios.post(`${asapmall_back_dns || process.env.SHOPPING_MALL_BACK_URL}/api/pays/virtual-acct/noti`, obj);
+                let { data: response } = await axios.post(`${asapmall_back_dns || process.env.SHOPPING_MALL_BACK_URL}/api/pays/virtual-acct/noti`, obj, {
+                    timeout: 5000
+                });
                 if (response?.result > 0) {
                     let result = await updateQuery(`deposits`, {
                         send_asapmall_noti: 0,

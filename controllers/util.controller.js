@@ -1,6 +1,6 @@
 'use strict';
 import _ from "lodash";
-import { pool } from "../config/db.js";
+import db, { pool } from "../config/db.js";
 import corpApi from "../utils.js/corp-util/index.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
@@ -60,6 +60,7 @@ const utilCtrl = {
         }
     },
 };
+
 
 
 export default utilCtrl;
