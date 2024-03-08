@@ -80,7 +80,7 @@ export const pushAsapMall = async (return_moment = "") => {
                     obj['amount'] = amount + withdraw_fee;
                     obj['acct_name'] = settle_acct_name;
                 }
-                sendNotiPushAsapMall(data[i], obj, id)
+                sendNotiPushAsapMall(data[i], obj)
             }
         }
     } catch (err) {
@@ -88,7 +88,7 @@ export const pushAsapMall = async (return_moment = "") => {
     }
 
 }
-const sendNotiPushAsapMall = async (data, obj, id) => {
+const sendNotiPushAsapMall = async (data, obj) => {
     let {
         asapmall_dns,
         asapmall_back_dns,
