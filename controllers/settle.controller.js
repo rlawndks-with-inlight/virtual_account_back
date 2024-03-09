@@ -14,7 +14,7 @@ const settleCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
-            const { level, pay_type } = req.query;
+            const { level, pay_type, s_dt, e_dt } = req.query;
             let columns = [
                 `${table_name}.*`,
                 `users.user_name`,
@@ -71,9 +71,23 @@ const settleCtrl = {
                 where_sql += ` AND ${table_name}.${user_id_column}=${decode_user?.id} `;
             }
             sql = sql + where_sql;
+            console.log(user_amount_column)
+            //chart
+            let chart_columns = [];
+            chart_columns.push(`SUM(${user_amount_column}) AS user_amount`);
+            let chart_sql = sql;
+            if (s_dt) {
+                chart_sql += ` AND ${table_name}.created_at >= '${s_dt} 00:00:00' `;
+            }
+            if (e_dt) {
+                chart_sql += ` AND ${table_name}.created_at <= '${e_dt} 23:59:59' `;
+            }
+            chart_sql = chart_sql.replaceAll(process.env.SELECT_COLUMN_SECRET, chart_columns.join());
+            let chart_data = await pool.query(chart_sql);
+            chart_data = chart_data?.result[0];
             let data = await getSelectQuery(sql, columns, req.query);
 
-            return response(req, res, 100, "success", data);
+            return response(req, res, 100, "success", { ...data, chart: chart_data });
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)
