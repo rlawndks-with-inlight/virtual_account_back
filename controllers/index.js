@@ -17,6 +17,7 @@ import depositRequestCtrl from './deposit_request.controller.js';
 import corpAccountCtrl from './corp_account.controller.js';
 import bellContentCtrl from './bell_content.controller.js';
 import brandPayCtrl from './brand_pay.controller.js';
+import reserveCtrl from './reserve.controller.js';
 
 export {
     brandCtrl,
@@ -36,4 +37,5 @@ export {
     corpAccountCtrl,
     bellContentCtrl,
     brandPayCtrl,
+    reserveCtrl,
 };
