@@ -17,6 +17,7 @@ import corpAccountRoutes from './corp_account.route.js';
 import bellContentRoutes from './bell_content.route.js';
 import brandPayRoutes from './brand_pay.route.js';
 import reserveRoutes from './reserve.route.js';
+import bulkUploadRoutes from './bulk_upload.route.js';
 
 const router = express.Router(); // eslint-disable-line new-cap
 
@@ -46,5 +47,6 @@ router.use('/upload', uploadRoutes);
 router.use('/util', utilRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/corp', corpUtilRoutes);
+router.use('/bulk-upload', bulkUploadRoutes);
 
 export default router;

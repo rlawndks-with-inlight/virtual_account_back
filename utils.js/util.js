@@ -509,3 +509,115 @@ export const getMotherDeposit = async (decode_dns) => {
     }
     return data;
 }
+export const settingMchtFee = async (decode_dns, user_id, body) => {
+    try {
+        let {
+            mcht_fee,
+            withdraw_fee,
+            deposit_fee
+        } = body;
+        let mother_fee = decode_dns?.head_office_fee;
+        let mother_withdraw_fee = decode_dns?.withdraw_head_office_fee;
+        let mother_deposit_fee = decode_dns?.deposit_head_office_fee;
+        let up_user = '본사';
+        let down_user = '';
+        let mcht_obj = {
+            mcht_id: user_id,
+            mcht_fee,
+        };
+        let operator_list = getOperatorList(decode_dns);
+        for (var i = 0; i < operator_list.length; i++) {
+            if (body[`sales${operator_list[i]?.num}_id`] > 0) {
+                down_user = operator_list[i]?.label;
+                if (decode_dns?.is_use_deposit_operator == 1 && !body[`sales${operator_list[i]?.num}_deposit_fee`]) {
+                    return {
+                        data: {},
+                        code: -100,
+                        message: `${operator_list[i]?.label}입금수수료를 입력해 주세요.`,
+                    }
+                }
+                if (body[`sales${operator_list[i]?.num}_deposit_fee`] < mother_deposit_fee && decode_dns?.is_use_deposit_operator == 1) {
+                    return {
+                        data: {},
+                        code: -100,
+                        message: `${up_user} 입금수수료가 ${down_user} 입금수수료보다 높습니다.`,
+                    }
+                }
+                if (decode_dns?.is_use_fee_operator == 1 && !body[`sales${operator_list[i]?.num}_fee`]) {
+                    return {
+                        data: {},
+                        code: -100,
+                        message: `${operator_list[i]?.label}요율을 입력해 주세요.`,
+                    }
+                }
+                if (body[`sales${operator_list[i]?.num}_fee`] < mother_fee && decode_dns?.is_use_fee_operator == 1) {
+                    return {
+                        data: {},
+                        code: -100,
+                        message: `${up_user} 요율이 ${down_user} 요율보다 높습니다.`,
+                    }
+                }
+                if (decode_dns?.is_use_withdraw_operator == 1 && !body[`sales${operator_list[i]?.num}_withdraw_fee`]) {
+                    return {
+                        data: {},
+                        code: -100,
+                        message: `${operator_list[i]?.label}출금수수료를 입력해 주세요.`,
+                    }
+                }
+                if (body[`sales${operator_list[i]?.num}_withdraw_fee`] < mother_withdraw_fee && decode_dns?.is_use_withdraw_operator == 1) {
+                    return {
+                        data: {},
+                        code: -100,
+                        message: `${up_user} 출금수수료가 ${down_user} 출금수수료보다 높습니다.`,
+                    }
+                }
+
+                up_user = operator_list[i]?.label;
+                mother_fee = body[`sales${operator_list[i]?.num}_fee`];
+                mother_withdraw_fee = body[`sales${operator_list[i]?.num}_withdraw_fee`];
+                mother_deposit_fee = body[`sales${operator_list[i]?.num}_deposit_fee`];
+            }
+            mcht_obj[`sales${operator_list[i]?.num}_id`] = body[`sales${operator_list[i]?.num}_id`];
+            mcht_obj[`sales${operator_list[i]?.num}_fee`] = body[`sales${operator_list[i]?.num}_fee`] ?? 0;
+            mcht_obj[`sales${operator_list[i]?.num}_withdraw_fee`] = body[`sales${operator_list[i]?.num}_withdraw_fee`] ?? 0;
+            mcht_obj[`sales${operator_list[i]?.num}_deposit_fee`] = body[`sales${operator_list[i]?.num}_deposit_fee`] ?? 0;
+        }
+        down_user = '가맹점';
+        if (mcht_fee < mother_fee && decode_dns?.is_use_fee_operator == 1) {
+            return {
+                data: {},
+                code: -100,
+                message: `${up_user} 요율이 ${down_user} 요율보다 높습니다.`,
+            }
+        }
+        if (withdraw_fee < mother_withdraw_fee && decode_dns?.is_use_withdraw_operator == 1) {
+            return {
+                data: {},
+                code: -100,
+                message: `${up_user} 출금수수료가 ${down_user} 출금수수료보다 높습니다.`,
+            }
+        }
+        if (deposit_fee < mother_deposit_fee && decode_dns?.is_use_deposit_operator == 1) {
+            return {
+                data: {},
+                code: -100,
+                message: `${up_user} 입금수수료가 ${down_user} 입금수수료보다 높습니다.`,
+            }
+        }
+        console.log(deposit_fee)
+        console.log(withdraw_fee)
+        console.log(mcht_fee)
+        console.log(mcht_obj)
+        return {
+            data: mcht_obj,
+            code: 100,
+            message: `성공`,
+        }
+    } catch (err) {
+        return {
+            data: {},
+            code: -100,
+            message: `서버 에러 발생`,
+        }
+    }
+}

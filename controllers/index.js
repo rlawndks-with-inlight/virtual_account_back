@@ -18,6 +18,7 @@ import corpAccountCtrl from './corp_account.controller.js';
 import bellContentCtrl from './bell_content.controller.js';
 import brandPayCtrl from './brand_pay.controller.js';
 import reserveCtrl from './reserve.controller.js';
+import bulkUploadCtrl from './bulk_upload.controller.js';
 
 export {
     brandCtrl,
@@ -38,4 +39,5 @@ export {
     bellContentCtrl,
     brandPayCtrl,
     reserveCtrl,
+    bulkUploadCtrl,
 };
