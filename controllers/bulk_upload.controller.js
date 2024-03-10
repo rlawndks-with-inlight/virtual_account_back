@@ -1,4 +1,5 @@
 'use strict';
+import _ from "lodash";
 import db, { pool } from "../config/db.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
@@ -23,6 +24,8 @@ const bulkUploadCtrl = {
             };
             let operator_list = getOperatorList(decode_dns);
             let error_list = [];
+            let operators = await pool.query(`SELECT user_name, id, level FROM users WHERE brand_id=${decode_dns?.id} AND level > 10 AND level < 40`);
+            operators = operators?.result;
 
             await db.beginTransaction();
             for (var i = 0; i < data.length; i++) {
@@ -41,6 +44,7 @@ const bulkUploadCtrl = {
                     withdraw_fee,
                     mcht_fee,
                 } = data[i];
+                let data_obj = { ...data[i] };
                 let is_exist_user = await pool.query(`SELECT * FROM users WHERE user_name=? AND brand_id=${brand_id}`, [user_name]);
                 if (is_exist_user?.result.length > 0) {
                     error_list.push({
@@ -55,6 +59,7 @@ const bulkUploadCtrl = {
 
                 if (!is_error) {
                     let result = await insertQuery(`users`, {
+                        brand_id,
                         user_name,
                         user_pw,
                         user_salt,
@@ -67,23 +72,55 @@ const bulkUploadCtrl = {
                         is_withdraw_hold,
                         deposit_fee,
                         withdraw_fee,
+                        level: 10,
                     })
                     let user_id = result?.result?.insertId;
-                    let mcht_obj = await settingMchtFee(decode_dns, user_id, data[i]);
+                    for (var j = 0; j < operator_list.length; j++) {
+                        if (data_obj[`sales${operator_list[j]?.num}_user_name`]) {
+                            let operator = _.find(operators, { user_name: data_obj[`sales${operator_list[j]?.num}_user_name`] });
+                            if (!operator) {
+                                error_list.push({
+                                    idx: `${i}-sales${operator_list[j]?.num}_user_name`,
+                                    message: `존재하지 않는 ${operator_list[j]?.label} 입니다.`,
+                                })
+                                continue;
+                            }
+                            if (operator?.level != operator_list[j]?.value) {
+                                error_list.push({
+                                    idx: `${i}-sales${operator_list[j]?.num}_user_name`,
+                                    message: '영업자 레벨이 잘못되었습니다.',
+                                })
+                                continue;
+                            }
+                            data_obj[`sales${operator_list[j]?.num}_id`] = _.find(operators, { user_name: data_obj[`sales${operator_list[j]?.num}_user_name`] })?.id;
+                        }
+                    }
+                    let mcht_obj = await settingMchtFee(decode_dns, user_id, data_obj);
                     if (mcht_obj?.code > 0) {
                         mcht_obj = mcht_obj.data
                         let mcht_result = await insertQuery(`merchandise_columns`, mcht_obj);
                     } else {
+                        let column = '';
+                        if (mcht_obj?.level == 10) {
+                            column = `mcht_${mcht_obj.type}`
+                        } else {
+                            column = `sales${_.find(operator_list, { value: mcht_obj?.level })?.num}_${mcht_obj.type}`
+                        }
                         error_list.push({
-                            idx: `${i}-fee`,
+                            idx: `${i}-${column}`,
                             message: mcht_obj.message,
                         })
                     }
                 }
             }
-
-            await db.commit();
-            return response(req, res, 100, "success", {})
+            if (error_list.length > 0) {
+                await db.rollback();
+            } else {
+                await db.commit();
+            }
+            return response(req, res, 100, "success", {
+                error_list
+            })
         } catch (err) {
             console.log(err)
             await db.rollback();
