@@ -167,7 +167,22 @@ const userCtrl = {
                 ip_list: ip_list?.result,
                 ip_logs,
             }
+            let settle_amount_sql = ``;
+            let find_oper_level = _.find(operatorLevelList, { level: parseInt(data?.level) });
+            if (data?.level == 10) {
+                settle_amount_sql = `SELECT SUM(mcht_amount) AS settle_amount FROM deposits WHERE mcht_id=${id}`;
 
+            } else if (find_oper_level) {
+                settle_amount_sql = `SELECT SUM(sales${find_oper_level.num}_amount) AS settle_amount FROM deposits WHERE sales${find_oper_level.num}_id=${id}`;
+            }
+            if (data?.level == 10 || find_oper_level) {
+                let settle_amount = await pool.query(settle_amount_sql);
+                settle_amount = settle_amount?.result[0]?.settle_amount ?? 0;
+                data = {
+                    ...data,
+                    settle_amount,
+                }
+            }
             return response(req, res, 100, "success", data)
         } catch (err) {
             console.log(err)
