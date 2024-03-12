@@ -430,12 +430,16 @@ const withdrawCtrl = {
                 decode_user: {},
                 guid: data?.brand?.guid,
                 amount: withdraw_amount,
+                bank_code: data?.brand?.settle_bank_code,
+                acct_num: data?.brand?.settle_acct_num,
+                acct_name: data?.brand?.settle_acct_name,
             })
             if (api_withdraw_request_result.code != 100) {
                 return response(req, res, -100, (api_withdraw_request_result?.message || "서버 에러 발생"), api_withdraw_request_result?.data)
             }
             let result3 = await updateQuery(`${table_name}`, {
                 trx_id: api_withdraw_request_result.data?.tid,
+                top_office_amount: api_withdraw_request_result.data?.tid ?? 0,
             }, withdraw_id);
 
             return response(req, res, 100, "success", {})
