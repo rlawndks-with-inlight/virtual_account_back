@@ -73,8 +73,12 @@ const bulkUploadCtrl = {
                         deposit_fee,
                         withdraw_fee,
                         level: 10,
+                        mid: `${decode_dns?.id}${user_id}${new Date().getTime()}`,
                     })
                     let user_id = result?.result?.insertId;
+                    let result2 = await updateQuery(table_name, {
+                        mid: `${decode_dns?.id}${user_id}${new Date().getTime()}`,
+                    }, user_id);
                     for (var j = 0; j < operator_list.length; j++) {
                         if (data_obj[`sales${operator_list[j]?.num}_user_name`]) {
                             let operator = _.find(operators, { user_name: data_obj[`sales${operator_list[j]?.num}_user_name`] });

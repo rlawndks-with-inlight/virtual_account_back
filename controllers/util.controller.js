@@ -62,5 +62,4 @@ const utilCtrl = {
 };
 
 
-
 export default utilCtrl;

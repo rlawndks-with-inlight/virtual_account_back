@@ -3,7 +3,7 @@ import axios from "axios";
 import db, { pool } from "../config/db.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, updateQuery } from "../utils.js/query-util.js";
-import { checkDns, checkLevel, createHashedPassword, lowLevelException, response, settingFiles } from "../utils.js/util.js";
+import { checkDns, checkLevel, createHashedPassword, generateRandomString, lowLevelException, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 import corpApi from "../utils.js/corp-util/index.js";
 import speakeasy from 'speakeasy';
@@ -301,7 +301,7 @@ const brandCtrl = {
             const { brand_id } = req.body;
             let dns_data = await pool.query(`SELECT ${table_name}.* FROM ${table_name} WHERE id=${brand_id}`);
             dns_data = dns_data?.result[0];
-            let rand_text = generateRandomString();
+            let rand_text = generateRandomString(30);
             return response(req, res, 100, "success", {
                 rand_text
             })
@@ -330,15 +330,5 @@ const brandCtrl = {
         }
     },
 };
-function generateRandomString() {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let randomString = '';
 
-    for (let i = 0; i < 30; i++) {
-        const randomIndex = Math.floor(Math.random() * characters.length);
-        randomString += characters.charAt(randomIndex);
-    }
-
-    return randomString;
-}
 export default brandCtrl;

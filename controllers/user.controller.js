@@ -157,7 +157,6 @@ const userCtrl = {
             sql += ` WHERE ${table_name}.id=${id} AND (level < ${decode_user?.level} OR ${table_name}.id=${decode_user?.id})  `;
             let data = await pool.query(sql)
             data = data?.result[0];
-            console.log(data);
             let ip_logs = await pool.query(`SELECT * FROM connected_ips WHERE user_id=${data?.id} ORDER BY id DESC`);
             ip_logs = ip_logs?.result;
             data['telegram_chat_ids'] = JSON.parse(data?.telegram_chat_ids ?? '[]').join();
@@ -275,6 +274,7 @@ const userCtrl = {
                 children_brand_dns = '',
                 ip_list = [],
             } = req.body;
+            console.log(req.body)
             let is_exist_user = await pool.query(`SELECT * FROM ${table_name} WHERE user_name=? AND brand_id=${brand_id}`, [user_name]);
             if (is_exist_user?.result.length > 0) {
                 return response(req, res, -100, "유저아이디가 이미 존재합니다.", false)
