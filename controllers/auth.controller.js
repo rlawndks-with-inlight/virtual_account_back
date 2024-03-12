@@ -124,6 +124,7 @@ const authCtrl = {
                 withdraw_bank_code: user.withdraw_bank_code,
                 withdraw_acct_num: user.withdraw_acct_num,
                 withdraw_acct_name: user.withdraw_acct_name,
+                can_return: user.can_return,
                 ip: requestIp,
             }
             if (user?.brand_id != decode_dns?.id && user?.level == 40) {
@@ -185,6 +186,7 @@ const authCtrl = {
                 withdraw_bank_code: user.withdraw_bank_code,
                 withdraw_acct_num: user.withdraw_acct_num,
                 withdraw_acct_name: user.withdraw_acct_name,
+                can_return: user.can_return,
             })
             res.cookie("token", token, {
                 httpOnly: true,
