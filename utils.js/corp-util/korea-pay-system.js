@@ -10,14 +10,14 @@ const makeHeaderData = (dns_data, pay_type) => {
     }
 }
 
-const processBodyObj = (obj_ = {}, dns_data, pay_type) => {
+const processBodyObj = (obj_ = {}, dns_data, pay_type, object_type = 'vact') => {
     let obj = obj_;
     obj = {
         ...obj,
         mchtId: dns_data[`${pay_type}_api_id`]
     }
     obj = {
-        "vact": obj,
+        [object_type]: obj,
     }
     return obj;
 }
@@ -160,9 +160,11 @@ export const koreaPaySystemApi = {
                     ecordInfo: acct_name,
                 }
                 query = processBodyObj(query, dns_data, pay_type, "transfer");
+                console.log(query)
                 let { data: result } = await axios.post(`${API_URL}/api/settle/transfer`, query, {
                     headers: makeHeaderData(dns_data, pay_type)
                 });
+                console.log(result)
                 if (result?.result?.resultCd != '0000') {
                     return {
                         code: -100,

@@ -71,7 +71,6 @@ const virtualAccountCtrl = {
             }
             let data = await pool.query(sql, values)
             data = data?.result[0];
-            console.log(data)
             return response(req, res, 100, "success", data)
         } catch (err) {
             console.log(err)
