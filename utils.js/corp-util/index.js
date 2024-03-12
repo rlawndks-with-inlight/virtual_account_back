@@ -266,7 +266,7 @@ const corpApi = {
             } else if (corp_type == 6) {
                 result = await koreaPaySystemApi.bank.list(data);
             } else {
-                result.data = [];
+                result = await banknersApi.bank.list(data);
             }
 
             return result;
