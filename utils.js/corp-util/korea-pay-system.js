@@ -143,4 +143,51 @@ export const koreaPaySystemApi = {
             }
         },
     },
+    withdraw: {
+        request: async (data) => {//출금신청
+            try {
+                let { dns_data, pay_type, decode_user,
+                    guid, amount,
+                    bank_code,
+                    acct_num,
+                    acct_name,
+                } = data;
+                let query = {
+                    account: acct_num,
+                    bankCd: bank_code,
+                    amount: amount,
+                    trackId: `${dns_data?.id ?? 0}${decode_user?.id ?? 0}${new Date().getTime()}`,
+                    ecordInfo: acct_name,
+                }
+                query = processBodyObj(query, dns_data, pay_type, "transfer");
+                let { data: result } = await axios.post(`${API_URL}/api/settle/transfer`, query, {
+                    headers: makeHeaderData(dns_data, pay_type)
+                });
+                if (result?.result?.resultCd != '0000') {
+                    return {
+                        code: -100,
+                        message: result?.result?.advanceMsg,
+                        data: {},
+                    };
+                }
+                return {
+                    code: 100,
+                    message: result?.message,
+                    data: {
+                        tid: result?.transfer?.trxId,
+                        top_amount: result?.transfer?.fee,
+                    },
+                };
+            } catch (err) {
+                console.log(err)
+                console.log(err?.response?.data)
+                return {
+                    code: -100,
+                    message: '',
+                    data: {},
+                };
+
+            }
+        },
+    },
 }

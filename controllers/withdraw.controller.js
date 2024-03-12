@@ -512,12 +512,16 @@ const withdrawCtrl = {
             let result2 = await updateQuery(`${table_name}`, {
                 is_pass_confirm: 1,
             }, withdraw_id);
+
             let api_withdraw_request_result = await corpApi.withdraw.request({
                 pay_type: 'withdraw',
                 dns_data: decode_dns,
                 decode_user: user,
                 guid: virtual_account?.guid,
                 amount: withdraw_amount,
+                bank_code: virtual_account?.settle_bank_code,
+                acct_num: virtual_account?.settle_acct_num,
+                acct_name: virtual_account?.settle_acct_name,
             })
             if (api_withdraw_request_result.code != 100) {
                 return response(req, res, -100, (api_withdraw_request_result?.message || "서버 에러 발생"), api_withdraw_request_result?.data)
@@ -525,6 +529,7 @@ const withdrawCtrl = {
             let result3 = await updateQuery(`${table_name}`, {
                 trx_id: api_withdraw_request_result.data?.tid,
                 is_withdraw_hold: 0,
+                top_office_amount: api_withdraw_request_result.data?.fee ?? 0,
             }, withdraw_id);
             /*
             let trx_id = `${new Date().getTime()}${decode_dns?.id}${user?.id}5`;
