@@ -152,15 +152,17 @@ export const koreaPaySystemApi = {
                     acct_num,
                     acct_name,
                 } = data;
+
                 let query = {
-                    account: acct_num,
-                    bankCd: bank_code,
                     amount: amount,
-                    trackId: `${dns_data?.id ?? 0}${decode_user?.id ?? 0}${new Date().getTime()}`,
-                    ecordInfo: acct_name,
+                    trackId: `${dns_data?.id ?? 0}-${decode_user?.id ?? 0}-${new Date().getTime()}`,
+                    bankCd: bank_code,
+                    account: acct_num,
+                    recordInfo: acct_name,
                 }
                 query = processBodyObj(query, dns_data, pay_type, "transfer");
                 console.log(query)
+
                 let { data: result } = await axios.post(`${API_URL}/api/settle/transfer`, query, {
                     headers: makeHeaderData(dns_data, pay_type)
                 });
