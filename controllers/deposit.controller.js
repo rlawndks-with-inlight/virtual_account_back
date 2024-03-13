@@ -32,6 +32,7 @@ const depositCtrl = {
                 `CASE WHEN ${table_name}.virtual_account_id > 0  THEN virtual_accounts.virtual_acct_name ELSE ${table_name}.virtual_acct_name END AS virtual_acct_name`,
                 `virtual_accounts.birth AS virtual_birth`,
                 `virtual_accounts.created_at AS virtual_created_at`,
+                `virtual_accounts.virtual_user_name AS virtual_user_name`,
                 `corp_accounts.bank_code AS corp_bank_code`,
                 `corp_accounts.acct_num AS corp_acct_num`,
                 `corp_accounts.acct_name AS corp_acct_name`,
