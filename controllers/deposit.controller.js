@@ -99,6 +99,7 @@ const depositCtrl = {
                 `SUM(${table_name}.amount) AS amount`,
                 `SUM(${table_name}.mcht_amount) AS mcht_amount`,
                 `SUM(${table_name}.head_office_amount) AS head_office_amount`,
+                `SUM(${table_name}.top_office_amount) AS top_office_amount`,
                 `SUM(${table_name}.deposit_fee) AS deposit_fee`,
             ]
             for (var i = 0; i < operator_list.length; i++) {
