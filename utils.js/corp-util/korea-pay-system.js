@@ -143,6 +143,53 @@ export const koreaPaySystemApi = {
             }
         },
     },
+    vaccount_delete: async (data) => {
+        try {
+            let { dns_data, pay_type, decode_user,
+                virtual_acct_num,
+                phone_num,
+                bank_code,
+                acct_num,
+            } = data;
+
+            let query = {
+                trxType: '1',
+                account: virtual_acct_num,
+                withdrawBankCd: bank_code,
+                withdrawAccount: acct_num,
+                phoneNo: phone_num,
+            }
+            query = processBodyObj(query, dns_data, pay_type, "vact");
+
+            let { data: result } = await axios.post(`${API_URL}/api/vact/reg`, query, {
+                headers: makeHeaderData(dns_data, pay_type)
+            });
+            console.log(result);
+            if (result?.result?.resultCd != '0000') {
+                return {
+                    code: -100,
+                    message: result?.result?.advanceMsg,
+                    data: {},
+                };
+            }
+            return {
+                code: 100,
+                message: result?.message,
+                data: {
+                    tid: result?.vact?.issueId,
+                },
+            };
+        } catch (err) {
+            console.log(err)
+            console.log(err?.response?.data)
+            return {
+                code: -100,
+                message: '',
+                data: {},
+            };
+
+        }
+    },
     withdraw: {
         request: async (data) => {//출금신청
             try {

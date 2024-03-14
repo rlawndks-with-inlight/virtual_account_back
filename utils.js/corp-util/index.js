@@ -312,6 +312,9 @@ const corpApi = {
         if (corp_type == 1) {
             result = await banknersApi.vaccount_delete(data);
         }
+        if (corp_type == 6) {
+            result = await koreaPaySystemApi.vaccount_delete(data);
+        }
         return result;
     },
     push: {
