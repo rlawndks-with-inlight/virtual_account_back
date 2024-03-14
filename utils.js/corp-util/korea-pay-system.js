@@ -160,7 +160,7 @@ export const koreaPaySystemApi = {
                 phoneNo: phone_num,
             }
             query = processBodyObj(query, dns_data, pay_type, "vact");
-
+            console.log(query)
             let { data: result } = await axios.post(`${API_URL}/api/vact/reg`, query, {
                 headers: makeHeaderData(dns_data, pay_type)
             });
