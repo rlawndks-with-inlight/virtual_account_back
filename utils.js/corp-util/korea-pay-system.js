@@ -160,6 +160,7 @@ export const koreaPaySystemApi = {
                 withdrawAccount: acct_num,
                 phoneNo: phone_num,
                 name,
+                holderName: name,
             }
             query = processBodyObj(query, dns_data, pay_type, "vact");
             console.log(query)
