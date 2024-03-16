@@ -19,6 +19,7 @@ const depositCtrl = {
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
+
             let search_columns = [
                 `users.user_name`,
                 `users.nickname`,
