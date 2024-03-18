@@ -18,5 +18,7 @@ router
 router
     .route('/mother')
     .post(virtualAccountCtrl.moveMother)
-
+router
+    .route('/change-virtual-user-name')
+    .post(virtualAccountCtrl.changeVirtualUserName)
 export default router;

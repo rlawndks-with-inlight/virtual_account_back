@@ -301,7 +301,28 @@ const virtualAccountCtrl = {
 
         }
     },
+    changeVirtualUserName: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = checkLevel(req.cookies.token, 10);
+            const decode_dns = checkDns(req.cookies.dns);
+            const {
+                virtual_account_id, virtual_user_name,
+            } = req.body;
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
+            let result = await updateQuery(`${table_name}`, {
+                virtual_user_name
+            }, virtual_account_id)
+            return response(req, res, 100, "success", {})
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
 
+        }
+    },
 };
 
 export default virtualAccountCtrl;
