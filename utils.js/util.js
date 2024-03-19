@@ -645,6 +645,57 @@ export const settingMchtFee = async (decode_dns, user_id, body) => {
         }
     }
 }
+export const setWithdrawAmountSetting = async (amount_ = 0, user_ = {}, dns_data = {}) => {
+    let amount = parseInt(amount_);
+    let user = user_;
+    let result = {};
+    let operator_list = getOperatorList(dns_data);
+    result['amount'] = (-1) * (parseInt(amount) + parseInt(user?.withdraw_fee));
+    result['expect_amount'] = result['amount'];
+    result['withdraw_fee'] = user?.withdraw_fee;
+    if (user?.level == 10) {
+        let mcht_columns = [
+            `merchandise_columns.mcht_fee`
+        ]
+        for (var i = 0; i < operator_list.length; i++) {
+            mcht_columns.push(`merchandise_columns.sales${operator_list[i]?.num}_id`);
+            mcht_columns.push(`merchandise_columns.sales${operator_list[i]?.num}_fee`);
+            mcht_columns.push(`merchandise_columns.sales${operator_list[i]?.num}_withdraw_fee`);
+            mcht_columns.push(`merchandise_columns.sales${operator_list[i]?.num}_deposit_fee`);
+        }
+        let mcht_sql = `SELECT ${mcht_columns.join()} FROM merchandise_columns `
+        mcht_sql += ` WHERE mcht_id=${user?.id} `;
+        let mcht = await pool.query(mcht_sql);
+        mcht = mcht?.result[0];
+        user = {
+            ...user,
+            ...mcht,
+        }
+        result['mcht_amount'] = (-1) * (amount + user?.withdraw_fee);
+        result['mcht_id'] = user?.id;
+        if (dns_data?.is_use_deposit_operator == 1) {
+            result['head_office_amount'] = result['head_office_amount'] ?? 0;
+            result['head_office_amount'] = parseFloat(getUserWithDrawFee(user, 40, operator_list, dns_data?.withdraw_head_office_fee));
+            for (var i = 0; i < operator_list.length; i++) {
+                if (user[`sales${operator_list[i].num}_id`] > 0) {
+                    result[`sales${operator_list[i].num}_amount`] = result[`sales${operator_list[i].num}_amount`] ?? 0;
+                    result[`sales${operator_list[i].num}_amount`] = parseFloat(getUserWithDrawFee(user, operator_list[i].value, operator_list, dns_data?.withdraw_head_office_fee));
+                    result[`sales${operator_list[i].num}_id`] = user[`sales${operator_list[i].num}_id`];
+                }
+            }
+        }
+        return result;
+    } else {
+        for (var i = 0; i < operator_list.length; i++) {
+            if (operator_list[i]?.value == user?.level) {
+                result[`sales${operator_list[i].num}_id`] = user?.id;
+                result[`sales${operator_list[i].num}_amount`] = (-1) * (amount + user?.withdraw_fee);
+                break;
+            }
+        }
+        return result;
+    }
+}
 export function generateRandomString(length = 1) {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let randomString = '';
