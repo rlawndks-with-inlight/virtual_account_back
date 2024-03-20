@@ -4,7 +4,7 @@ import { checkIsManagerUrl } from "../utils.js/function.js";
 import { checkDns, checkLevel, isItemBrandIdSameDnsId, lowLevelException, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 import { Client } from "ssh2";
-import { ssh_list } from "../utils.js/ssh-list.js";
+import { ssh_list } from "../ssh-list.js";
 
 const gitCtrl = {
     commit: async (req, res, next) => {
