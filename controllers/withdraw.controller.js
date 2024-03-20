@@ -408,7 +408,7 @@ const withdrawCtrl = {
                     if (api_result2.code == 100) {
                         let update_obj = {
                             withdraw_status: status,
-                            amount: (status == 0 ? ((-1) * amount) : 0),
+                            amount: (status == 0 ? withdraw?.expect_amount : 0),
                         }
                         let withdraw_obj = await setWithdrawAmountSetting(withdraw_amount, user, dns_data)
                         if (status == 0) {
