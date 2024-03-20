@@ -4,7 +4,7 @@ import db, { pool } from "../config/db.js";
 import corpApi from "../utils.js/corp-util/index.js";
 import { checkIsManagerUrl, returnMoment } from "../utils.js/function.js";
 import { deleteQuery, getMultipleQueryByWhen, getSelectQuery, insertQuery, makeSearchQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
-import { checkDns, checkLevel, commarNumber, getMotherDeposit, getOperatorList, isItemBrandIdSameDnsId, lowLevelException, operatorLevelList, response, settingFiles } from "../utils.js/util.js";
+import { checkDns, checkLevel, commarNumber, getMotherDeposit, getOperatorList, isItemBrandIdSameDnsId, lowLevelException, operatorLevelList, response, setWithdrawAmountSetting, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 import userCtrl from "./user.controller.js";
 
@@ -375,9 +375,9 @@ const withdrawCtrl = {
                 decode_user: user,
                 guid: virtual_account?.guid,
                 amount: withdraw_amount - (dns_data?.withdraw_fee_type == 0 ? 0 : user?.withdraw_fee),
-                bank_code: virtual_account?.deposit_bank_code,
-                acct_num: virtual_account?.deposit_acct_num,
-                acct_name: virtual_account?.deposit_acct_name,
+                bank_code: virtual_account?.deposit_bank_code || withdraw?.settle_bank_code,
+                acct_num: virtual_account?.deposit_acct_num || withdraw?.settle_acct_num,
+                acct_name: virtual_account?.deposit_acct_name || withdraw?.settle_acct_name,
                 trx_id,
             })
             if (api_withdraw_request_result.code != 100) {
