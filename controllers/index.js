@@ -19,6 +19,7 @@ import bellContentCtrl from './bell_content.controller.js';
 import brandPayCtrl from './brand_pay.controller.js';
 import reserveCtrl from './reserve.controller.js';
 import bulkUploadCtrl from './bulk_upload.controller.js';
+import gitCtrl from './git.controller.js';
 
 export {
     brandCtrl,
@@ -40,4 +41,5 @@ export {
     brandPayCtrl,
     reserveCtrl,
     bulkUploadCtrl,
+    gitCtrl,
 };
