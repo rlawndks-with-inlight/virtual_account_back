@@ -383,11 +383,14 @@ const withdrawCtrl = {
             if (api_withdraw_request_result.code != 100) {
                 return response(req, res, -100, (api_withdraw_request_result?.message || "서버 에러 발생"), api_withdraw_request_result?.data)
             }
+            let virtual_acct_balance = api_result?.data?.virtual_acct_balance ?? 0;
             let tid = api_withdraw_request_result.data?.tid;
             let result3 = await updateQuery(`${table_name}`, {
+                withdraw_status: 5,
                 trx_id: api_withdraw_request_result.data?.tid,
                 is_withdraw_hold: 0,
                 top_office_amount: api_withdraw_request_result.data?.top_amount ?? 0,
+                virtual_acct_balance,
             }, withdraw_id);
 
             if (dns_data[`withdraw_corp_type`] == 2) {
