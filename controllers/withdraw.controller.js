@@ -383,7 +383,7 @@ const withdrawCtrl = {
             if (api_withdraw_request_result.code != 100) {
                 return response(req, res, -100, (api_withdraw_request_result?.message || "서버 에러 발생"), api_withdraw_request_result?.data)
             }
-            let virtual_acct_balance = api_result?.data?.virtual_acct_balance ?? 0;
+            let virtual_acct_balance = api_withdraw_request_result?.data?.virtual_acct_balance ?? 0;
             let tid = api_withdraw_request_result.data?.tid;
             let result3 = await updateQuery(`${table_name}`, {
                 withdraw_status: 5,
@@ -393,7 +393,7 @@ const withdrawCtrl = {
                 virtual_acct_balance,
             }, withdraw_id);
 
-            if (dns_data[`withdraw_corp_type`] == 2) {
+            if (dns_data?.withdraw_corp_type == 2) {
                 for (var i = 0; i < 3; i++) {
                     let api_result2 = await corpApi.withdraw.request_check({
                         pay_type: 'withdraw',
