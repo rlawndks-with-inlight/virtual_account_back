@@ -15,6 +15,9 @@ const gitCtrl = {
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
+            for (var i = 0; i < ssh_list.length; i++) {
+                const sshClient = new Client();
+            }
             console.log(1)
             return response(req, res, 100, "success", {});
         } catch (err) {
