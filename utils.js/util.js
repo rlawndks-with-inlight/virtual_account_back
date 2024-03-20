@@ -6,7 +6,7 @@ import 'dotenv/config';
 import { readSync } from 'fs';
 import when from 'when';
 import _ from 'lodash';
-import { returnMoment } from './function.js';
+import { getUserWithDrawFee, returnMoment } from './function.js';
 import { getMultipleQueryByWhen, updateQuery } from './query-util.js';
 import axios from 'axios';
 import corpApi from './corp-util/index.js';
