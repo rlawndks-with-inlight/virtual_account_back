@@ -6,3 +6,4 @@
 ./env
 .env
 
+/utils.js/ssh-list.js
