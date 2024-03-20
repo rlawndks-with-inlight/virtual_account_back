@@ -317,6 +317,7 @@ const withdrawCtrl = {
             if (!withdraw) {
                 return response(req, res, -100, "잘못된 출금 입니다.", false)
             }
+            let trx_id = withdraw?.trx_id;
             let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
             dns_data = dns_data?.result[0];
             dns_data['setting_obj'] = JSON.parse(dns_data?.setting_obj ?? '{}');
@@ -373,33 +374,55 @@ const withdrawCtrl = {
                 dns_data: decode_dns,
                 decode_user: user,
                 guid: virtual_account?.guid,
-                amount: withdraw_amount,
+                amount: withdraw_amount - (dns_data?.withdraw_fee_type == 0 ? 0 : user?.withdraw_fee),
                 bank_code: virtual_account?.deposit_bank_code,
                 acct_num: virtual_account?.deposit_acct_num,
                 acct_name: virtual_account?.deposit_acct_name,
+                trx_id,
             })
             if (api_withdraw_request_result.code != 100) {
                 return response(req, res, -100, (api_withdraw_request_result?.message || "서버 에러 발생"), api_withdraw_request_result?.data)
             }
+            let tid = api_withdraw_request_result.data?.tid;
             let result3 = await updateQuery(`${table_name}`, {
                 trx_id: api_withdraw_request_result.data?.tid,
                 is_withdraw_hold: 0,
                 top_office_amount: api_withdraw_request_result.data?.top_amount ?? 0,
             }, withdraw_id);
-            /*
-            let trx_id = `${new Date().getTime()}${decode_dns?.id}${user?.id}5`;
-            let deposit_obj = {
-                brand_id: decode_dns?.id,
-                pay_type,
-                amount: (-1) * (parseInt(withdraw_amount) + user?.withdraw_fee),
-                settle_bank_code: user?.settle_bank_code,
-                settle_acct_num: user?.settle_acct_num,
-                settle_acct_name: user?.settle_acct_name,
-                trx_id: trx_id,
-                withdraw_fee: user?.withdraw_fee,
-                user_id: user?.id,
+
+            if (dns_data[`withdraw_corp_type`] == 2) {
+                for (var i = 0; i < 3; i++) {
+                    let api_result2 = await corpApi.withdraw.request_check({
+                        pay_type: 'withdraw',
+                        dns_data: dns_data,
+                        decode_user: user,
+                        date: withdraw?.created_at.substring(0, 10).replaceAll('-', ''),
+                        tid,
+                    })
+                    let status = 0;
+                    if (api_result2.data?.status == 3) {
+                        status = 10;
+                    } else if (api_result2.data?.status == 6) {
+                        continue;
+                    }
+                    if (api_result2.code == 100) {
+                        let update_obj = {
+                            withdraw_status: status,
+                            amount: (status == 0 ? ((-1) * amount) : 0),
+                        }
+                        let withdraw_obj = await setWithdrawAmountSetting(withdraw_amount, user, dns_data)
+                        if (status == 0) {
+                            update_obj = {
+                                ...update_obj,
+                                ...withdraw_obj,
+                            }
+                        }
+
+                        let result = await updateQuery(`deposits`, update_obj, withdraw_id)
+                        break;
+                    }
+                }
             }
-            */
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)

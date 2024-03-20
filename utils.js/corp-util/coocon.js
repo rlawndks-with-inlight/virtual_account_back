@@ -193,62 +193,105 @@ export const cooconApi = {
     },
     withdraw: {
         request: async (data) => {//출금요청
+            let {
+                dns_data, pay_type, decode_user,
+                bank_code, acct_num, amount, acct_name, trx_id
+            } = data;
+            let default_body = getDefaultBody(dns_data, pay_type);
+            default_body = {
+                ...default_body,
+                TRSC_SEQ_NO: trx_id,
+            }
             try {
-                let {
-                    dns_data, pay_type, decode_user,
-                    bank_code, acct_num
-                } = data;
-                let query = {
+                let query = new URLSearchParams()
+                query.append('JSONData', JSON.stringify({
+                    ...default_body,
                     KEY: '6120',
                     RCV_BNK_CD: bank_code,
                     RCV_ACCT_NO: acct_num,
+                    WDRW_ACCT_NO: dns_data[`${pay_type}_virtual_acct_num`],
+                    TRSC_AMT: amount,
+                    WDRW_ACCT_NM: acct_name,
+                }))
+                let { data: response } = await axios.post(`${API_URL}/sol/gateway/vapg_wapi.jsp`, query, {
+                    headers: getDefaultHeader(),
+                });
+                if (response?.RESP_CD == '0000') {
+                    return {
+                        code: 100,
+                        message: '',
+                        data: {
+                            amount: response?.TRSC_AMT,
+                            tid: default_body?.TRSC_SEQ_NO,
+                            virtual_acct_balance: response?.BAL_AMT,
+                        },
+                    };
+                } else {
+                    return {
+                        code: -100,
+                        message: response?.RESP_MSG,
+                        data: {
+                            tid: default_body?.TRSC_SEQ_NO
+                        },
+                    };
                 }
-                let { data: response } = await axios.post(`${API_URL}/sol/gateway/vapg_wapi.jsp`, {
-                    ...getDefaultBody(dns_data, pay_type),
-                    ...query,
-                })
-                response.data = {
-
-                }
-                return {
-                    code: 100,
-                    message: '',
-                    data: response.data,
-                };
             } catch (err) {
                 console.log(err)
                 console.log(err?.response?.data)
                 return {
                     code: -100,
                     message: '',
-                    data: {},
+                    data: {
+                        tid: default_body?.TRSC_SEQ_NO
+                    },
                 };
 
             }
         },
-        request_check: async (data) => {//출금요청
+        request_check: async (data) => {//출금확인
             try {
                 let {
                     dns_data, pay_type, decode_user,
-                    bank_code, acct_num
+                    date, tid
                 } = data;
-                let query = {
-                    KEY: '6170',
-                    RCV_BNK_CD: bank_code,
-                    RCV_ACCT_NO: acct_num,
-                }
-                let { data: response } = await axios.post(`${API_URL}/sol/gateway/vapg_wapi.jsp`, {
+                let query = new URLSearchParams()
+                query.append('JSONData', JSON.stringify({
                     ...getDefaultBody(dns_data, pay_type),
-                    ...query,
-                })
-                response.data = {
-
+                    KEY: '6170',
+                    RQRE_TMSG_NO: tid,
+                    REQ_TRSC_DT: date
+                }))
+                let { data: response } = await axios.post(`${API_URL}/sol/gateway/vapg_wapi.jsp`, query, {
+                    headers: getDefaultHeader(),
+                });
+                let status = response?.STS;
+                if (response?.RESP_CD == '0000') {
+                    if (response?.TRSC_AMT > 0 && status == 1) {
+                        return {
+                            code: 100,
+                            message: '',
+                            data: {
+                                amount: response?.TRSC_AMT,
+                                status,
+                            },
+                        };
+                    } else {
+                        return {
+                            code: -100,
+                            message: response?.RCV_ACCT_NM,
+                            data: {
+                                amount: response?.TRSC_AMT,
+                                status,
+                            },
+                        };
+                    }
+                } else {
+                    return {
+                        code: -100,
+                        message: response?.RESP_MSG,
+                        data: {},
+                    };
                 }
-                return {
-                    code: 100,
-                    message: '',
-                    data: response.data,
-                };
             } catch (err) {
                 console.log(err)
                 console.log(err?.response?.data)
