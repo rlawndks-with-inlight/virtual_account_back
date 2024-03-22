@@ -72,9 +72,7 @@ const logCtrl = {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
             const { id } = req.params;
-            let result = await deleteQuery('brands', {
-                id
-            })
+
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
