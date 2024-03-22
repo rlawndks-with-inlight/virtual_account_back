@@ -528,23 +528,49 @@ const withdrawCtrl = {
             dns_data = dns_data?.result[0];
 
             let withdraw_id = withdraw?.id;
-            let mother_to_result = await corpApi.transfer.pass({
+            let user_amount = await corpApi.balance.info({
                 pay_type: 'deposit',
-                dns_data,
-                decode_user: user,
-                from_guid: virtual_account?.guid,
-                to_guid: dns_data[`deposit_guid`],
-                amount: withdraw_amount,
+                dns_data: decode_dns,
+                decode_user,
+                guid: virtual_account?.guid,
             })
-            if (mother_to_result.code == 100) {
-                let update_mother_to_result = await updateQuery(`${table_name}`, {
-                    is_move_mother: 0,
-                }, deposit_id);
+            let amount = user_amount.data?.amount ?? 0
+            if (amount > 0 && virtual_account) {
+                let mother_to_result = await corpApi.transfer.pass({
+                    pay_type: 'deposit',
+                    dns_data,
+                    decode_user,
+                    from_guid: virtual_account?.guid,
+                    to_guid: dns_data[`deposit_guid`],
+                    amount: amount,
+                })
+                let obj = {
+                    brand_id: decode_dns?.id,
+                    virtual_account_id: virtual_account?.id,
+                    amount,
+                    expect_amount: amount,
+                    deposit_bank_code: virtual_account?.deposit_bank_code,
+                    deposit_acct_num: virtual_account?.deposit_acct_num,
+                    deposit_acct_name: virtual_account?.deposit_acct_name,
+                    pay_type: 15,
+                    trx_id: mother_to_result.data?.tid,
+                };
+                let result = await insertQuery(`deposits`, obj);
             }
             let result = await updateQuery(`${table_name}`, {
                 is_withdraw_hold: 0,
                 withdraw_status: 10
             }, withdraw_id);
+
+            let result2 = await userCtrl.changeUserDeposit({
+                ...req, IS_RETURN: true, body: {
+                    amount: withdraw_amount + withdraw?.withdraw_fee,
+                    pay_type: 25,
+                    user_id: user?.id,
+                    note: "출금 실패",
+                }
+            }, res, next);
+
             /*
             let trx_id = `${new Date().getTime()}${decode_dns?.id}${user?.id}5`;
             let deposit_obj = {
