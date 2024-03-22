@@ -91,7 +91,6 @@ const logRequestResponse = async (req, res, decode_user, decode_dns) => {//로�
 
         let request = {
             url: req.originalUrl,
-            headers: req.headers,
             query: req.query,
             params: req.params,
             body: req.body,
@@ -130,7 +129,7 @@ export const response = async (req, res, code, message, data) => { //응답 포�
     }
     const decode_user = checkLevel(req.cookies.token, 0, res)
     const decode_dns = checkDns(req.cookies.dns, 0)
-    if (req.originalUrl?.includes('/auth') || req.originalUrl?.includes('/withdraw') || req.originalUrl?.includes('/user') || req.method == 'DELETE') {
+    if (req.originalUrl?.includes('/auth') || req.method == 'DELETE' || req.method == 'POST' || req.method == 'PUT') {
         let save_log = await logRequestResponse(req, resDict, decode_user, decode_dns);
     }
     if (req?.IS_RETURN) {
