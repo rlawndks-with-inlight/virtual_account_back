@@ -5,6 +5,8 @@ import { deleteQuery, getSelectQuery, insertQuery, makeSearchQuery, selectQueryS
 import { checkDns, checkLevel, getNumberByPercent, isItemBrandIdSameDnsId, response, settingFiles, operatorLevelList, getOperatorList, lowLevelException, getChildrenBrands } from "../utils.js/util.js";
 import _ from 'lodash';
 import 'dotenv/config';
+import axios from "axios";
+import { getDnsData } from "../utils.js/corp-util/index.js";
 
 const table_name = 'deposits';
 
@@ -238,6 +240,78 @@ const depositCtrl = {
             let result = await updateQuery(`${table_name}`, {
                 note
             }, deposit_id)
+            return response(req, res, 100, "success", {})
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
+    addNotiDeposit: async (req, res, next) => { // 노티 누락건 추가
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = checkLevel(req.cookies.token, 40);
+            const decode_dns = checkDns(req.cookies.dns);
+            if (!(((decode_user?.level >= 40 && !(decode_dns?.parent_id > 0)) || decode_user?.level >= 45) && [1, 3, 6].includes(decode_dns?.deposit_corp_type))) {
+                return lowLevelException(req, res);
+            }
+            const {
+                guid,
+                trx_id,
+                amount,
+                date,
+                time
+            } = req.body;
+            if (!trx_id || !amount || !guid) {
+                return response(req, res, -100, "필수값을 입력해 주세요.", false)
+            }
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
+            let dns_data = await getDnsData(decode_dns);
+
+            let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE guid=? AND brand_id=?`, [
+                guid,
+                decode_dns?.id,
+            ])
+            virtual_account = virtual_account?.result[0];
+            if (!virtual_account) {
+                return response(req, res, -100, "존재하지 않는 가상계좌 guid 입니다.", false)
+            }
+            if (decode_dns?.deposit_corp_type == 1) {//뱅크너스
+                let { data: response } = await axios.post(`${process.env.API_URL}/api/push/deposit`, {
+                    trx_amt: amount,
+                    guid: virtual_account?.guid,
+                    tid: trx_id,
+                })
+                if (response != '0000') {
+                    return response(req, res, -100, "노티서버 문제", false)
+                }
+            } else if (decode_dns?.deposit_corp_type == 3) {//페이투스
+
+            } else if (decode_dns?.deposit_corp_type == 6) {//코리아
+                let top_amount = getNumberByPercent(amount, dns_data?.head_office_fee)
+                let { data: response } = await axios.post(`${process.env.API_URL}/api/push/korea-pay-system/deposit`, {
+                    response: {
+                        vactId: trx_id,
+                        mchtId: dns_data?.deposit_api_id,
+                        issueId: virtual_account?.tid,
+                        sender: virtual_account?.deposit_acct_name,
+                        amount: amount,
+                        trxType: 'deposit',
+                        trxDay: date,
+                        trxTime: time,
+                        trackId: virtual_account?.guid,
+                        stlFee: top_amount,
+                        stlFeeVat: 0,
+                        resultMsg: "",
+                    }
+                });
+                if (response != '0000') {
+                    return response(req, res, -100, "노티서버 문제", false)
+                }
+            }
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)

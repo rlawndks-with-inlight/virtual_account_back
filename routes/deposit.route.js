@@ -15,5 +15,7 @@ router
 router
     .route('/change-note')
     .post(depositCtrl.changeNote);
-
+router
+    .route('/add-noti')
+    .post(depositCtrl.addNotiDeposit);
 export default router;
