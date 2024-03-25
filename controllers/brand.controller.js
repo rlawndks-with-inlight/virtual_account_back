@@ -20,8 +20,9 @@ const brandCtrl = {
                 `${table_name}.*`,
             ]
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
+            sql += ` WHERE is_delete=0 `
             if (decode_dns?.is_main_dns != 1) {
-                sql += `WHERE id=${decode_dns?.id}`;
+                sql += ` AND id=${decode_dns?.id}`;
             }
 
             let chart_columns = [
