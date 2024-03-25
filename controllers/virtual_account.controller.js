@@ -333,15 +333,15 @@ const virtualAccountCtrl = {
             }
             const {
                 virtual_account_id,
-                mid,
+                mcht_id,
             } = req.body;
             let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE brand_id=${decode_dns?.id} AND id=${virtual_account_id}`);
             virtual_account = virtual_account?.result[0];
             if (!virtual_account) {
                 return response(req, res, -100, "가상계좌가 존재하지 않습니다.", false)
             }
-            let mcht = await pool.query(`SELECT * FROM users WHERE level=10 AND brand_id=${decode_dns?.id} AND mid=?`, [
-                mid,
+            let mcht = await pool.query(`SELECT * FROM users WHERE level=10 AND brand_id=${decode_dns?.id} AND id=?`, [
+                mcht_id,
             ]);
             mcht = mcht?.result[0];
             if (!mcht) {
