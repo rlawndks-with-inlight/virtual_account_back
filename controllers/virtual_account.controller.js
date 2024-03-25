@@ -4,7 +4,7 @@ import db, { pool } from "../config/db.js";
 import corpApi from "../utils.js/corp-util/index.js";
 import { checkIsManagerUrl, returnMoment } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, makeSearchQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
-import { checkDns, checkLevel, isItemBrandIdSameDnsId, response, settingFiles } from "../utils.js/util.js";
+import { checkDns, checkLevel, isItemBrandIdSameDnsId, lowLevelException, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 
 const table_name = 'virtual_accounts';
@@ -315,6 +315,42 @@ const virtualAccountCtrl = {
             let result = await updateQuery(`${table_name}`, {
                 virtual_user_name
             }, virtual_account_id)
+            return response(req, res, 100, "success", {})
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
+    connectMcht: async (req, res, next) => {//가맹점과 매칭
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = checkLevel(req.cookies.token, 40);
+            const decode_dns = checkDns(req.cookies.dns);
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
+            const {
+                virtual_account_id,
+                mid,
+            } = req.body;
+            let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE brand_id=${decode_dns?.id} AND id=${virtual_account_id}`);
+            virtual_account = virtual_account?.result[0];
+            if (!virtual_account) {
+                return response(req, res, -100, "가상계좌가 존재하지 않습니다.", false)
+            }
+            let mcht = await pool.query(`SELECT * FROM users WHERE level=10 AND brand_id=${decode_dns?.id} AND mid=?`, [
+                mid,
+            ]);
+            mcht = mcht?.result[0];
+            if (!mcht) {
+                return response(req, res, -100, "존재하지 않는 가맹점 입니다.", false)
+            }
+            let result = await updateQuery(`${table_name}`, {
+                mcht_id: mcht?.id,
+            }, virtual_account_id);
+
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)

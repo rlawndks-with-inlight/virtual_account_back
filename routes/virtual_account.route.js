@@ -21,4 +21,8 @@ router
 router
     .route('/change-virtual-user-name')
     .post(virtualAccountCtrl.changeVirtualUserName)
+router
+    .route('/connect-mcht')
+    .post(virtualAccountCtrl.connectMcht)
+
 export default router;
