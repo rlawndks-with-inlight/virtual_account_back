@@ -284,7 +284,7 @@ const userCtrl = {
                 brand_id, user_name, user_pw, name, nickname, level, phone_num, profile_img, note,
                 mcht_fee = 0,
                 guid,
-                deposit_fee = 0, withdraw_fee = 0, min_withdraw_price = 0, min_withdraw_remain_price = 0, min_withdraw_hold_price = 0, is_withdraw_hold = 0, can_return_ago_pay = 1, daily_withdraw_amount = 0,
+                deposit_fee = 0, withdraw_fee = 0, min_withdraw_price = 0, min_withdraw_remain_price = 0, min_withdraw_hold_price = 0, is_withdraw_hold = 0, can_return_ago_pay = 1, is_not_same_acct_withdraw_minute = 0, daily_withdraw_amount = 0,
                 withdraw_bank_code, withdraw_acct_num, withdraw_acct_name, telegram_chat_ids = '[]', otp_token = '', sign_key = '', deposit_noti_url = '', withdraw_noti_url = '',
                 children_brand_dns = '',
                 can_return = 1,
@@ -302,7 +302,7 @@ const userCtrl = {
 
             let obj = {
                 brand_id, user_name, user_pw, user_salt, name, nickname, level, phone_num, profile_img, note,
-                deposit_fee, withdraw_fee, min_withdraw_price, min_withdraw_remain_price, min_withdraw_hold_price, is_withdraw_hold, can_return_ago_pay, daily_withdraw_amount,
+                deposit_fee, withdraw_fee, min_withdraw_price, min_withdraw_remain_price, min_withdraw_hold_price, is_withdraw_hold, can_return_ago_pay, is_not_same_acct_withdraw_minute, daily_withdraw_amount,
                 withdraw_bank_code, withdraw_acct_num, withdraw_acct_name, telegram_chat_ids, otp_token, sign_key, deposit_noti_url, withdraw_noti_url,
                 can_return
             };
@@ -380,7 +380,7 @@ const userCtrl = {
                 brand_id, user_name, name, nickname, level, phone_num, profile_img, note,
                 mcht_fee = 0,
                 guid = "",
-                deposit_fee = 0, withdraw_fee = 0, min_withdraw_price = 0, min_withdraw_remain_price = 0, min_withdraw_hold_price = 0, is_withdraw_hold = 0, can_return_ago_pay = 1, daily_withdraw_amount = 0,
+                deposit_fee = 0, withdraw_fee = 0, min_withdraw_price = 0, min_withdraw_remain_price = 0, min_withdraw_hold_price = 0, is_withdraw_hold = 0, can_return_ago_pay = 1, is_not_same_acct_withdraw_minute = 0, daily_withdraw_amount = 0,
                 withdraw_bank_code, withdraw_acct_num, withdraw_acct_name, telegram_chat_ids = '[]', otp_token = '', sign_key = '', deposit_noti_url = '', withdraw_noti_url = '',
                 children_brand_dns = "",
                 ip_list = [],
@@ -390,7 +390,7 @@ const userCtrl = {
             let files = settingFiles(req.files);
             let obj = {
                 brand_id, user_name, name, nickname, level, phone_num, profile_img, note,
-                deposit_fee, withdraw_fee, min_withdraw_price, min_withdraw_remain_price, min_withdraw_hold_price, is_withdraw_hold, can_return_ago_pay, daily_withdraw_amount,
+                deposit_fee, withdraw_fee, min_withdraw_price, min_withdraw_remain_price, min_withdraw_hold_price, is_withdraw_hold, can_return_ago_pay, is_not_same_acct_withdraw_minute, daily_withdraw_amount,
                 withdraw_bank_code, withdraw_acct_num, withdraw_acct_name, telegram_chat_ids, otp_token, sign_key, deposit_noti_url, withdraw_noti_url,
                 can_return,
             };
