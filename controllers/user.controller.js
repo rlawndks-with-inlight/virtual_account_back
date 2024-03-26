@@ -450,7 +450,7 @@ const userCtrl = {
                 }
             }
             if (result_delete_ip_list.length > 0) {//기존거 삭제
-                let delete_ip_result = await pool.query(`DELETE FROM permit_ips WHERE id IN (${result_delete_ip_list.join()})`)
+                let delete_ip_result = await pool.query(`UPDATE permit_ips SET is_delete=0 WHERE id IN (${result_delete_ip_list.join()})`)
             }
 
             if (level == 10) {//가맹점
