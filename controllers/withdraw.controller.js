@@ -480,7 +480,7 @@ const withdrawCtrl = {
                     amount: withdraw_amount + withdraw?.withdraw_fee,
                     pay_type: 25,
                     user_id: user?.id,
-                    note: "출금 반려",
+                    note: `${withdraw?.created_at}건 출금 반려`,
                 }
             }, res, next);
             /*
@@ -576,7 +576,7 @@ const withdrawCtrl = {
                     amount: withdraw_amount + withdraw?.withdraw_fee,
                     pay_type: 25,
                     user_id: user?.id,
-                    note: "출금 실패",
+                    note: `${withdraw?.created_at}건 출금 실패`,
                 }
             }, res, next);
 
