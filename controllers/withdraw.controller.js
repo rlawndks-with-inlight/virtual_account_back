@@ -450,6 +450,9 @@ const withdrawCtrl = {
             if (!withdraw) {
                 return response(req, res, -100, "잘못된 출금 입니다.", false)
             }
+            if (withdraw?.withdraw_status == 15) {
+                return response(req, res, -100, "이미 반려된 건입니다.", false)
+            }
             let withdraw_amount = (withdraw?.expect_amount + withdraw?.withdraw_fee) * (-1);
             let user = await pool.query(`SELECT * FROM users WHERE id=${withdraw?.user_id} AND brand_id=${decode_dns?.id}`);
             user = user?.result[0];
@@ -514,6 +517,9 @@ const withdrawCtrl = {
             withdraw = withdraw?.result[0];
             if (!withdraw) {
                 return response(req, res, -100, "잘못된 출금 입니다.", false)
+            }
+            if (withdraw?.withdraw_status == 10) {
+                return response(req, res, -100, "이미 실패된 건입니다.", false)
             }
             let withdraw_amount = (withdraw?.expect_amount + withdraw?.withdraw_fee) * (-1);
             let user = await pool.query(`SELECT * FROM users WHERE id=${withdraw?.user_id} AND brand_id=${decode_dns?.id}`);
