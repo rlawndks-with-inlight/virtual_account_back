@@ -374,7 +374,10 @@ const userCtrl = {
     update: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = checkLevel(req.cookies.token, 40);
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
             const decode_dns = checkDns(req.cookies.dns);
             const {
                 brand_id, user_name, name, nickname, level, phone_num, profile_img, note,
