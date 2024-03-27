@@ -75,7 +75,7 @@ const domainCtrl = {
             let parents = findParents(brands, brand)
             brand['childrens'] = childrens;
             brand['parents'] = parents;
-            const token = await makeUserToken(brand);
+            const token = await makeUserToken(brand, 'dns');
 
             res.cookie("dns", token, {
                 httpOnly: true,

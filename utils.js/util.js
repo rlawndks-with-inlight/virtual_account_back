@@ -27,9 +27,9 @@ export const createHashedPassword = async (password, salt_) => {
     const hashedPassword = key.toString("base64");
     return { hashedPassword, salt };
 };
-export const makeUserToken = (obj) => {
+export const makeUserToken = (obj, type = 'user') => {
     let token = jwt.sign({ ...obj },
-        process.env.JWT_SECRET,
+        type == 'user' ? process.env.JWT_SECRET : process.env.DNS_JWT_SECRET,
         {
             expiresIn: '180m',
             issuer: 'fori',
@@ -67,7 +67,7 @@ export const checkDns = (token) => { //dns 정보 뿌려주기
             return false
 
         //const decoded = jwt.decode(token)
-        const decoded = jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        const decoded = jwt.verify(token, process.env.DNS_JWT_SECRET, (err, decoded) => {
             //console.log(decoded)
             if (err) {
                 // console.log("token이 변조되었습니다." + err);
