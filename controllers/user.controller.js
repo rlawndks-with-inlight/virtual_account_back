@@ -117,9 +117,7 @@ const userCtrl = {
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
 
-            let user_list = await pool.query(`SELECT * FROM ${table_name} WHERE ${table_name}.brand_id=${decode_dns?.id} AND ${table_name}.is_delete=0 `);
-            let user_tree = makeUserTree(user_list?.result, decode_user);
-            return response(req, res, 100, "success", user_tree);
+            return response(req, res, 100, "success", {});
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)
@@ -219,6 +217,7 @@ const userCtrl = {
             sql += ` LEFT JOIN merchandise_columns ON merchandise_columns.mcht_id=${table_name}.id `;
             sql += ` LEFT JOIN virtual_accounts ON ${table_name}.virtual_account_id=virtual_accounts.id `;
             sql += ` WHERE ${table_name}.mid=${mid} `;
+            sql += ` AND ${table_name}.brand_id=${decode_dns?.id} `;
 
             let data = await pool.query(sql)
             data = data?.result[0];
@@ -258,9 +257,12 @@ const userCtrl = {
     remove: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = checkLevel(req.cookies.token, 40);
             const decode_dns = checkDns(req.cookies.dns);
             const { id } = req.params;
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
             let result = await deleteQuery(`${table_name}`, {
                 id
             })
