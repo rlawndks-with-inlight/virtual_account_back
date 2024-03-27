@@ -374,10 +374,21 @@ const authCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
+            let { mid = "" } = req.query;
+            let user = {};
+            if (decode_user) {
+                user = await pool.query(`SELECT * FROM users WHERE id=${decode_user?.id ?? 0}`);
+                user = user?.result[0];
+            } else {
+                user = await pool.query(`SELECT * FROM users WHERE mid=?`, [
+                    mid,
+                ]);
+                user = user?.result[0];
+            }
+            mid = user?.mid ?? "";
+            let sign_key = user?.sign_key ?? "";
 
-            let user = await pool.query(`SELECT * FROM users WHERE id=${decode_user?.id}`);
-            user = user?.result[0];
-            let api_sign_val = crypto.createHash('sha256').update(`${decode_dns?.api_key}${user?.mid ?? ""}${user?.sign_key ?? ""}`).digest('hex');
+            let api_sign_val = crypto.createHash('sha256').update(`${decode_dns?.api_key}${mid}${sign_key}`).digest('hex');
             return response(req, res, 100, "success", {
                 api_sign_val
             })
