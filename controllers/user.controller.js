@@ -5,6 +5,7 @@ import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, makeSearchQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, createHashedPassword, getOperatorList, getUserDepositFee, isItemBrandIdSameDnsId, lowLevelException, makeObjByList, makeUserChildrenList, makeUserTree, operatorLevelList, response, settingFiles, settingMchtFee } from "../utils.js/util.js";
 import 'dotenv/config';
+import { emitSocket } from "../utils.js/socket/index.js";
 
 const table_name = 'users';
 
@@ -596,7 +597,15 @@ const userCtrl = {
                 }
             }
             let result = await insertQuery(`deposits`, obj);
-
+            let bell_data = {
+                amount,
+                nickname: user?.nickname,
+            }
+            emitSocket({
+                method: 'settle_plus',
+                brand_id: decode_dns?.id,
+                data: bell_data
+            })
 
             return response(req, res, 100, "success", {})
         } catch (err) {
