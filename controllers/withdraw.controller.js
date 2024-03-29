@@ -638,7 +638,6 @@ const withdrawCtrl = {
             let result = await updateQuery(`${table_name}`, {
                 is_withdraw_hold: 0,
                 withdraw_status: 0,
-                amount: withdraw?.expect_amount
             }, withdraw_id);
             /*
             let trx_id = `${new Date().getTime()}${decode_dns?.id}${user?.id}5`;
