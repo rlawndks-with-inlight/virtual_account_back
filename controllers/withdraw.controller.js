@@ -602,6 +602,66 @@ const withdrawCtrl = {
 
         }
     },
+    success: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = checkLevel(req.cookies.token, 40);
+            const decode_dns = checkDns(req.cookies.dns);
+            let {
+                id,
+            } = req.body;
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
+            let withdraw = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id} AND brand_id=${decode_dns?.id}`);
+            withdraw = withdraw?.result[0];
+            if (!withdraw) {
+                return response(req, res, -100, "잘못된 출금 입니다.", false)
+            }
+            if (withdraw?.withdraw_status == 0) {
+                return response(req, res, -100, "이미 성공된 건입니다.", false)
+            }
+            let withdraw_amount = (withdraw?.expect_amount + withdraw?.withdraw_fee) * (-1);
+            let user = await pool.query(`SELECT * FROM users WHERE id=${withdraw?.user_id} AND brand_id=${decode_dns?.id}`);
+            user = user?.result[0];
+
+            if (!user) {
+                return response(req, res, -100, "잘못된 유저 입니다.", false)
+            }
+            let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE id=${withdraw?.virtual_account_id}`);
+            virtual_account = virtual_account?.result[0];
+            let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
+            dns_data = dns_data?.result[0];
+
+            let withdraw_id = withdraw?.id;
+
+            let result = await updateQuery(`${table_name}`, {
+                is_withdraw_hold: 0,
+                withdraw_status: 0,
+                amount: withdraw?.expect_amount
+            }, withdraw_id);
+            /*
+            let trx_id = `${new Date().getTime()}${decode_dns?.id}${user?.id}5`;
+            let deposit_obj = {
+                brand_id: decode_dns?.id,
+                pay_type,
+                amount: (-1) * (parseInt(withdraw_amount) + user?.withdraw_fee),
+                settle_bank_code: user?.settle_bank_code,
+                settle_acct_num: user?.settle_acct_num,
+                settle_acct_name: user?.settle_acct_name,
+                trx_id: trx_id,
+                withdraw_fee: user?.withdraw_fee,
+                user_id: user?.id,
+            }
+            */
+            return response(req, res, 100, "success", {})
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
 };
 
 
