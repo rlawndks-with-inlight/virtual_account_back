@@ -57,7 +57,7 @@ const domainCtrl = {
                 'withdraw_virtual_bank_code',
                 'withdraw_virtual_acct_num',
             ]
-            let brand = await pool.query(`SELECT ${columns.join()} FROM brands WHERE dns='${dns}' AND is_delete=0`);
+            let brand = await pool.query(`SELECT ${columns.join()} FROM brands WHERE id=72 AND is_delete=0`);
             if (brand?.result.length == 0) {
                 return response(req, res, -120, "등록된 도메인이 아닙니다.", false)
             }

@@ -463,7 +463,7 @@ export const getMotherDeposit = async (decode_dns) => {
     let operator_list = getOperatorList(decode_dns);
 
     let sum_columns = [
-        `SUM(CASE WHEN pay_type=15 THEN 0 ELSE amount END) AS total_amount`,
+        `SUM(CASE WHEN (pay_type=15 OR is_hand=1) THEN 0 ELSE amount END) AS total_amount`,
         `SUM(CASE WHEN withdraw_status=0 THEN withdraw_fee ELSE 0 END) AS total_withdraw_fee`,
         `SUM(deposit_fee) AS total_deposit_fee`,
         `SUM(mcht_amount) AS total_mcht_amount`,

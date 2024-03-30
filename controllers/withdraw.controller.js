@@ -640,6 +640,7 @@ const withdrawCtrl = {
             let result = await updateQuery(`${table_name}`, {
                 is_withdraw_hold: 0,
                 withdraw_status: 0,
+                amount: withdraw?.expect_amount,
                 is_hand: 1,
             }, withdraw_id);
             /*
