@@ -472,7 +472,8 @@ const withdrawCtrl = {
 
             let result = await updateQuery(`${table_name}`, {
                 is_withdraw_hold: 0,
-                withdraw_status: 15
+                withdraw_status: 15,
+                is_hand: 1,
             }, withdraw_id);
             //
             let result2 = await userCtrl.changeUserDeposit({
@@ -568,7 +569,8 @@ const withdrawCtrl = {
             }
             let result = await updateQuery(`${table_name}`, {
                 is_withdraw_hold: 0,
-                withdraw_status: 10
+                withdraw_status: 10,
+                is_hand: 1,
             }, withdraw_id);
 
             let result2 = await userCtrl.changeUserDeposit({
@@ -638,6 +640,7 @@ const withdrawCtrl = {
             let result = await updateQuery(`${table_name}`, {
                 is_withdraw_hold: 0,
                 withdraw_status: 0,
+                is_hand: 1,
             }, withdraw_id);
             /*
             let trx_id = `${new Date().getTime()}${decode_dns?.id}${user?.id}5`;
