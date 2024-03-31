@@ -51,7 +51,7 @@ const authCtrl = {
             if (parent_ids.length > 0) {
                 parent_where_sql = ` OR (users.level>=40 AND brand_id IN (${parent_ids.join()})) `
             }
-            let user = await pool.query(`SELECT * FROM users WHERE user_name=? AND ( brand_id=${decode_dns?.id} ${parent_where_sql} OR level >=50 ) LIMIT 1 AND is_delete=0`, user_name);
+            let user = await pool.query(`SELECT * FROM users WHERE user_name=? AND ( brand_id=${decode_dns?.id} ${parent_where_sql} OR level >=50 ) AND is_delete=0 LIMIT 1 `, user_name);
             user = user?.result[0];
             if (!user) {
                 return response(req, res, -100, "가입되지 않은 회원입니다.", {})
