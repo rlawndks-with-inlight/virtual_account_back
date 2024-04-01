@@ -72,7 +72,11 @@ export const getTableNameBySelectQuery = (sql) => {// select query 가지고 불
 export const getSelectQuery = async (sql_, columns, query, add_sql_list = []) => {
 
     const { page = 1, page_size = 100000, is_asc = false, order = 'id', s_dt, e_dt, } = query;
-    if (page_size >= 1000 && (differenceTwoDate(e_dt, s_dt) > 7 || !s_dt)) {
+
+
+    let sql = sql_;
+    let table = getTableNameBySelectQuery(sql);
+    if (page_size >= 1000 && (differenceTwoDate(e_dt, s_dt) > 7 || !s_dt) && (table == 'deposits')) {
         return {
             total: 0,
             page,
@@ -80,10 +84,6 @@ export const getSelectQuery = async (sql_, columns, query, add_sql_list = []) =>
             content: [],
         }
     }
-
-    let sql = sql_;
-    let table = getTableNameBySelectQuery(sql);
-
     sql = settingSelectQueryWhere(sql, query, table);
     for (var i = 0; i < add_sql_list.length; i++) {
         add_sql_list[i].sql = settingSelectQueryWhere(add_sql_list[i].sql, query, table);
