@@ -1,6 +1,7 @@
 import { pool } from '../config/db.js';
 import 'dotenv/config';
 import when from 'when';
+import { differenceTwoDate, returnMoment } from './function.js';
 
 export const insertQuery = async (table, obj) => {
     let keys = Object.keys(obj);
@@ -69,7 +70,17 @@ export const getTableNameBySelectQuery = (sql) => {// select query 가지고 불
     return table;
 }
 export const getSelectQuery = async (sql_, columns, query, add_sql_list = []) => {
-    const { page = 1, page_size = 100000, is_asc = false, order = 'id' } = query;
+
+    const { page = 1, page_size = 100000, is_asc = false, order = 'id', s_dt, e_dt, } = query;
+    if (page_size >= 1000 && (differenceTwoDate(e_dt, s_dt) > 3 || !s_dt)) {
+        return {
+            total: 0,
+            page,
+            page_size,
+            content: [],
+        }
+    }
+
     let sql = sql_;
     let table = getTableNameBySelectQuery(sql);
 
