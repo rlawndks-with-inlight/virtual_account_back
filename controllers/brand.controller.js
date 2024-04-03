@@ -21,6 +21,7 @@ const brandCtrl = {
             }
             let columns = [
                 `${table_name}.*`,
+                `(SELECT MAX(date) FROM brand_pays WHERE brand_id=${table_name}.id AND is_delete=0) AS last_pay_date`
             ]
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
             sql += ` WHERE is_delete=0 `
@@ -35,7 +36,6 @@ const brandCtrl = {
             chart_sql = chart_sql.replaceAll(process.env.SELECT_COLUMN_SECRET, chart_columns.join());
             let chart_data = await pool.query(chart_sql);
             chart_data = chart_data?.result[0];
-
             let data = await getSelectQuery(sql, columns, req.query);
 
             return response(req, res, 100, "success", { ...data, chart: chart_data });
