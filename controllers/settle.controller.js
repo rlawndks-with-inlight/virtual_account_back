@@ -1,7 +1,7 @@
 'use strict';
 import { pool } from "../config/db.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
-import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
+import { deleteQuery, getSelectQuery, insertQuery, makeSearchQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, getNumberByPercent, isItemBrandIdSameDnsId, response, settingFiles, operatorLevelList, getOperatorList } from "../utils.js/util.js";
 import _ from 'lodash';
 import 'dotenv/config';
@@ -14,7 +14,13 @@ const settleCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
-            const { level, pay_type, s_dt, e_dt } = req.query;
+            const { level, pay_type, s_dt, e_dt, search } = req.query;
+
+            let search_columns = [
+                `users.user_name`,
+                `users.nickname`,
+            ]
+
             let columns = [
                 `${table_name}.*`,
                 `users.user_name`,
@@ -69,6 +75,9 @@ const settleCtrl = {
                 }
             } else {
                 where_sql += ` AND ${table_name}.${user_id_column}=${decode_user?.id} `;
+            }
+            if (search) {
+                where_sql += makeSearchQuery(search_columns, search);
             }
             sql = sql + where_sql;
             console.log(user_amount_column)
