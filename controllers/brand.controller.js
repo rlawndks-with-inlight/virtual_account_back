@@ -13,9 +13,12 @@ const brandCtrl = {
     list: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = checkLevel(req.cookies.token, 40);
             const decode_dns = checkDns(req.cookies.dns);
             const { } = req.query;
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
             let columns = [
                 `${table_name}.*`,
             ]
@@ -46,8 +49,11 @@ const brandCtrl = {
     get: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = checkLevel(req.cookies.token, 40);
             const decode_dns = checkDns(req.cookies.dns);
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
             const { id } = req.params;
             let columns = [
                 `${table_name}.*`,
@@ -264,9 +270,12 @@ const brandCtrl = {
     remove: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = checkLevel(req.cookies.token, 50);
             const decode_dns = checkDns(req.cookies.dns);
             const { id } = req.params;
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
             let result = await deleteQuery(`${table_name}`, {
                 id
             })
