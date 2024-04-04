@@ -27,7 +27,18 @@ const gitCtrl = {
         }
     },
 };
-const execSSH = (ssh_obj) => {
+const execSSH = (ssh_obj_ = {}) => {
+    let ssh_obj = {
+        host: ssh_obj_?.host,
+        port: ssh_obj_?.port, // 기본 포트는 22번입니다.
+        username: ssh_obj_?.username,
+        dns: ssh_obj_?.dns,
+    }
+    if (ssh_obj_?.key_type == 'pem') {
+        ssh_obj['privateKey'] = ssh_obj_?.privateKey;
+    } else if (ssh_obj_?.key_type == 'password') {
+        ssh_obj['password'] = ssh_obj_?.password;
+    }
     const conn = new Client();
     conn.on('ready', () => {
         console.log('Client :: ready');
