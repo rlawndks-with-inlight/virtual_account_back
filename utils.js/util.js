@@ -50,7 +50,7 @@ export const checkLevel = (token, level) => { //유저 정보 뿌려주기
             }
             else return decoded;
         })
-        const user_level = decoded.level
+        const user_level = decoded?.level ?? -1
         if (level > user_level)
             return false
         else
