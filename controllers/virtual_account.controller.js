@@ -13,7 +13,7 @@ const virtualAccountCtrl = {
     list: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = checkLevel(req.cookies.token, 10);
             const decode_dns = checkDns(req.cookies.dns);
             if (!decode_user) {
                 return lowLevelException(req, res);
