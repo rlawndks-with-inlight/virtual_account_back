@@ -339,6 +339,11 @@ const brandCtrl = {
             await db.beginTransaction();
             let result = await insertQuery(`deposits`, obj);
 
+            let data = await getMotherDeposit(decode_dns);
+            if (data?.real_amount < 0) {
+                await db.rollback();
+                return response(req, res, -200, "모계좌 잔액은 마이너스가 될 수 없습니다.", false)
+            }
             await db.commit();
             return response(req, res, 100, "success", {})
         } catch (err) {
