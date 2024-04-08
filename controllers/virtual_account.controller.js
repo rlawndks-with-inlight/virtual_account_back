@@ -15,6 +15,9 @@ const virtualAccountCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = checkLevel(req.cookies.token, 0);
             const decode_dns = checkDns(req.cookies.dns);
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
             const { mcht_id, status, search } = req.query;
             let search_columns = [
                 `mchts.user_name`,
