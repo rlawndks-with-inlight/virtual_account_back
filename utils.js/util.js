@@ -49,13 +49,12 @@ export const checkLevel = async (token, level, req) => { //유저 정보 뿌려�
             }
             else return decoded;
         })
-        let requestIp = getReqIp(req);
-        let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${decoded?.id} AND is_delete=0`);
-        ip_list = ip_list?.result;
-        if (decoded?.level < 50 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp)) && ip_list.length > 0) {
-            return false;
-        }
-
+        // let requestIp = getReqIp(req);
+        // let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${decoded?.id} AND is_delete=0`);
+        // ip_list = ip_list?.result;
+        // if (decoded?.level < 50 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp)) && ip_list.length > 0) {
+        //     return false;
+        // }
         const user_level = decoded?.level ?? -1
         if (level > user_level)
             return false
