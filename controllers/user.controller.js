@@ -12,7 +12,7 @@ const table_name = 'users';
 const userCtrl = {
     list: async (req, res, next) => {
         try {
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
             const { level, level_list = [], search } = req.query;
             let columns = [
@@ -115,7 +115,7 @@ const userCtrl = {
     organizationalChart: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
 
             return response(req, res, 100, "success", {});
@@ -129,7 +129,7 @@ const userCtrl = {
     get: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
             const { id } = req.params;
             let columns = [
@@ -193,7 +193,7 @@ const userCtrl = {
     getByMID: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
             const { mid } = req.params;
             let columns = [
@@ -235,7 +235,7 @@ const userCtrl = {
     ipLogs: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
             const { id } = req.query;
             let columns = [
@@ -258,7 +258,7 @@ const userCtrl = {
     remove: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 40);
+            const decode_user = await checkLevel(req.cookies.token, 40, req);
             const decode_dns = checkDns(req.cookies.dns);
             const { id } = req.params;
             if (!decode_user) {
@@ -278,7 +278,7 @@ const userCtrl = {
     create: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 40);
+            const decode_user = await checkLevel(req.cookies.token, 40, req);
             if (!decode_user) {
                 return lowLevelException(req, res)
             }
@@ -377,7 +377,7 @@ const userCtrl = {
     update: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 40);
+            const decode_user = await checkLevel(req.cookies.token, 40, req);
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
@@ -482,7 +482,7 @@ const userCtrl = {
     changePassword: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
             const { id } = req.params
             let { user_pw } = req.body;
@@ -510,7 +510,7 @@ const userCtrl = {
     changeStatus: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
             const { id } = req.params
             let { status } = req.body;
@@ -537,7 +537,7 @@ const userCtrl = {
     changeUserDeposit: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 40);
+            const decode_user = await checkLevel(req.cookies.token, 40, req);
             const decode_dns = checkDns(req.cookies.dns);
             let { amount, pay_type, user_id, note = "", is_use_deposit_fee = 0, } = req.body;
             if (!decode_user) {

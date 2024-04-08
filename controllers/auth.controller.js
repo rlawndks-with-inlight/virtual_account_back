@@ -33,7 +33,7 @@ const authCtrl = {
     signIn: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
             let { user_name, user_pw, otp_num } = req.body;
 
@@ -158,7 +158,7 @@ const authCtrl = {
     signInAnotherUser: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 40);
+            const decode_user = await checkLevel(req.cookies.token, 40, req);
             const decode_dns = checkDns(req.cookies.dns);
             if (!decode_user) {
                 return lowLevelException(req, res);
@@ -206,7 +206,7 @@ const authCtrl = {
     signUp: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
             let {
                 user_name,
@@ -252,7 +252,7 @@ const authCtrl = {
     signOut: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
             res.clearCookie('token');
             return response(req, res, 100, "success", {})
@@ -266,7 +266,7 @@ const authCtrl = {
     checkSign: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, is_manager ? 1 : 0);
+            const decode_user = await checkLevel(req.cookies.token, is_manager ? 1 : 0);
             if (!decode_user) {
                 return response(req, res, -150, "권한이 없습니다.", {})
             }
@@ -288,7 +288,7 @@ const authCtrl = {
     changePassword: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, is_manager ? 1 : 0);
+            const decode_user = await checkLevel(req.cookies.token, is_manager ? 1 : 0);
             if (!decode_user) {
                 return response(req, res, -150, "권한이 없습니다.", {})
             }
@@ -329,7 +329,7 @@ const authCtrl = {
     deposit: async (req, res, next) => {//보유정산금
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, is_manager ? 1 : 0);
+            const decode_user = await checkLevel(req.cookies.token, is_manager ? 1 : 0);
             const decode_dns = checkDns(req.cookies.dns);
             let deposit_column = [
                 `users.*`,
@@ -372,7 +372,7 @@ const authCtrl = {
     getMySignKey: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
             let { mid = "" } = req.query;
             let user = {};

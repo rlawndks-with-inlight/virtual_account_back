@@ -12,7 +12,7 @@ const utilCtrl = {
     setting: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
             let data = {};
             let deposit_api_result = await corpApi.bank.list({
@@ -44,7 +44,7 @@ const utilCtrl = {
     changeStatus: async (req, res, next) => {
         try {
 
-            const decode_user = checkLevel(req.cookies.token, 10);
+            const decode_user = await checkLevel(req.cookies.token, 10, req);
             const decode_dns = checkDns(req.cookies.dns);
             const { table, column_name } = req.params;
             const { value, id } = req.body;

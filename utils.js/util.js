@@ -36,11 +36,10 @@ export const makeUserToken = (obj, type = 'user') => {
         });
     return token
 }
-export const checkLevel = (token, level) => { //유저 정보 뿌려주기
+export const checkLevel = async (token, level, req) => { //유저 정보 뿌려주기
     try {
         if (token == undefined)
             return false
-
         //const decoded = jwt.decode(token)
         const decoded = jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
             //console.log(decoded)
@@ -50,6 +49,13 @@ export const checkLevel = (token, level) => { //유저 정보 뿌려주기
             }
             else return decoded;
         })
+        let requestIp = getReqIp(req);
+        let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${decoded?.id} AND is_delete=0`);
+        ip_list = ip_list?.result;
+        if (decoded?.level < 50 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp)) && ip_list.length > 0) {
+            return false;
+        }
+
         const user_level = decoded?.level ?? -1
         if (level > user_level)
             return false
@@ -128,7 +134,7 @@ export const response = async (req, res, code, message, data) => { //응답 포�
         'message': message,
         'data': data,
     }
-    const decode_user = checkLevel(req.cookies.token, 0, res)
+    const decode_user = await checkLevel(req.cookies.token, 0, res)
     const decode_dns = checkDns(req.cookies.dns, 0)
     if (req.originalUrl?.includes('/auth') || req.method == 'DELETE' || req.method == 'POST' || req.method == 'PUT' || req.query?.page_size >= 500) {
         let save_log = await logRequestResponse(req, resDict, decode_user, decode_dns);

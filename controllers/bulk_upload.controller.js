@@ -10,7 +10,7 @@ const bulkUploadCtrl = {
     merchandise: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 40);
+            const decode_user = await checkLevel(req.cookies.token, 40, req);
             const decode_dns = checkDns(req.cookies.dns);
             const {
                 brand_id, data = [],

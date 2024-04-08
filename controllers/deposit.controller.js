@@ -14,7 +14,7 @@ const depositCtrl = {
     list: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 10);
+            const decode_user = await checkLevel(req.cookies.token, 10, req);
             const decode_dns = checkDns(req.cookies.dns);
             const { is_mother, pay_type, s_dt, e_dt, search, is_delete, corp_account_id } = req.query;
 
@@ -133,7 +133,7 @@ const depositCtrl = {
     get: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 10);
+            const decode_user = await checkLevel(req.cookies.token, 10, req);
             const decode_dns = checkDns(req.cookies.dns);
             const { id } = req.params;
             if (!decode_user) {
@@ -155,7 +155,7 @@ const depositCtrl = {
     create: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
             const {
                 mid, amount, deposit_bank_code, deposit_acct_num, deposit_acct_name
@@ -189,7 +189,7 @@ const depositCtrl = {
     update: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
             const {
                 id
@@ -212,7 +212,7 @@ const depositCtrl = {
     remove: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
             const { id } = req.params;
             let result = await deleteQuery(`${table_name}`, {
@@ -229,7 +229,7 @@ const depositCtrl = {
     changeNote: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 40);
+            const decode_user = await checkLevel(req.cookies.token, 40, req);
             const decode_dns = checkDns(req.cookies.dns);
             const {
                 deposit_id, note,
@@ -251,7 +251,7 @@ const depositCtrl = {
     addNotiDeposit: async (req, res, next) => { // 노티 누락건 추가
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 40);
+            const decode_user = await checkLevel(req.cookies.token, 40, req);
             const decode_dns = checkDns(req.cookies.dns);
             if (!(((decode_user?.level >= 40 && !(decode_dns?.parent_id > 0)) || decode_user?.level >= 45) && [1, 3, 6].includes(decode_dns?.deposit_corp_type))) {
                 return lowLevelException(req, res);

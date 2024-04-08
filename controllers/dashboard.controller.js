@@ -9,7 +9,7 @@ const dashboardCtrl = {
     mchtDeposit: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
             const { s_dt, e_dt } = req.query;
             let amount_sub_sql = ` SELECT SUM(amount) FROM deposits  `;
@@ -60,7 +60,7 @@ const dashboardCtrl = {
     amount: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
             const { s_dt, e_dt, time_type, pay_type = 'deposit' } = req.query;
 
