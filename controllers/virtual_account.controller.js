@@ -274,7 +274,6 @@ const virtualAccountCtrl = {
                     to_guid: dns_data[`deposit_guid`],
                     amount: amount,
                 })
-                console.log(mother_to_result)
                 let obj = {
                     brand_id: decode_dns?.id,
                     virtual_account_id: virtual_account?.id,
@@ -303,6 +302,7 @@ const virtualAccountCtrl = {
             // if (api_result.code != 100 && api_result?.message != '가상계좌 해지 불가 상태') {
             //     return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
             // }
+            await new Promise((r) => setTimeout(r, 1000));
             let api_result_account_delete = await corpApi.user.account_delete({
                 pay_type: 'deposit',
                 dns_data: decode_dns,
