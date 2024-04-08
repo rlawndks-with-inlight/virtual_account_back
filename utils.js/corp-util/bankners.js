@@ -600,6 +600,44 @@ export const banknersApi = {
 
         }
     },
+    vaccount_info: async (data) => {
+        try {
+            let {
+                dns_data, pay_type, decode_user,
+                guid
+            } = data;
+            let query = {
+                guid,
+            }
+            query = makeBody(query, dns_data, pay_type)
+            let result = await postRequest('/api/vaccount/info', query, makeHeaderData(dns_data, pay_type, decode_user));
+            if (result?.code != '0000') {
+                return {
+                    code: -100,
+                    message: result?.message,
+                    data: {},
+                };
+            }
+            let status = result?.data?.use_stat == 'USE' ? 0 : 1;
+            return {
+                code: 100,
+                message: '',
+                data: {
+                    virtual_acct_num: result?.data?.vacnt_no,
+                    status: status,
+                },
+            };
+        } catch (err) {
+            console.log(err)
+            console.log(err?.response?.data)
+            return {
+                code: -100,
+                message: '',
+                data: {},
+            };
+
+        }
+    },
     vaccount_delete: async (data) => {
         try {
             let {

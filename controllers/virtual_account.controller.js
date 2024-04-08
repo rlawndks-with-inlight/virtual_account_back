@@ -169,6 +169,34 @@ const virtualAccountCtrl = {
 
         }
     },
+    getStatus: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = checkLevel(req.cookies.token, 0);
+            const decode_dns = checkDns(req.cookies.dns);
+            const { id } = req.params;
+            let virtual_account = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id}`);
+            virtual_account = virtual_account?.result[0];
+            let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
+            dns_data = dns_data?.result[0];
+
+            let api_result = await corpApi.vaccount_info({
+                pay_type: 'deposit',
+                dns_data: decode_dns,
+                decode_user,
+                guid: virtual_account?.guid,
+            })
+            let status = (api_result.data?.virtual_acct_num == virtual_account?.virtual_acct_num && api_result.data?.status == 0) ? 0 : 1;
+            return response(req, res, 100, "success", {
+                status
+            })
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
     moveMother: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
