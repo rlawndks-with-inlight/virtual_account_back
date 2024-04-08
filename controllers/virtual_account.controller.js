@@ -186,7 +186,6 @@ const virtualAccountCtrl = {
                 decode_user,
                 guid: virtual_account?.guid,
             })
-            console.log(api_result)
             let status = (api_result.data?.virtual_acct_num == virtual_account?.virtual_acct_num && api_result.data?.status == 0) ? 0 : 1;
             return response(req, res, 100, "success", {
                 status

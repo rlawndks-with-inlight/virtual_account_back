@@ -602,15 +602,14 @@ export const banknersApi = {
     },
     vaccount_info: async (data) => {
         try {
-            let {
-                dns_data, pay_type, decode_user,
-                guid
-            } = data;
+            let { dns_data, pay_type, decode_user, guid, curr } = data;
             let query = {
-                guid,
+                guid: guid,
             }
-            query = makeBody(query, dns_data, pay_type)
-            let result = await postRequest('/api/vaccount/info', query, makeHeaderData(dns_data, pay_type, decode_user));
+            query = new URLSearchParams(query).toString();
+            let { data: result } = await axios.get(`https://${API_URL}/api/vaccount/info?${query}`, {
+                headers: makeHeaderData(dns_data, pay_type, decode_user)
+            })
             if (result?.code != '0000') {
                 return {
                     code: -100,
