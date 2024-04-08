@@ -120,6 +120,9 @@ const virtualAccountCtrl = {
             const {
                 id
             } = req.body;
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
             let files = settingFiles(req.files);
             let obj = {
             };
