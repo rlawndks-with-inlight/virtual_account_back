@@ -16,6 +16,9 @@ router
     .route('/balance/:id')
     .get(virtualAccountCtrl.getBalance)
 router
+    .route('/status/:id')
+    .get(virtualAccountCtrl.getStatus)
+router
     .route('/mother')
     .post(virtualAccountCtrl.moveMother)
 router
