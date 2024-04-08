@@ -59,6 +59,7 @@ const authCtrl = {
             let requestIp = getReqIp(req);
             let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${user?.id} AND is_delete=0`);
             ip_list = ip_list?.result;
+            console.log(requestIp)
             if (user?.level < 50 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp)) && ip_list.length > 0) {
                 return response(req, res, -150, "권한이 없습니다.", {})
             }
@@ -85,9 +86,6 @@ const authCtrl = {
                 let add_login_fail_count = await updateQuery(`users`, login_fail_obj, user?.id);
                 return response(req, res, -100, err_message, {});
             }
-
-
-
             if (decode_dns?.is_use_otp == 1 && user?.level < 45) {
                 let otp_token = '';
                 if (!otp_num) {
@@ -111,6 +109,7 @@ const authCtrl = {
                     return response(req, res, -100, "OTP번호가 잘못되었습니다.", {})
                 }
             }
+
             let user_obj = {
                 id: user.id,
                 user_name: user.user_name,

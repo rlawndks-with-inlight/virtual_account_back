@@ -327,13 +327,19 @@ const brandCtrl = {
     },
     changeMotherDeposit: async (req, res, next) => {
         try {
-            const decode_user = await checkLevel(req.cookies.token, 0, req);
+            const decode_user = await checkLevel(req.cookies.token, 40, req);
             const decode_dns = checkDns(req.cookies.dns);
             const { brand_id, pay_type, amount, note } = req.body;
             let obj = {
                 brand_id, pay_type, amount, note
             }
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
+            await db.beginTransaction();
             let result = await insertQuery(`deposits`, obj);
+
+            await db.rollback();
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
