@@ -339,10 +339,11 @@ const brandCtrl = {
             await db.beginTransaction();
             let result = await insertQuery(`deposits`, obj);
 
-            await db.rollback();
+            await db.commit();
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
+            await db.rollback();
             return response(req, res, -200, "서버 에러 발생", false)
         } finally {
 
