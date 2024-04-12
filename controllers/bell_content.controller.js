@@ -41,8 +41,11 @@ const bellContentCtrl = {
     get: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = await checkLevel(req.cookies.token, 0, req);
+            const decode_user = await checkLevel(req.cookies.token, 10, req);
             const decode_dns = checkDns(req.cookies.dns);
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
             const { id } = req.params;
             let data = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id}`)
             data = data?.result[0];
@@ -71,7 +74,6 @@ const bellContentCtrl = {
 
             obj = { ...obj, ...files };
 
-            let result = await insertQuery(`${table_name}`, obj);
 
             return response(req, res, 100, "success", {})
         } catch (err) {
@@ -94,7 +96,6 @@ const bellContentCtrl = {
             };
             obj = { ...obj, ...files };
 
-            let result = await updateQuery(`${table_name}`, obj, id);
 
             return response(req, res, 100, "success", {})
         } catch (err) {
