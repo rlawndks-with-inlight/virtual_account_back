@@ -2,15 +2,18 @@
 import { pool } from "../config/db.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
-import { checkDns, checkLevel, getOperatorList, isItemBrandIdSameDnsId, response, settingFiles } from "../utils.js/util.js";
+import { checkDns, checkLevel, getOperatorList, isItemBrandIdSameDnsId, lowLevelException, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 
 const dashboardCtrl = {
     mchtDeposit: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = await checkLevel(req.cookies.token, 0, req);
+            const decode_user = await checkLevel(req.cookies.token, 10, req);
             const decode_dns = checkDns(req.cookies.dns);
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
             const { s_dt, e_dt } = req.query;
             let amount_sub_sql = ` SELECT SUM(amount) FROM deposits  `;
             let count_sub_sql = ` SELECT COUNT(*) FROM deposits `;
@@ -60,10 +63,12 @@ const dashboardCtrl = {
     amount: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = await checkLevel(req.cookies.token, 0, req);
+            const decode_user = await checkLevel(req.cookies.token, 10, req);
             const decode_dns = checkDns(req.cookies.dns);
             const { s_dt, e_dt, time_type, pay_type = 'deposit' } = req.query;
-
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
             let pay_type_join = '';
             let where_sql = '';
             if (pay_type == 'deposit') {
