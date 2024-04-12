@@ -11,10 +11,12 @@ const bellContentCtrl = {
     list: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = await checkLevel(req.cookies.token, 0, req);
+            const decode_user = await checkLevel(req.cookies.token, 10, req);
             const decode_dns = checkDns(req.cookies.dns);
             const { } = req.query;
-
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
             let columns = [
                 `${table_name}.*`,
             ]
