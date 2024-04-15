@@ -18,4 +18,8 @@ router
 router
     .route('/add-noti')
     .post(depositCtrl.addNotiDeposit);
+router
+    .route('/cancel')
+    .post(depositCtrl.cancel);
+
 export default router;

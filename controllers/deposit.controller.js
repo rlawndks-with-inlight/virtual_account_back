@@ -320,6 +320,48 @@ const depositCtrl = {
 
         }
     },
+    cancel: async (req, res, next) => { // 입금건 취소
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = await checkLevel(req.cookies.token, 40, req);
+            const decode_dns = checkDns(req.cookies.dns);
+            const { id } = req.body;
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
+            let sum_deposit_cancel = await pool.query(`SELECT SUM(amount) AS cancel_amount FROM deposits WHERE deposit_id=${id} AND is_cancel=1`);
+            sum_deposit_cancel = sum_deposit_cancel?.result[0]?.cancel_amount ?? 0;
+            let deposit = await selectQuerySimple(table_name, id);
+            deposit = deposit?.result[0];
+            if (sum_deposit_cancel + deposit?.amount <= 0) {
+                return response(req, res, -100, "이미 취소가 완료된 건입니다.", false)
+            }
+
+            delete deposit['id'];
+            delete deposit['created_at'];
+            delete deposit['updated_at'];
+            delete deposit['deposit_fee'];
+            deposit = {
+                ...deposit,
+                deposit_id: id,
+                is_cancel: 1,
+            }
+            let keys = Object.keys(deposit);
+            for (var i = 0; i < keys.length; i++) {
+                if (keys[i].includes('amount')) {
+                    deposit[keys[i]] = (-1) * deposit[keys[i]];
+                }
+            }
+            let result = await insertQuery(table_name, deposit);
+
+            return response(req, res, 100, "success", {})
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
 };
 
 export default depositCtrl;
