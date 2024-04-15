@@ -27,6 +27,7 @@ const depositCtrl = {
                 `users.nickname`,
                 `${table_name}.deposit_acct_num`,
                 `${table_name}.deposit_acct_name`,
+                `${table_name}.trx_id`,
                 `virtual_accounts.virtual_acct_num`,
                 `virtual_accounts.virtual_user_name`,
             ]
