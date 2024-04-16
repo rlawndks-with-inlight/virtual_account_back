@@ -9,9 +9,7 @@ const scheduleIndex = () => {
         let return_moment = returnMoment();
         pushDepositNoti();
 
-        if (parseInt(return_moment.split(' ')[1].split(':')[1]) % 5 == 0) {
-            popbillScraping();
-        }
+        popbillScraping();
 
         pushAsapMall(return_moment);
     })
