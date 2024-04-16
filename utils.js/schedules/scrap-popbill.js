@@ -157,7 +157,8 @@ const processCorpAccount = async (corp_account_item = {}) => {
             deposit_list = deposit_list?.list;
             let deposit_push_list = [];
             for (var i = 0; i < deposit_list.length; i++) {
-                if (deposit_list[i]?.tid == corp_account?.process_tid) {
+                let deposit_trx_id = `${acct_num}${deposit_list[i]?.trdt.substring(0, 8)}${deposit_list[i]?.trdt.substring(8, 16)}${deposit_list[i]?.accIn}${0}${deposit_list[i]?.balance}`;
+                if (deposit_trx_id == corp_account?.process_tid) {
                     break;
                 }
                 deposit_push_list.push({
