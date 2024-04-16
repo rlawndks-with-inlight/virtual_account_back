@@ -205,4 +205,3 @@ const depositItemProcess = (item_ = {}, bank_code) => {
     }
     return obj;
 }
-popbillScraping();
