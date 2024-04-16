@@ -177,8 +177,11 @@ const processCorpAccount = async (corp_account_item = {}) => {
             });
             console.log('response: ' + response)
             if (response == '0000') {
+                let last_item = deposit_push_list[deposit_push_list.length - 1];
+                let deposit_trx_id = `${acct_num}${last_item?.trdt.substring(0, 8)}${last_item?.trdt.substring(8, 16)}${last_item?.accIn}${0}${last_item?.balance}`;
+
                 let update_corp_account = await updateQuery('corp_accounts', {
-                    process_tid: deposit_push_list[deposit_push_list.length - 1]?.trxId,
+                    process_tid: deposit_trx_id,
                 }, corp_account?.id);
             }
             //조회 완료후 그다음 시퀀스
