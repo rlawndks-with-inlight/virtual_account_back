@@ -104,7 +104,6 @@ export const popbillFunc = {
 
 export const popbillScraping = async () => {
     try {
-
         let corp_account_list = await popbillFunc.listBankAccount();
         for (var i = 0; i < corp_account_list.length; i++) {
             processCorpAccount(corp_account_list[i])
