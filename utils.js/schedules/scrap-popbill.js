@@ -150,9 +150,6 @@ const processCorpAccount = async (corp_account_item = {}) => {
         let job_state = await popbillFunc.getJobState({
             job_id,
         })
-        let process_corp_account = await updateQuery('corp_accounts', {
-            is_process: 1,
-        }, corp_account?.id);
         if (job_state?.jobState == 3) {
             let deposit_list = await popbillFunc.search({
                 job_id,
@@ -173,9 +170,11 @@ const processCorpAccount = async (corp_account_item = {}) => {
             for (var i = 0; i < deposit_push_list.length; i++) {
                 deposit_push_list[i] = depositItemProcess(deposit_push_list[i], bank_code,);
             }
-
             deposit_push_list.reverse();
             if (deposit_push_list.length > 0) {
+                let process_corp_account = await updateQuery('corp_accounts', {
+                    is_process: 1,
+                }, corp_account?.id);
                 let { data: response } = await axios.post(`${process.env.API_URL}/api/push/popbill/${corp_account?.brand_id}`, {
                     list: deposit_push_list,
                 });
