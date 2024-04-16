@@ -112,7 +112,9 @@ export const popbillScraping = async () => {
         console.log(err);
     }
 }
+popbillScraping();
 const processCorpAccount = async (corp_account_item = {}) => {
+    return;
     try {
         let {
             bankCode,
@@ -173,7 +175,6 @@ const processCorpAccount = async (corp_account_item = {}) => {
             }
 
             deposit_push_list.reverse();
-
             let { data: response } = await axios.post(`${process.env.API_URL}/api/push/popbill/${corp_account?.brand_id}`, {
                 list: deposit_push_list,
             });
