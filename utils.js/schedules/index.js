@@ -8,7 +8,11 @@ const scheduleIndex = () => {
     schedule.scheduleJob('0 0/1 * * * *', async function () {
         let return_moment = returnMoment();
         pushDepositNoti();
-        popbillScraping();
+
+        if (parseInt(return_moment.split(' ')[1].split(':')[1]) % 5 == 0) {
+            popbillScraping();
+        }
+
         pushAsapMall(return_moment);
     })
 }
