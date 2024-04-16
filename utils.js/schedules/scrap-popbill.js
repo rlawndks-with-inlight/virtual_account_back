@@ -178,7 +178,7 @@ const processCorpAccount = async (corp_account_item = {}) => {
             });
             if (response == '0000') {
                 let update_corp_account = await updateQuery('corp_accounts', {
-                    process_tid: deposit_list[i]?.tid,
+                    process_tid: deposit_push_list[deposit_push_list.length - 1]?.tid,
                 }, corp_account?.id);
             }
             //조회 완료후 그다음 시퀀스
