@@ -110,7 +110,6 @@ export const popbillScraping = async () => {
         console.log(err);
     }
 }
-popbillScraping();
 const processCorpAccount = async (corp_account_item = {}) => {
     try {
         let {
