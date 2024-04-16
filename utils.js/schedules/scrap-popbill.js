@@ -88,7 +88,7 @@ export const popbillFunc = {
                 type,
                 '',
                 1,
-                500,
+                100,
                 'D',
                 function (response) {
                     resolve(response);
