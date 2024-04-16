@@ -178,7 +178,7 @@ const processCorpAccount = async (corp_account_item = {}) => {
             console.log('response: ' + response)
             if (response == '0000') {
                 let last_item = deposit_push_list[deposit_push_list.length - 1];
-                let deposit_trx_id = `${acct_num}${last_item?.trdt.substring(0, 8)}${last_item?.trdt.substring(8, 16)}${last_item?.accIn}${0}${last_item?.balance}`;
+                let deposit_trx_id = `${acct_num}${last_item?.tranDate}${last_item?.tranTime}${last_item?.depositAmnt}${0}${last_item?.balance}`;
 
                 let update_corp_account = await updateQuery('corp_accounts', {
                     process_tid: deposit_trx_id,
