@@ -178,7 +178,7 @@ const processCorpAccount = async (corp_account_item = {}) => {
                 let { data: response } = await axios.post(`${process.env.API_URL}/api/push/popbill/${corp_account?.brand_id}`, {
                     list: deposit_push_list,
                 });
-                if (response == '0000') {
+                if (response != '9999') {
                     let last_item = deposit_push_list[deposit_push_list.length - 1];
                     let deposit_trx_id = `${acct_num}${last_item?.tranDate}${last_item?.tranTime}${last_item?.depositAmnt}${0}${last_item?.balance}`;
                     let update_corp_account = await updateQuery('corp_accounts', {
