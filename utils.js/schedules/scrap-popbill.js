@@ -121,7 +121,7 @@ const processCorpAccount = async (corp_account_item = {}) => {
         let acct_num = accountNumber;
         let s_dt = returnMoment().substring(0, 10).replaceAll('-', '');
         let e_dt = returnMoment().substring(0, 10).replaceAll('-', '');
-        let corp_account = await pool.query(`SELECT * FROM corp_accounts WHERE acct_num=? AND status=0 `, [
+        let corp_account = await pool.query(`SELECT * FROM corp_accounts WHERE acct_num=? AND status=0 and is_process=0 `, [
             acct_num
         ])
         corp_account = corp_account?.result[0];
@@ -150,6 +150,9 @@ const processCorpAccount = async (corp_account_item = {}) => {
         let job_state = await popbillFunc.getJobState({
             job_id,
         })
+        let process_corp_account = await updateQuery('corp_accounts', {
+            is_process: 1,
+        }, corp_account?.id);
         if (job_state?.jobState == 3) {
             let deposit_list = await popbillFunc.search({
                 job_id,
@@ -181,6 +184,7 @@ const processCorpAccount = async (corp_account_item = {}) => {
                     let deposit_trx_id = `${acct_num}${last_item?.tranDate}${last_item?.tranTime}${last_item?.depositAmnt}${0}${last_item?.balance}`;
                     let update_corp_account = await updateQuery('corp_accounts', {
                         process_tid: deposit_trx_id,
+                        is_process: 0,
                     }, corp_account?.id);
                 }
             }
