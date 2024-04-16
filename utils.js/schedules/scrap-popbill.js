@@ -111,7 +111,6 @@ export const popbillScraping = async () => {
     }
 }
 const processCorpAccount = async (corp_account_item = {}) => {
-    return;
     try {
         let {
             bankCode,
@@ -175,6 +174,7 @@ const processCorpAccount = async (corp_account_item = {}) => {
             let { data: response } = await axios.post(`${process.env.API_URL}/api/push/popbill/${corp_account?.brand_id}`, {
                 list: deposit_push_list,
             });
+            console.log('response: ' + response)
             if (response == '0000') {
                 let update_corp_account = await updateQuery('corp_accounts', {
                     process_tid: deposit_push_list[deposit_push_list.length - 1]?.trxId,
