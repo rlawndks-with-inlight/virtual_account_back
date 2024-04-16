@@ -91,11 +91,9 @@ export const popbillFunc = {
                 500,
                 'D',
                 function (response) {
-                    console.log(1)
                     resolve(response);
                 },
                 function (err) {
-                    console.log(2)
                     reject(err);
                 },)
         });
@@ -114,7 +112,6 @@ export const popbillScraping = async () => {
 }
 popbillScraping();
 const processCorpAccount = async (corp_account_item = {}) => {
-    return;
     try {
         let {
             bankCode,
@@ -180,7 +177,7 @@ const processCorpAccount = async (corp_account_item = {}) => {
             });
             if (response == '0000') {
                 let update_corp_account = await updateQuery('corp_accounts', {
-                    process_tid: deposit_push_list[deposit_push_list.length - 1]?.tid,
+                    process_tid: deposit_push_list[deposit_push_list.length - 1]?.trxId,
                 }, corp_account?.id);
             }
             //조회 완료후 그다음 시퀀스
