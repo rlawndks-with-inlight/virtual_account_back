@@ -129,8 +129,11 @@ const userCtrl = {
     get: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = await checkLevel(req.cookies.token, 0, req);
+            const decode_user = await checkLevel(req.cookies.token, 11, req);
             const decode_dns = checkDns(req.cookies.dns);
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
             const { id } = req.params;
             let columns = [
                 `${table_name}.*`,
@@ -483,6 +486,9 @@ const userCtrl = {
         try {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = await checkLevel(req.cookies.token, 0, req);
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
             const decode_dns = checkDns(req.cookies.dns);
             const { id } = req.params
             let { user_pw } = req.body;
@@ -510,8 +516,11 @@ const userCtrl = {
     changeStatus: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = await checkLevel(req.cookies.token, 0, req);
+            const decode_user = await checkLevel(req.cookies.token, 11, req);
             const decode_dns = checkDns(req.cookies.dns);
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
             const { id } = req.params
             let { status } = req.body;
             let user = await selectQuerySimple(table_name, id);
