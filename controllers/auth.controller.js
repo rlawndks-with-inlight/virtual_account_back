@@ -59,7 +59,6 @@ const authCtrl = {
             let requestIp = getReqIp(req);
             let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${user?.id} AND is_delete=0`);
             ip_list = ip_list?.result;
-            console.log(requestIp)
             if (user?.level < 50 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp)) && ip_list.length > 0) {
                 return response(req, res, -150, "권한이 없습니다.", {})
             }
@@ -305,8 +304,6 @@ const authCtrl = {
             user = user?.result[0];
 
             password = (await createHashedPassword(password, user.user_salt)).hashedPassword;
-            console.log(password)
-            console.log(user.user_pw)
             if (password != user.user_pw) {
                 return response(req, res, -100, '비밀번호가 일치하지 않습니다.', false);
             }

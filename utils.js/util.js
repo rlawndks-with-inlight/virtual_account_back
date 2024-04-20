@@ -520,6 +520,7 @@ export const getMotherDeposit = async (decode_dns) => {
         let children_mother_deposit = await getMotherDeposit(children_brands[i]);
         data['childrens'].push(children_mother_deposit);
     }
+    data['hold_amount'] = data['brand']?.hold_amount;
     return data;
 }
 export const settingMchtFee = async (decode_dns, user_id, body) => {

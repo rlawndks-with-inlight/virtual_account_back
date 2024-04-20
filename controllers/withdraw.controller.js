@@ -218,7 +218,6 @@ const withdrawCtrl = {
                 return lowLevelException(req, res);
             }
             let data = await getMotherDeposit(decode_dns);
-
             return response(req, res, 100, "success", data)
         } catch (err) {
             console.log(err)

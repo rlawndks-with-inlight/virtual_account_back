@@ -11,7 +11,6 @@ const settingSecretKey = (body = {}) => {
     const request_arr = body;
     const bodydata = JSON.stringify(request_arr);
     const auth_key = crypto.createHash('md5').update(secret_key + bodydata).digest("hex");
-    console.log(auth_key)
     return auth_key;
 }
 
