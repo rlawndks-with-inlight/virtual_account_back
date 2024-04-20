@@ -19,6 +19,7 @@ import brandPayRoutes from './brand_pay.route.js';
 import reserveRoutes from './reserve.route.js';
 import bulkUploadRoutes from './bulk_upload.route.js';
 import gitRoutes from './git.route.js';
+import blackListRoutes from './black_list.route.js';
 
 const router = express.Router(); // eslint-disable-line new-cap
 
@@ -37,6 +38,7 @@ router.use('/corp-accounts', corpAccountRoutes);
 router.use('/bell-contents', bellContentRoutes);
 router.use('/brand-pays', brandPayRoutes);
 router.use('/reserves', reserveRoutes);
+router.use('/black-lists', blackListRoutes);
 
 
 //auth

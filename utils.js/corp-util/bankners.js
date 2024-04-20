@@ -836,4 +836,94 @@ export const banknersApi = {
             }
         },
     },
+    bl: {
+        create: async (data) => {//블랙리스트등록
+            try {
+                let {
+                    dns_data, pay_type, decode_user,
+                    type = 0,
+                    word
+                } = data;
+                if (type == 0) {
+                    type = 'ACCOUNT';
+                } else if (type == 1) {
+                    type = 'CP';
+                }
+                let query = {
+                    bl_tp: type,
+                    bl_word: word,
+                }
+                query = makeBody(query, dns_data, pay_type)
+                let result = await postRequest('/api/merchant/bl', query, makeHeaderData(dns_data, pay_type, decode_user));
+                console.log(result)
+                if (result?.code != '0000') {
+                    return {
+                        code: -100,
+                        message: result?.message,
+                        data: {},
+                    };
+                }
+                return {
+                    code: 100,
+                    message: '',
+                    data: {
+
+                    },
+                };
+            } catch (err) {
+                console.log(err)
+                console.log(err?.response?.data)
+                return {
+                    code: -100,
+                    message: '',
+                    data: {},
+                };
+
+            }
+        },
+        remove: async (data) => {//블랙리스트등록
+            try {
+                let {
+                    dns_data, pay_type, decode_user,
+                    type = 0,
+                    word
+                } = data;
+                if (type == 0) {
+                    type = 'ACCOUNT';
+                } else if (type == 1) {
+                    type = 'CP';
+                }
+                let query = {
+                    bl_tp: type,
+                    bl_word: word,
+                }
+                query = makeBody(query, dns_data, pay_type)
+                let result = await postRequest('/api/merchant/bl', query, makeHeaderData(dns_data, pay_type, decode_user), 'DELETE');
+                console.log(result)
+                if (result?.code != '0000') {
+                    return {
+                        code: -100,
+                        message: result?.message,
+                        data: {},
+                    };
+                }
+                return {
+                    code: 100,
+                    message: '',
+                    data: {
+
+                    },
+                };
+            } catch (err) {
+                console.log(err)
+                console.log(err?.response?.data)
+                return {
+                    code: -100,
+                    message: '',
+                    data: {},
+                };
+
+            }
+        },
+    }
 }

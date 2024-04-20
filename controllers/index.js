@@ -20,6 +20,7 @@ import brandPayCtrl from './brand_pay.controller.js';
 import reserveCtrl from './reserve.controller.js';
 import bulkUploadCtrl from './bulk_upload.controller.js';
 import gitCtrl from './git.controller.js';
+import blackListCtrl from './black_list.controller.js';
 
 export {
     brandCtrl,
@@ -42,4 +43,5 @@ export {
     reserveCtrl,
     bulkUploadCtrl,
     gitCtrl,
+    blackListCtrl,
 };
