@@ -166,7 +166,7 @@ const brandCtrl = {
                 guid = "",
             } = req.body;
             const { id } = req.params;
-            if ((decode_user?.level < 50 && decode_user?.brand_id != id) || decode_user?.level < 40) {
+            if ((decode_user?.level < 45 && decode_user?.brand_id != id) || decode_user?.level < 40) {
                 return lowLevelException(req, res);
             }
             let files = settingFiles(req.files);
