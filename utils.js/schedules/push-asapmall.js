@@ -26,11 +26,13 @@ export const pushAsapMall = async (return_moment = "") => {
         if (!is_process_func) {
             return;
         }
-        let sql = ` SELECT deposits.*, brands.asapmall_dns, brands.asapmall_back_dns FROM deposits `;
+        let sql = ` SELECT deposits.*, brands.asapmall_dns, brands.asapmall_back_dns, virtual_accounts.phone_num FROM deposits `;
         sql += ` LEFT JOIN brands ON deposits.brand_id=brands.id `;
+        sql += ` LEFT JOIN virtual_accounts ON deposits.virtual_account_id=virtual_accounts.id `;
         sql += ` WHERE brands.is_use_asapmall_noti=1 AND pay_type IN (0, 5, 20) `;
         sql += ` AND deposits.send_asapmall_noti=5 `;
         sql += ` ORDER BY deposits.id ASC `;
+
         let data = await pool.query(sql);
         data = data?.result;
         let is_stop_func = false;
@@ -56,7 +58,8 @@ export const pushAsapMall = async (return_moment = "") => {
                 deposit_acct_name,
                 settle_acct_name,
                 id,
-                created_at
+                created_at,
+                phone_num
             } = data[i];
             if (amount > 0 || amount < 0) {
                 let obj = {
@@ -64,6 +67,7 @@ export const pushAsapMall = async (return_moment = "") => {
                     amount: amount,
                     tid: trx_id,
                     created_at,
+                    phone_num,
                 };
                 if (pay_type == 0) {
                     obj['pay_type'] = 'deposit';
@@ -89,6 +93,7 @@ export const pushAsapMall = async (return_moment = "") => {
     }
 
 }
+
 const sendNotiPushAsapMall = async (data, obj) => {
     try {
         let {
