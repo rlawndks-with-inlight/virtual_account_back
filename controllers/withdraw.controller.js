@@ -349,8 +349,6 @@ const withdrawCtrl = {
             if (withdraw_amount > mother_account?.real_amount - mother_account?.hold_amount) {
                 return response(req, res, -100, "출금 요청금이 모계좌 출금가능금액보다 많습니다.", false)
             }
-
-
             let withdraw_id = withdraw?.id;
             if (withdraw?.is_pass_confirm != 1) {
                 let api_move_to_user_amount_result = await corpApi.transfer.pass({
