@@ -346,8 +346,8 @@ const withdrawCtrl = {
             }
 
             let mother_account = await getMotherDeposit(decode_dns);
-            if (withdraw_amount > mother_account?.real_amount) {
-                return response(req, res, -100, "출금 요청금이 모계좌잔액보다 많습니다.", false)
+            if (withdraw_amount > mother_account?.real_amount - mother_account?.hold_amount) {
+                return response(req, res, -100, "출금 요청금이 모계좌 출금가능금액보다 많습니다.", false)
             }
 
 
