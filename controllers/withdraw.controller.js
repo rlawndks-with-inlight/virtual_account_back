@@ -240,7 +240,7 @@ const withdrawCtrl = {
 
             let data = await getMotherDeposit(decode_dns);
             if (withdraw_amount > data?.real_amount) {
-                return response(req, res, -100, "출금 요청금이 모계좌잔액보다 많습니다.", false)
+                return response(req, res, -100, "출금 실패 A", false)
             }
             if (!data?.brand?.settle_acct_num) {
                 return response(req, res, -100, "입금받을 계좌를 등록해 주세요.", false)
@@ -347,7 +347,7 @@ const withdrawCtrl = {
 
             let mother_account = await getMotherDeposit(decode_dns);
             if (withdraw_amount > mother_account?.real_amount - mother_account?.hold_amount) {
-                return response(req, res, -100, "출금 요청금이 모계좌 출금가능금액보다 많습니다.", false)
+                return response(req, res, -100, "출금 실패 A", false)
             }
             let withdraw_id = withdraw?.id;
             if (withdraw?.is_pass_confirm != 1) {
