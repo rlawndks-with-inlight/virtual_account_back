@@ -78,10 +78,10 @@ const setProcessId = async () => {
     get_process_list = get_process_list?.result;
     if (get_process_list.length > process.env.instances) {
       let delete_ago_process = await pool.query(`DELETE FROM node_clusters ORDER BY id ASC LIMIT 1`);
-      let insert_process = await insertQuery(`node_clusters`, {
-        instance_id: process.env.INSTANCE_ID,
-      })
     }
+    let insert_process = await insertQuery(`node_clusters`, {
+      instance_id: process.env.INSTANCE_ID,
+    })
   } catch (err) {
     console.log(err);
   }
