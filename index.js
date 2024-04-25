@@ -11,7 +11,7 @@ import http from 'http';
 import https from 'https';
 import scheduleIndex from "./utils.js/schedules/index.js";
 import upload from "./config/multerConfig.js";
-import { imageFieldList } from "./utils.js/util.js";
+import { generateRandomString, imageFieldList } from "./utils.js/util.js";
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import { uploadMultipleFiles } from "./utils.js/api-util.js";
@@ -46,6 +46,7 @@ app.use((req, res, next) => {
 let server = undefined
 const HTTP_PORT = 8001;
 const HTTPS_PORT = 8443;
+
 if (process.env.NODE_ENV == 'development') {
   server = http.createServer(app).listen(HTTP_PORT, function () {
     console.log("**-------------------------------------**");
