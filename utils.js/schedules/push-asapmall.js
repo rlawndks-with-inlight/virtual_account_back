@@ -3,9 +3,9 @@ import { pool } from '../../config/db.js';
 import axios from 'axios';
 import { insertQuery, updateQuery } from '../query-util.js';
 import { returnMoment } from '../function.js';
+import { shopProcess } from './shop-process.js';
 
 export const pushAsapMall = async (return_moment = "") => {
-    return;
     try {
         let moment_list = [
             ':00:00',
@@ -124,10 +124,8 @@ const sendNotiPushAsapMall = async (data, obj) => {
             id,
             created_at
         } = data;
-        let { data: response } = await axios.post(`${asapmall_back_dns || process.env.SHOPPING_MALL_BACK_URL}/api/pays/virtual-acct/noti`, obj, {
-            timeout: 60 * 1000
-        });
-        if (response?.result > 0) {
+        let result = await shopProcess(obj);
+        if (result?.result > 0) {
             let result = await updateQuery(`deposits`, {
                 send_asapmall_noti: 0,
             }, id)
