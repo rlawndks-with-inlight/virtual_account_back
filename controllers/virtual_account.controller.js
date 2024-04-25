@@ -301,6 +301,9 @@ const virtualAccountCtrl = {
                 name: virtual_account?.deposit_acct_name,
             })
             console.log(api_result_vaccount_delete);
+            if (api_result_vaccount_delete?.code != 100) {
+                return response(req, res, -100, (api_result_vaccount_delete?.message || "서버 에러 발생"), false)
+            }
             // if (api_result.code != 100 && api_result?.message != '가상계좌 해지 불가 상태') {
             //     return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
             // }
@@ -314,6 +317,9 @@ const virtualAccountCtrl = {
                 deposit_acct_num: virtual_account?.deposit_acct_num,
             })
             console.log(api_result_account_delete);
+            if (api_result_account_delete?.code != 100) {
+                return response(req, res, -100, (api_result_account_delete?.message || "서버 에러 발생"), false)
+            }
             // if (api_result.code != 100 && api_result.message != '출금계좌 불일치로 진행 불가') {
             //     return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
             // }
@@ -324,6 +330,9 @@ const virtualAccountCtrl = {
                 guid: virtual_account?.guid,
             })
             console.log(delete_user);
+            if (delete_user?.code != 100) {
+                return response(req, res, -100, (delete_user?.message || "서버 에러 발생"), false)
+            }
             let result1 = await updateQuery(`users`, {
                 virtual_account_id: 0,
             }, id, 'virtual_account_id')
