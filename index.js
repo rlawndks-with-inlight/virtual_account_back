@@ -48,6 +48,24 @@ app.use((req, res, next) => {
 let server = undefined
 const HTTP_PORT = 8001;
 const HTTPS_PORT = 8443;
+const setServer = async () => {
+  await setProcessId();
+  scheduleIndex();
+}
+const setProcessId = async () => {
+  try {
+    let get_process_list = await pool.query(`SELECT * FROM node_clusters ORDER BY id ASC`);
+    get_process_list = get_process_list?.result;
+    if (get_process_list.length > process.env.instances) {
+      let delete_ago_process = await pool.query(`DELETE FROM node_clusters ORDER BY id ASC LIMIT 1`);
+    }
+    let insert_process = await insertQuery(`node_clusters`, {
+      instance_id: process.env.INSTANCE_ID,
+    })
+  } catch (err) {
+    console.log(err);
+  }
+}
 
 if (process.env.NODE_ENV == 'development') {
   server = http.createServer(app).listen(HTTP_PORT, function () {
@@ -67,22 +85,4 @@ if (process.env.NODE_ENV == 'development') {
     console.log("**-------------------------------------**");
     setServer();
   });
-}
-const setServer = async () => {
-  await setProcessId();
-  scheduleIndex();
-}
-const setProcessId = async () => {
-  try {
-    let get_process_list = await pool.query(`SELECT * FROM process ORDER BY id ASC`);
-    get_process_list = get_process_list?.result;
-    if (get_process_list.length > process.env.instances) {
-      let delete_ago_process = await pool.query(`DELETE FROM node_clusters ORDER BY id ASC LIMIT 1`);
-    }
-    let insert_process = await insertQuery(`node_clusters`, {
-      instance_id: process.env.INSTANCE_ID,
-    })
-  } catch (err) {
-    console.log(err);
-  }
 }

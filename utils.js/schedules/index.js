@@ -11,6 +11,7 @@ const scheduleIndex = () => {
         if (process.env.INSTANCE_ID != '0') {
             return;
         }
+
         let return_moment = returnMoment();
 
         pushDepositNoti();
