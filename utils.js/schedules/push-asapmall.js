@@ -8,11 +8,17 @@ export const pushAsapMall = async (return_moment = "") => {
     try {
         let moment_list = [
             ':00:00',
+            ':05:00',
             ':10:00',
+            ':15:00',
             ':20:00',
+            ':25:00',
             ':30:00',
+            ':35:00',
             ':40:00',
+            ':45:00',
             ':50:00',
+            ':55:00',
         ];
         let is_process_func = false;
         let minute = '';
