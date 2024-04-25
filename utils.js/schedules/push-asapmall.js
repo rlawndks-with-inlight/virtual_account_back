@@ -5,6 +5,7 @@ import { insertQuery, updateQuery } from '../query-util.js';
 import { returnMoment } from '../function.js';
 
 export const pushAsapMall = async (return_moment = "") => {
+    return;
     try {
         let moment_list = [
             ':00:00',
