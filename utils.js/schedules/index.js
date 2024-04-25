@@ -8,7 +8,7 @@ import { pool } from '../../config/db.js';
 const scheduleIndex = () => {
     schedule.scheduleJob('0 0/1 * * * *', async function () {
         //let pm2_back_id = await pool.query(`SELECT * FROM `)
-        if (process.env.INSTANCE_ID != parseInt(process.env.instances) - 1) {
+        if (parseInt(process.env.INSTANCE_ID) != parseInt(process.env.instances) - 1) {
             return;
         }
 
