@@ -301,6 +301,7 @@ const virtualAccountCtrl = {
                     acct_num: virtual_account?.deposit_acct_num,
                     name: virtual_account?.deposit_acct_name,
                 })
+
                 console.log('1:' + api_result_vaccount_delete);
                 if (api_result_vaccount_delete?.code != 100) {
                     return response(req, res, -100, (api_result_vaccount_delete?.message || "서버 에러 발생"), false)
@@ -344,9 +345,9 @@ const virtualAccountCtrl = {
                     guid: virtual_account?.guid,
                 })
                 console.log('3:' + delete_user);
-                if (delete_user?.code != 100) {
-                    return response(req, res, -100, (delete_user?.message || "서버 에러 발생"), false)
-                }
+                // if (delete_user?.code != 100) {
+                //     return response(req, res, -100, (delete_user?.message || "서버 에러 발생"), false)
+                // }
                 let result = await updateQuery(`${table_name}`, {
                     delete_step: 3,
                 }, id)
