@@ -309,8 +309,8 @@ const virtualAccountCtrl = {
             // if (api_result.code != 100 && api_result?.message != '가상계좌 해지 불가 상태') {
             //     return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
             // }
-            await new Promise((r) => setTimeout(r, 1000));
             if (virtual_account?.deposit_acct_num) {
+                await new Promise((r) => setTimeout(r, 1000));
                 let api_result_account_delete = await corpApi.user.account_delete({
                     pay_type: 'deposit',
                     dns_data: decode_dns,
@@ -329,6 +329,7 @@ const virtualAccountCtrl = {
             //     return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
             // }
             if (virtual_account?.guid) {
+                await new Promise((r) => setTimeout(r, 1000));
                 let delete_user = await corpApi.user.remove({
                     pay_type: 'deposit',
                     dns_data: decode_dns,
