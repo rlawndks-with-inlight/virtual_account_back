@@ -109,7 +109,7 @@ const sendNotiPushAsapMall = async (data, obj) => {
             created_at
         } = data;
         let { data: response } = await axios.post(`${asapmall_back_dns || process.env.SHOPPING_MALL_BACK_URL}/api/pays/virtual-acct/noti`, obj, {
-            timeout: 5000
+            timeout: 10000
         });
         if (response?.result > 0) {
             let result = await updateQuery(`deposits`, {
