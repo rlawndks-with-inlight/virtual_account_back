@@ -264,7 +264,6 @@ const virtualAccountCtrl = {
                 decode_user,
                 guid: virtual_account?.guid,
             })
-            console.log(user_amount);
             let amount = user_amount.data?.amount ?? 0
             if (amount > 0) {
                 let mother_to_result = await corpApi.transfer.pass({
