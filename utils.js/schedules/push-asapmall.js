@@ -102,7 +102,7 @@ export const pushAsapMall = async (return_moment = "") => {
                     obj['acct_name'] = settle_acct_name;
                 }
                 sendNotiPushAsapMall(data[i], obj)
-                await new Promise((r) => setTimeout(r, 200));
+                await new Promise((r) => setTimeout(r, 100));
             }
         }
     } catch (err) {
