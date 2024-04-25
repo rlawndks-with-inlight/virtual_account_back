@@ -131,7 +131,7 @@ const processCorpAccount = async (corp_account_item = {}) => {
         let job_id = '';
         if (
             corp_account?.job_id && corp_account?.jod_id_date &&
-            differenceSecondTwoDate(returnMoment(), corp_account?.jod_id_date) < 60 * 59 &&
+            differenceSecondTwoDate(returnMoment(), corp_account?.jod_id_date) < 60 * 5 &&
             corp_account?.jod_id_date?.substring(0, 10) == returnMoment().substring(0, 10)
         ) {//job_id가 유효한지
             job_id = corp_account?.job_id;
