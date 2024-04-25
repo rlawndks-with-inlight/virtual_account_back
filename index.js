@@ -16,6 +16,8 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import { uploadMultipleFiles } from "./utils.js/api-util.js";
 import { limiter } from "./utils.js/limiter/index.js";
+import { pool } from "./config/db.js";
+import { insertQuery } from "./utils.js/query-util.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -63,6 +65,24 @@ if (process.env.NODE_ENV == 'development') {
     console.log("**-------------------------------------**");
     console.log(`====      Server is On ${HTTPS_PORT}...!!!    ====`);
     console.log("**-------------------------------------**");
-    scheduleIndex();
+    setServer();
   });
+}
+const setServer = async () => {
+  await setProcessId();
+  scheduleIndex();
+}
+const setProcessId = async () => {
+  try {
+    let get_process_list = await pool.query(`SELECT * FROM process ORDER BY id ASC`);
+    get_process_list = get_process_list?.result;
+    if (get_process_list.length > process.env.instances) {
+      let delete_ago_process = await pool.query(`DELETE FROM node_clusters ORDER BY id ASC LIMIT 1`);
+      let insert_process = await insertQuery(`node_clusters`, {
+        instance_id: process.env.INSTANCE_ID,
+      })
+    }
+  } catch (err) {
+    console.log(err);
+  }
 }
