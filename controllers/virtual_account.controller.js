@@ -264,6 +264,7 @@ const virtualAccountCtrl = {
                 decode_user,
                 guid: virtual_account?.guid,
             })
+            console.log(user_amount);
             let amount = user_amount.data?.amount ?? 0
             if (amount > 0) {
                 let mother_to_result = await corpApi.transfer.pass({
@@ -299,6 +300,7 @@ const virtualAccountCtrl = {
                 acct_num: virtual_account?.deposit_acct_num,
                 name: virtual_account?.deposit_acct_name,
             })
+            console.log(api_result_vaccount_delete);
             // if (api_result.code != 100 && api_result?.message != '가상계좌 해지 불가 상태') {
             //     return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
             // }
@@ -311,6 +313,7 @@ const virtualAccountCtrl = {
                 bank_id: virtual_account?.deposit_bank_code,
                 deposit_acct_num: virtual_account?.deposit_acct_num,
             })
+            console.log(api_result_account_delete);
             // if (api_result.code != 100 && api_result.message != '출금계좌 불일치로 진행 불가') {
             //     return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
             // }
@@ -320,6 +323,7 @@ const virtualAccountCtrl = {
                 decode_user,
                 guid: virtual_account?.guid,
             })
+            console.log(delete_user);
             let result1 = await updateQuery(`users`, {
                 virtual_account_id: 0,
             }, id, 'virtual_account_id')

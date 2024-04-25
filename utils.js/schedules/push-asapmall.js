@@ -93,7 +93,6 @@ export const pushAsapMall = async (return_moment = "") => {
     }
 
 }
-
 const sendNotiPushAsapMall = async (data, obj) => {
     try {
         let {
