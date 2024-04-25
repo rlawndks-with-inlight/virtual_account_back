@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { pool } from '../../config/db.js';
 import axios from 'axios';
-import { updateQuery } from '../query-util.js';
+import { insertQuery, updateQuery } from '../query-util.js';
 import { returnMoment } from '../function.js';
 
 export const pushAsapMall = async (return_moment = "") => {
@@ -32,6 +32,16 @@ export const pushAsapMall = async (return_moment = "") => {
         sql += ` WHERE brands.is_use_asapmall_noti=1 AND pay_type IN (0, 5, 20) `;
         sql += ` AND deposits.send_asapmall_noti=5 `;
         sql += ` ORDER BY deposits.id ASC `;
+        let insert_log = await insertQuery('logs', {
+            brand_id: 66,
+            request: JSON.stringify({
+                type: 'send_asap'
+            }),
+            response_data: '{}',
+            response_result: 100,
+            response_message: '스케줄링 시작',
+            user_id: -1,
+        })
 
         let data = await pool.query(sql);
         data = data?.result;
