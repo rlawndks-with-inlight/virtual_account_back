@@ -128,5 +128,4 @@ const sendNotiPushAsapMall = async (data, obj) => {
     } catch (err) {
         console.log(err);
     }
-
 }
