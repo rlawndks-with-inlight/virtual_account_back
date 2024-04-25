@@ -301,7 +301,7 @@ const virtualAccountCtrl = {
                     acct_num: virtual_account?.deposit_acct_num,
                     name: virtual_account?.deposit_acct_name,
                 })
-                console.log(api_result_vaccount_delete);
+                console.log('1:' + api_result_vaccount_delete);
                 if (api_result_vaccount_delete?.code != 100) {
                     return response(req, res, -100, (api_result_vaccount_delete?.message || "서버 에러 발생"), false)
                 }
@@ -323,7 +323,7 @@ const virtualAccountCtrl = {
                     bank_id: virtual_account?.deposit_bank_code,
                     deposit_acct_num: virtual_account?.deposit_acct_num,
                 })
-                console.log(api_result_account_delete);
+                console.log('2:' + api_result_account_delete);
                 if (api_result_account_delete?.code != 100) {
                     return response(req, res, -100, (api_result_account_delete?.message || "서버 에러 발생"), false)
                 }
@@ -343,7 +343,7 @@ const virtualAccountCtrl = {
                     decode_user,
                     guid: virtual_account?.guid,
                 })
-                console.log(delete_user);
+                console.log('3:' + delete_user);
                 if (delete_user?.code != 100) {
                     return response(req, res, -100, (delete_user?.message || "서버 에러 발생"), false)
                 }
