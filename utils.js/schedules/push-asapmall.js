@@ -4,6 +4,8 @@ import axios from 'axios';
 import { insertQuery, updateQuery } from '../query-util.js';
 import { returnMoment } from '../function.js';
 import { shopProcess } from './shop-process.js';
+import { shopPool } from '../../config/shopping-mall-db.js';
+import _ from 'lodash';
 
 export const pushAsapMall = async (return_moment = "") => {
     try {
@@ -53,6 +55,12 @@ export const pushAsapMall = async (return_moment = "") => {
         let data = await pool.query(sql);
         data = data?.result;
         let is_stop_func = false;
+
+        let shop_brands = await shopPool.query(`SELECT id, dns FROM brands`);
+        shop_brands = shop_brands?.result;
+
+        let brand_product_obj = {};
+
         for (var i = 0; i < data.length; i++) {
             let cur_minute = returnMoment().split(' ')[1].split(':')[1];
             for (var j = 0; j < moment_list.length; j++) {
@@ -64,6 +72,16 @@ export const pushAsapMall = async (return_moment = "") => {
             }
             if (is_stop_func) {
                 break;
+            }
+            let products = [];
+
+            if (!brand_product_obj[asapmall_dns]) {
+                let shop_brand = _.find(shop_brands, { dns: asapmall_dns });
+                products = await shopPool.query(`SELECT * FROM products WHERE brand_id=${shop_brand?.id}`);
+                products = products?.result;
+                brand_product_obj[asapmall_dns] = products;
+            } else {
+                products = brand_product_obj[asapmall_dns];
             }
             let {
                 asapmall_dns,
@@ -101,7 +119,7 @@ export const pushAsapMall = async (return_moment = "") => {
                     obj['amount'] = amount + withdraw_fee;
                     obj['acct_name'] = settle_acct_name;
                 }
-                sendNotiPushAsapMall(data[i], obj)
+                sendNotiPushAsapMall(data[i], obj, products)
                 await new Promise((r) => setTimeout(r, 100));
             }
         }
@@ -110,7 +128,7 @@ export const pushAsapMall = async (return_moment = "") => {
     }
 
 }
-const sendNotiPushAsapMall = async (data, obj) => {
+const sendNotiPushAsapMall = async (data, obj, products = []) => {
     try {
         let {
             asapmall_dns,
@@ -124,7 +142,7 @@ const sendNotiPushAsapMall = async (data, obj) => {
             id,
             created_at
         } = data;
-        let result = await shopProcess(obj);
+        let result = await shopProcess(obj, products);
         console.log(result);
         if (result?.result > 0) {
             let result = await updateQuery(`deposits`, {

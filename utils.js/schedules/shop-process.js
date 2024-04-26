@@ -18,7 +18,7 @@ const insertQuery = async (table, obj) => {
 }
 const table_name = "transactions";
 
-const shopProcess = async (params) => {
+const shopProcess = async (params, products = []) => {
     //가상계좌노티
     try {
         let {
@@ -87,8 +87,8 @@ const shopProcess = async (params) => {
         let result = await insertQuery(`${table_name}`, obj);
         let trans_id = result?.result?.insertId;
         if (pay_type == 'deposit') {
-            let products = await shopPool.query(`SELECT * FROM products WHERE brand_id=${brand?.id}`);
-            products = products?.result;
+            // let products = await shopPool.query(`SELECT * FROM products WHERE brand_id=${brand?.id}`);
+            // products = products?.result;
             let result_products = generateArrayWithSum(products, amount)
             let insert_item_data = [];
             for (var i = 0; i < result_products.length; i++) {
