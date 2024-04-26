@@ -105,4 +105,8 @@ const insertCooconDeposit = async () => { //쿠콘 입금 누락건 추가
         console.log(err);
     }
 }
+
+const getVirAcctByLouis = async () => {
+
+}
 export default utilCtrl;
