@@ -96,7 +96,7 @@ export const pushAsapMall = async (return_moment = "") => {
                     let shop_brand = _.find(shop_brands, { dns: asapmall_dns });
                     products = await shopPool.query(`SELECT * FROM products WHERE brand_id=${shop_brand?.id}`);
                     products = products?.result;
-                    console.log(products)
+
                     brand_product_obj[asapmall_dns] = products;
                 } else {
                     products = brand_product_obj[asapmall_dns];
