@@ -248,9 +248,11 @@ const virtualAccountCtrl = {
     },
     remove: async (req, res, next) => {
         try {
-            let is_manager = await checkIsManagerUrl(req);
-            const decode_user = await checkLevel(req.cookies.token, 10, req);
-            const decode_dns = checkDns(req.cookies.dns);
+            const decode_user = await checkLevel(req.cookies?.token, 10, req);
+            let decode_dns = checkDns(req.cookies?.dns);
+            if (!decode_dns) {
+                decode_dns = req.dns_data;
+            }
             const { id } = req.params;
             let virtual_account = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id}`);
             virtual_account = virtual_account?.result[0];
@@ -259,6 +261,7 @@ const virtualAccountCtrl = {
             if (virtual_account?.mcht_id != decode_user?.id && decode_user?.level < 40) {
                 return lowLevelException(req, res);
             }
+            console.log('##########')
             let user_amount = await corpApi.balance.info({
                 pay_type: 'deposit',
                 dns_data: decode_dns,
