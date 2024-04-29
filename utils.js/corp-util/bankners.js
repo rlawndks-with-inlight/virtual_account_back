@@ -925,5 +925,54 @@ export const banknersApi = {
 
             }
         },
+    },
+    pay: {
+        cancel: async (data) => {//거래취소
+            try {
+                let {
+                    dns_data, pay_type, decode_user,
+                    tid,
+                    from_guid, to_guid,
+                    amount,
+                } = data;
+                if (type == 0) {
+                    type = 'ACCOUNT';
+                } else if (type == 1) {
+                    type = 'CP';
+                }
+                let query = {
+                    tid: tid,
+                    from_guid: from_guid,
+                    to_guid: to_guid,
+                    cncl_amt: amount
+                }
+                query = makeBody(query, dns_data, pay_type)
+                let result = await postRequest('/api/pay/cancel', query, makeHeaderData(dns_data, pay_type, decode_user));
+                console.log(result)
+                if (result?.code != '0000') {
+                    return {
+                        code: -100,
+                        message: result?.message,
+                        data: {},
+                    };
+                }
+                return {
+                    code: 100,
+                    message: '',
+                    data: {
+                        tid: result?.data?.tid,
+                    },
+                };
+            } catch (err) {
+                console.log(err)
+                console.log(err?.response?.data)
+                return {
+                    code: -100,
+                    message: '',
+                    data: {},
+                };
+
+            }
+        },
     }
 }

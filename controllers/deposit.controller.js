@@ -6,7 +6,7 @@ import { checkDns, checkLevel, getNumberByPercent, isItemBrandIdSameDnsId, respo
 import _ from 'lodash';
 import 'dotenv/config';
 import axios from "axios";
-import { getDnsData } from "../utils.js/corp-util/index.js";
+import corpApi, { getDnsData } from "../utils.js/corp-util/index.js";
 
 const table_name = 'deposits';
 
@@ -333,12 +333,28 @@ const depositCtrl = {
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
+            let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
+            dns_data = dns_data?.result[0];
             let sum_deposit_cancel = await pool.query(`SELECT SUM(amount) AS cancel_amount FROM deposits WHERE deposit_id=${id} AND is_cancel=1`);
             sum_deposit_cancel = sum_deposit_cancel?.result[0]?.cancel_amount ?? 0;
             let deposit = await selectQuerySimple(table_name, id);
             deposit = deposit?.result[0];
+            let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE id=${deposit?.virtual_account_id}`);
+            virtual_account = virtual_account?.result[0];
             if (sum_deposit_cancel + deposit?.amount <= 0) {
                 return response(req, res, -100, "이미 취소가 완료된 건입니다.", false)
+            }
+            let api_result = await corpApi.pay.cancel({
+                pay_type: 'deposit',
+                dns_data: decode_dns,
+                decode_user,
+                tid: deposit?.trx_id,
+                from_guid: dns_data?.deposit_guid,
+                to_guid: virtual_account?.guid,
+                amount: deposit?.amount,
+            })
+            if (api_result.code != 100) {
+                return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
             }
 
             delete deposit['id'];
@@ -347,6 +363,7 @@ const depositCtrl = {
             delete deposit['deposit_fee'];
             deposit = {
                 ...deposit,
+                trx_id: (api_result.data?.tid || deposit?.trx_id),
                 deposit_id: id,
                 is_cancel: 1,
             }
