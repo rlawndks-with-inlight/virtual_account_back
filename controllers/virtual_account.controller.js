@@ -261,7 +261,6 @@ const virtualAccountCtrl = {
             if (virtual_account?.mcht_id != decode_user?.id && decode_user?.level < 40) {
                 return lowLevelException(req, res);
             }
-            console.log('##########')
             let user_amount = await corpApi.balance.info({
                 pay_type: 'deposit',
                 dns_data: decode_dns,
