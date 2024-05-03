@@ -934,11 +934,7 @@ export const banknersApi = {
                     from_guid, to_guid,
                     amount,
                 } = data;
-                if (type == 0) {
-                    type = 'ACCOUNT';
-                } else if (type == 1) {
-                    type = 'CP';
-                }
+
                 let query = {
                     tid: tid,
                     from_guid: from_guid,
@@ -982,11 +978,7 @@ export const banknersApi = {
                     guid,
                     amount,
                 } = data;
-                if (type == 0) {
-                    type = 'ACCOUNT';
-                } else if (type == 1) {
-                    type = 'CP';
-                }
+
                 let query = {
                     guid: guid,
                     trx_amt: amount,
