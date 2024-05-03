@@ -34,11 +34,14 @@ const brandCtrl = {
             ]
             let chart_sql = sql;
             chart_sql = chart_sql.replaceAll(process.env.SELECT_COLUMN_SECRET, chart_columns.join());
-            let chart_data = await pool.query(chart_sql);
-            chart_data = chart_data?.result[0];
-            let data = await getSelectQuery(sql, columns, req.query);
 
-            return response(req, res, 100, "success", { ...data, chart: chart_data });
+            let data = await getSelectQuery(sql, columns, req.query, [{
+                table: 'chart',
+                sql: chart_sql,
+            }]);
+            data.chart = data?.chart[0] ?? {};
+
+            return response(req, res, 100, "success", data);
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)
