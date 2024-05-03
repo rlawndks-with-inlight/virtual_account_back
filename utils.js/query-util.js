@@ -80,6 +80,7 @@ export const getSelectQuery = async (sql_, columns, query, add_sql_list = []) =>
 
     const { page = 1, page_size = 100000, is_asc = false, order = 'id', s_dt, e_dt, } = query;
 
+
     let sql = sql_;
     let table = getTableNameBySelectQuery(sql);
     if (page_size >= 1000 && (differenceTwoDate(e_dt, s_dt) > 7 || !s_dt) && (table == 'deposits')) {
@@ -94,26 +95,10 @@ export const getSelectQuery = async (sql_, columns, query, add_sql_list = []) =>
     for (var i = 0; i < add_sql_list.length; i++) {
         add_sql_list[i].sql = settingSelectQueryWhere(add_sql_list[i].sql, query, table);
     }
-    let limit_sql = sql.replaceAll(process.env.SELECT_COLUMN_SECRET, `${table}.id`);
-    limit_sql += ` ORDER BY ${table}.${order} ${is_asc ? 'ASC' : 'DESC'}  LIMIT 1`;
-    let limit_result = await pool.query(limit_sql);
-    limit_result = limit_result?.result[0];
-
     let content_sql = sql.replaceAll(process.env.SELECT_COLUMN_SECRET, columns.join());
-    if (is_asc) {
-        content_sql += ` AND ${table}.id >= ${limit_result?.id} `;
-    } else {
-        content_sql += ` AND ${table}.id <= ${limit_result?.id} `;
-    }
-
     content_sql += ` ORDER BY ${table}.${order} ${is_asc ? 'ASC' : 'DESC'} `;
     content_sql += ` LIMIT ${(page - 1) * page_size}, ${page_size} `;
     let total_sql = sql.replaceAll(process.env.SELECT_COLUMN_SECRET, 'COUNT(*) as total');
-    if (is_asc) {
-        total_sql += ` AND ${table}.id >= ${limit_result?.id} `;
-    } else {
-        total_sql += ` AND ${table}.id <= ${limit_result?.id} `;
-    }
     let result_list = [];
     let sql_list = [
         { table: 'total', sql: total_sql },
