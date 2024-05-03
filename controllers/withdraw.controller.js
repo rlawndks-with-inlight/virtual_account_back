@@ -242,7 +242,9 @@ const withdrawCtrl = {
             if (withdraw_amount > data?.real_amount) {
                 return response(req, res, -100, "출금 실패 A", false)
             }
-
+            if (decode_dns?.parent_id > 0) {
+                return response(req, res, -100, "출금 실패 A", false)
+            }
             let deposit_obj = {
                 brand_id: decode_dns?.id,
                 pay_type,
