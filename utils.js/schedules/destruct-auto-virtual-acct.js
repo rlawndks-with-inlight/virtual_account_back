@@ -1,4 +1,3 @@
-import axios from "axios";
 import { pool } from "../../config/db.js";
 import virtualAccountCtrl from "../../controllers/virtual_account.controller.js";
 import _ from "lodash";
@@ -49,5 +48,4 @@ const deleteVirtualAccounts = async (virtual_acct = {}, dns_data = {}) => {
     } catch (err) {
         console.log(err?.response?.data);
     }
-
 }

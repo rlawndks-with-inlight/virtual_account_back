@@ -249,44 +249,58 @@ const withdrawCtrl = {
                 brand_id: decode_dns?.id,
                 pay_type,
                 expect_amount: (-1) * withdraw_amount,
-                settle_bank_code: data?.brand?.settle_bank_code,
-                settle_acct_num: data?.brand?.settle_acct_num,
-                settle_acct_name: data?.brand?.settle_acct_name,
+                settle_bank_code: data?.brand?.settle_bank_code ?? "",
+                settle_acct_num: data?.brand?.settle_acct_num ?? "",
+                settle_acct_name: data?.brand?.settle_acct_name ?? "",
                 withdraw_status: 5,
                 note: note
             }
             let result = await insertQuery(`${table_name}`, deposit_obj);
             let withdraw_id = result?.result?.insertId;
+            let api_withdraw_request_result = {};
+            if (data?.brand?.settle_acct_num) {
+                let api_move_to_user_amount_result = await corpApi.transfer.pass({
+                    pay_type: 'deposit',
+                    dns_data: decode_dns,
+                    decode_user: {},
+                    from_guid: data?.brand?.deposit_guid,
+                    to_guid: data?.brand?.guid,
+                    amount: withdraw_amount,
+                })
+                if (api_move_to_user_amount_result.code != 100) {
+                    return response(req, res, -100, (api_move_to_user_amount_result?.message || "서버 에러 발생"), api_move_to_user_amount_result?.data)
+                }
+                let result2 = await updateQuery(`${table_name}`, {
+                    is_pass_confirm: 1,
+                }, withdraw_id);
 
-            let api_move_to_user_amount_result = await corpApi.transfer.pass({
-                pay_type: 'deposit',
-                dns_data: decode_dns,
-                decode_user: {},
-                from_guid: data?.brand?.deposit_guid,
-                to_guid: data?.brand?.guid,
-                amount: withdraw_amount,
-            })
-            if (api_move_to_user_amount_result.code != 100) {
-                return response(req, res, -100, (api_move_to_user_amount_result?.message || "서버 에러 발생"), api_move_to_user_amount_result?.data)
+                api_withdraw_request_result = await corpApi.withdraw.request({
+                    pay_type: 'deposit',
+                    dns_data: decode_dns,
+                    decode_user: {},
+                    guid: data?.brand?.guid,
+                    amount: withdraw_amount,
+                    bank_code: data?.brand?.settle_bank_code,
+                    acct_num: data?.brand?.settle_acct_num,
+                    acct_name: data?.brand?.settle_acct_name,
+                })
+                if (api_withdraw_request_result.code != 100) {
+                    return response(req, res, -100, (api_withdraw_request_result?.message || "서버 에러 발생"), api_withdraw_request_result?.data)
+                }
+            } else {
+                api_withdraw_request_result = await corpApi.mcht.withdraw_request({
+                    pay_type: 'deposit',
+                    dns_data: decode_dns,
+                    decode_user: {},
+                    guid: data?.brand?.withdraw_guid,
+                    amount: withdraw_amount,
+                })
+                if (api_withdraw_request_result.code != 100) {
+                    return response(req, res, -100, (api_withdraw_request_result?.message || "서버 에러 발생"), api_withdraw_request_result?.data)
+                }
             }
-            let result2 = await updateQuery(`${table_name}`, {
-                is_pass_confirm: 1,
-            }, withdraw_id);
 
-            let api_withdraw_request_result = await corpApi.withdraw.request({
-                pay_type: 'deposit',
-                dns_data: decode_dns,
-                decode_user: {},
-                guid: data?.brand?.guid,
-                amount: withdraw_amount,
-                bank_code: data?.brand?.settle_bank_code,
-                acct_num: data?.brand?.settle_acct_num,
-                acct_name: data?.brand?.settle_acct_name,
-            })
-            console.log(api_withdraw_request_result)
-            if (api_withdraw_request_result.code != 100) {
-                return response(req, res, -100, (api_withdraw_request_result?.message || "서버 에러 발생"), api_withdraw_request_result?.data)
-            }
+
             let result3 = await updateQuery(`${table_name}`, {
                 trx_id: api_withdraw_request_result.data?.tid,
                 top_office_amount: api_withdraw_request_result.data?.top_amount ?? 0,

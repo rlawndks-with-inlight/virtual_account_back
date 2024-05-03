@@ -3,8 +3,8 @@ import { pushDepositNoti } from './push-noti.js';
 import { pushAsapMall } from './push-asapmall.js';
 import { returnMoment } from '../function.js';
 import { popbillScraping } from './scrap-popbill.js';
-import { pool } from '../../config/db.js';
 import { destructAutoVirtualAcct } from './destruct-auto-virtual-acct.js';
+import { getVirAcctByLouis } from './get-virtual-acct-louis.js';
 
 const scheduleIndex = () => {
     schedule.scheduleJob('0 0/1 * * * *', async function () {

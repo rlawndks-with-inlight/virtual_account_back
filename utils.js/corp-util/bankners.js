@@ -325,7 +325,6 @@ export const banknersApi = {
                 console.log(query)
                 query = makeBody(query, dns_data, pay_type)
                 let result = await postRequest('/api/transfer/auth/pass', query, makeHeaderData(dns_data, pay_type, decode_user));
-                console.log(result)
                 if (result?.code != '0000') {
                     return {
                         code: -100,
@@ -949,6 +948,52 @@ export const banknersApi = {
                 query = makeBody(query, dns_data, pay_type)
                 let result = await postRequest('/api/pay/cancel', query, makeHeaderData(dns_data, pay_type, decode_user));
                 console.log(result)
+                if (result?.code != '0000') {
+                    return {
+                        code: -100,
+                        message: result?.message,
+                        data: {},
+                    };
+                }
+                return {
+                    code: 100,
+                    message: '',
+                    data: {
+                        tid: result?.data?.tid,
+                    },
+                };
+            } catch (err) {
+                console.log(err)
+                console.log(err?.response?.data)
+                return {
+                    code: -100,
+                    message: '',
+                    data: {},
+                };
+
+            }
+        },
+    },
+    mcht: {
+        withdraw_request: async (data) => {//모계좌출금
+            try {
+                let {
+                    dns_data, pay_type, decode_user,
+                    guid,
+                    amount,
+                } = data;
+                if (type == 0) {
+                    type = 'ACCOUNT';
+                } else if (type == 1) {
+                    type = 'CP';
+                }
+                let query = {
+                    guid: guid,
+                    trx_amt: amount,
+                    trx_curr: 'KRW',
+                }
+                query = makeBody(query, dns_data, pay_type)
+                let result = await postRequest('/api/merchant/withdraw/auth/pass', query, makeHeaderData(dns_data, pay_type, decode_user));
                 if (result?.code != '0000') {
                     return {
                         code: -100,
