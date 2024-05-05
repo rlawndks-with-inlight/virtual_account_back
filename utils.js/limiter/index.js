@@ -1,6 +1,11 @@
 import rateLimit from 'express-rate-limit';
 import { getReqIp } from '../util.js';
 
+let confirm_ip_list = [
+    '211.45.163.4',
+    '127.0.0.1',
+]
+
 const limiter = rateLimit({
     windowMs: 1000 * 60, //1초 ... 15 * 60 * 1000 15분
     max: 100,
@@ -11,10 +16,11 @@ const limiter = rateLimit({
     },
     handler: function (req, res) {
         let ip = getReqIp(req);
-        console.log(ip)
-        res.status(429).send({
-            rate_limiter: 1
-        });
+        if (!confirm_ip_list.includes(ip)) {
+            res.status(429).send({
+                rate_limiter: 1
+            });
+        }
     }
 });
 
