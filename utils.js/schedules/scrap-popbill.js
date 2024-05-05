@@ -175,7 +175,6 @@ const processCorpAccount = async (corp_account_item = {}) => {
             }
             deposit_push_list.reverse();
             if (deposit_push_list.length > 0) {
-                console.log(JSON.stringify(deposit_push_list))
                 let process_corp_account = await updateQuery('corp_accounts', {
                     is_process: 1,
                 }, corp_account?.id);
