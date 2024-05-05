@@ -21,4 +21,3 @@ export const pushDepositNoti = async () => {
         console.log(err);
     }
 }
-pushDepositNoti()
