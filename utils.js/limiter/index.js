@@ -1,7 +1,9 @@
 import rateLimit from 'express-rate-limit';
 import { getReqIp } from '../util.js';
 
-let confirm_ip_list = [
+export const confirm_ip_list = [
+    '::1',
+    '0.0.0.0',
     '211.45.163.4',
     '127.0.0.1',
     '211.45.175.153',
