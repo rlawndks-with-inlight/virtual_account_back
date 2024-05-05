@@ -12,11 +12,11 @@ const scheduleIndex = () => {
         let return_moment = returnMoment();
 
         if (parseInt(process.env.INSTANCE_ID) == parseInt(process.env.instances) - 1) {
-            popbillScraping();
             destructAutoVirtualAcct();
+            pushDepositNoti();
         }
         if (parseInt(process.env.INSTANCE_ID) == parseInt(process.env.instances) - 2) {
-            pushDepositNoti();
+            popbillScraping();
             pushAsapMall(return_moment);
         }
     })
