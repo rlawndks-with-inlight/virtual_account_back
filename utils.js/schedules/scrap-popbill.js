@@ -103,6 +103,7 @@ export const popbillFunc = {
 export const popbillScraping = async () => {
     try {
         let corp_account_list = await popbillFunc.listBankAccount();
+        console.log(corp_account_list)
         for (var i = 0; i < corp_account_list.length; i++) {
             processCorpAccount(corp_account_list[i])
         }
@@ -151,6 +152,7 @@ const processCorpAccount = async (corp_account_item = {}) => {
             job_id,
         })
         if (job_state?.jobState == 3) {
+            console.log(corp_account_item)
             let deposit_list = await popbillFunc.search({
                 job_id,
             })

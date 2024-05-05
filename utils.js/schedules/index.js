@@ -15,7 +15,7 @@ const scheduleIndex = () => {
         let return_moment = returnMoment();
         destructAutoVirtualAcct();
         pushDepositNoti();
-        popbillScraping();
+        // popbillScraping();
         pushAsapMall(return_moment);
 
     })
