@@ -36,6 +36,7 @@ app.use('/api', limiter);
 app.use((req, res, next) => {
   // Check if request IP is in the whitelist
   let ip = getReqIp(req);
+  console.log(ip)
   if (confirm_ip_list.includes(ip)) {
     // Skip rate limiting for whitelisted IP addresses
     next();
