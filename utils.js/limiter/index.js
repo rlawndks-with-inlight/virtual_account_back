@@ -2,8 +2,8 @@ import rateLimit from 'express-rate-limit';
 import { getReqIp } from '../util.js';
 
 const limiter = rateLimit({
-    windowMs: 1000 * 3, //1초 ... 15 * 60 * 1000 15분
-    max: 3,
+    windowMs: 1000 * 60, //1초 ... 15 * 60 * 1000 15분
+    max: 100,
     standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
     message: {
