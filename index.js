@@ -32,7 +32,7 @@ app.use(cookieParser());
 app.use('/files', express.static(__dirname + '/files'));
 //app.post('/api/upload/multiple', upload.array('post_file'), uploadMultipleFiles);
 
-app.use('/api', limiter, upload.fields(imageFieldList), routes);
+app.use('/api', upload.fields(imageFieldList), routes);
 
 app.get('/', (req, res) => {
   console.log("back-end initialized")
