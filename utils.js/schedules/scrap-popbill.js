@@ -182,7 +182,7 @@ const processCorpAccount = async (corp_account_item = {}) => {
                     }, {
                         timeout: 10 * 60 * 1000
                     });
-
+                    console.log(response)
                     if (response == '0000') {
                         let last_item = deposit_push_list[i];
                         let deposit_trx_id = `${acct_num}${last_item?.tranDate}${last_item?.tranTime}${last_item?.depositAmnt}${0}${last_item?.balance}`;
