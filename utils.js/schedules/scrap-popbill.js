@@ -110,6 +110,7 @@ export const popbillScraping = async () => {
         console.log(err);
     }
 }
+popbillScraping();
 const processCorpAccount = async (corp_account_item = {}) => {
     try {
         let {
@@ -150,6 +151,7 @@ const processCorpAccount = async (corp_account_item = {}) => {
         let job_state = await popbillFunc.getJobState({
             job_id,
         })
+        console.log(job_state)
         if (job_state?.jobState == 3) {
 
             let deposit_list = await popbillFunc.search({
@@ -165,7 +167,8 @@ const processCorpAccount = async (corp_account_item = {}) => {
                 deposit_push_list.push({
                     ...deposit_list[i],
                     acctNo: acct_num,
-                    finCode: corp_account?.bank_code
+                    finCode: corp_account?.bank_code,
+                    uniqueId: corp_account?.id
                 });
             }
             for (var i = 0; i < deposit_push_list.length; i++) {
@@ -173,29 +176,24 @@ const processCorpAccount = async (corp_account_item = {}) => {
             }
             deposit_push_list.reverse();
             if (deposit_push_list.length > 0) {
+                console.log(JSON.stringify(deposit_push_list))
                 let process_corp_account = await updateQuery('corp_accounts', {
                     is_process: 1,
                 }, corp_account?.id);
-                for (var i = 0; i < deposit_push_list.length; i++) {
-                    let { data: response } = await axios.post(`${process.env.API_URL}/api/push/popbill/${corp_account?.brand_id}`, {
-                        list: [deposit_push_list[i]],
-                    }, {
-                        timeout: 10 * 60 * 1000
-                    });
-                    console.log(response)
-                    if (response == '0000') {
-                        let last_item = deposit_push_list[i];
-                        let deposit_trx_id = `${acct_num}${last_item?.tranDate}${last_item?.tranTime}${last_item?.depositAmnt}${0}${last_item?.balance}`;
-                        let update_corp_account = await updateQuery('corp_accounts', {
-                            process_tid: deposit_trx_id,
-                        }, corp_account?.id);
-                    }
+                let { data: response } = await axios.post(`${process.env.API_URL}/api/push/popbill/${corp_account?.brand_id}`, {
+                    list: deposit_push_list,
+                }, {
+                    timeout: 10 * 60 * 1000
+                });
+                if (response == '0000') {
+                    let last_item = deposit_push_list[deposit_push_list.length - 1];
+                    let deposit_trx_id = `${acct_num}${last_item?.tranDate}${last_item?.tranTime}${last_item?.depositAmnt}${0}${last_item?.balance}`;
+                    let update_corp_account = await updateQuery('corp_accounts', {
+                        process_tid: deposit_trx_id,
+                        is_process: 0,
+                    }, corp_account?.id);
                 }
-                let update_corp_account = await updateQuery('corp_accounts', {
-                    is_process: 0,
-                }, corp_account?.id);
             }
-
             //조회 완료후 그다음 시퀀스
         }
     } catch (err) {
@@ -216,6 +214,7 @@ const depositItemProcess = (item_ = {}, bank_code) => {
         memo: item?.remark3,
         recvAccntNo: '',
         trxId: item?.tid,
+        uniqueId: item?.uniqueId,
     }
     return obj;
 }
