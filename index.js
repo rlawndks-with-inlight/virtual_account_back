@@ -31,7 +31,33 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use('/files', express.static(__dirname + '/files'));
 //app.post('/api/upload/multiple', upload.array('post_file'), uploadMultipleFiles);
-
+let confirm_ip_list = [
+  '::1',
+  '0.0.0.0',
+  '211.45.163.4',
+  '127.0.0.1',
+  '211.45.175.153',
+  '54.79.149.16',
+  '52.65.141.209',
+  '54.252.21.217',
+  '3.104.6.73',
+  '18.219.207.193',
+  '18.116.18.32',
+  '3.133.218.23',
+  '3.12.114.115',
+]
+app.use('/api', limiter);
+app.use((req, res, next) => {
+  // Check if request IP is in the whitelist
+  console.log(req.ip)
+  if (confirm_ip_list.includes(req.ip)) {
+    // Skip rate limiting for whitelisted IP addresses
+    next();
+  } else {
+    // Continue with rate limiting for non-whitelisted IP addresses
+    limiter(req, res, next);
+  }
+});
 app.use('/api', upload.fields(imageFieldList), routes);
 
 app.get('/', (req, res) => {
