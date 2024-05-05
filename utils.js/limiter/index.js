@@ -28,6 +28,7 @@ const limiter = rateLimit({
     handler: function (req, res) {
         let ip = getReqIp(req);
         if (!confirm_ip_list.includes(ip)) {
+            console.log(ip)
             res.status(429).send({
                 rate_limiter: 1
             });
