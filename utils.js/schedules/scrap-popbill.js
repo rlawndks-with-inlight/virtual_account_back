@@ -151,6 +151,7 @@ const processCorpAccount = async (corp_account_item = {}) => {
             job_id,
         })
         if (job_state?.jobState == 3) {
+
             let deposit_list = await popbillFunc.search({
                 job_id,
             })
@@ -164,7 +165,8 @@ const processCorpAccount = async (corp_account_item = {}) => {
                 deposit_push_list.push({
                     ...deposit_list[i],
                     acctNo: acct_num,
-                    finCode: corp_account?.bank_code
+                    finCode: corp_account?.bank_code,
+                    uniqueId: corp_account?.id,
                 });
             }
             for (var i = 0; i < deposit_push_list.length; i++) {
@@ -180,6 +182,7 @@ const processCorpAccount = async (corp_account_item = {}) => {
                 }, {
                     timeout: 10 * 60 * 1000
                 });
+
                 if (response != '9999') {
                     let last_item = deposit_push_list[deposit_push_list.length - 1];
                     let deposit_trx_id = `${acct_num}${last_item?.tranDate}${last_item?.tranTime}${last_item?.depositAmnt}${0}${last_item?.balance}`;
