@@ -11,7 +11,7 @@ import http from 'http';
 import https from 'https';
 import scheduleIndex from "./utils.js/schedules/index.js";
 import upload from "./config/multerConfig.js";
-import { generateRandomString, imageFieldList } from "./utils.js/util.js";
+import { generateRandomString, getReqIp, imageFieldList } from "./utils.js/util.js";
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import { uploadMultipleFiles } from "./utils.js/api-util.js";
@@ -35,8 +35,8 @@ app.use('/files', express.static(__dirname + '/files'));
 app.use('/api', limiter);
 app.use((req, res, next) => {
   // Check if request IP is in the whitelist
-  console.log(req.ip)
-  if (confirm_ip_list.includes(req.ip)) {
+  let ip = getReqIp(req);
+  if (confirm_ip_list.includes(ip)) {
     // Skip rate limiting for whitelisted IP addresses
     next();
   } else {
