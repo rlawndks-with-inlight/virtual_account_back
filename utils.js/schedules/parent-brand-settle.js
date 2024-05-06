@@ -17,8 +17,6 @@ export const onParentBrandSettle = async (return_moment = "") => {
                 continue;
             }
             parentBrandSettle(children_brand, return_moment);
-
-
         }
     } catch (err) {
         console.log(err);
@@ -27,13 +25,15 @@ export const onParentBrandSettle = async (return_moment = "") => {
 const parentBrandSettle = async (brand = {}, return_moment = "") => {
     try {
         let insert_list = [];
-
+        console.log(brand)
+        console.log(return_moment)
         let yesterday = returnMoment(false, -1);
         let deposit_sql = `SELECT SUM(amount) AS amount, COUNT(*) AS total FROM deposits`;
         deposit_sql += ` WHERE brand_id=${brand?.id} `;
         deposit_sql += ` AND deposit_status=0 `;
         deposit_sql += ` AND pay_type=0 `;
         deposit_sql += ` AND (created_at BETWEEN '${return_moment.substring(0, 10)} 00:00:00' AND '${return_moment.substring(0, 10)} 23:59:59' )`;
+        console.log(deposit_sql)
         let deposit_sum = await pool.query(deposit_sql);
         deposit_sum = deposit_sum?.result[0];
         if (brand?.is_use_fee_operator == 1) {
@@ -63,7 +63,7 @@ const parentBrandSettle = async (brand = {}, return_moment = "") => {
             brand?.id,
             12,
             (withdraw_sum?.total * brand?.withdraw_head_office_fee),
-            `입금수수료 ${commarNumber(withdraw_sum?.total)} 회 입금 X  ${brand?.withdraw_head_office_fee}원 차감`,
+            `입금수수료 ${commarNumber(withdraw_sum?.total)} 회 출금 X  ${brand?.withdraw_head_office_fee}원 차감`,
             1,
         ])
 
@@ -88,15 +88,15 @@ const parentBrandSettle = async (brand = {}, return_moment = "") => {
             status: 0,
         })
         let success_id = sucess_result?.result?.insertId;
-
         if (result.code > 0) {
             if (withdraw_id_list.length > 0) {
                 for (var i = 0; i < withdraw_id_list.length / 1000; i++) {
                     let update_withdraw_list = withdraw_id_list.slice(i * 1000, (i + 1) * 1000);
-                    let update_result = await pool.query(`UPDATE deposits SET id IN (${update_withdraw_list.join()})`);
+                    let update_result = await pool.query(`UPDATE deposits SET  is_confirm_parent_brand_settle=1 WHERE id IN (${update_withdraw_list.map(itm => itm?.id).join()})`);
                 }
             }
         }
+
         sucess_result = await updateQuery(`parent_brand_settles`, {
             status: 1,
         }, success_id)
