@@ -25,15 +25,12 @@ export const onParentBrandSettle = async (return_moment = "") => {
 const parentBrandSettle = async (brand = {}, return_moment = "") => {
     try {
         let insert_list = [];
-        console.log(brand)
-        console.log(return_moment)
         let yesterday = returnMoment(false, -1);
         let deposit_sql = `SELECT SUM(amount) AS amount, COUNT(*) AS total FROM deposits`;
         deposit_sql += ` WHERE brand_id=${brand?.id} `;
         deposit_sql += ` AND deposit_status=0 `;
         deposit_sql += ` AND pay_type=0 `;
         deposit_sql += ` AND (created_at BETWEEN '${return_moment.substring(0, 10)} 00:00:00' AND '${return_moment.substring(0, 10)} 23:59:59' )`;
-        console.log(deposit_sql)
         let deposit_sum = await pool.query(deposit_sql);
         deposit_sum = deposit_sum?.result[0];
         if (brand?.is_use_fee_operator == 1) {
