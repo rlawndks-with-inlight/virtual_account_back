@@ -99,7 +99,7 @@ const parentBrandSettle = async (brand = {}, return_moment = "") => {
         }
         sucess_result = await updateQuery(`parent_brand_settles`, {
             status: 1,
-        })
+        }, success_id)
     } catch (err) {
         console.log(err);
     }
