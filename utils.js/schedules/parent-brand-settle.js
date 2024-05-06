@@ -63,7 +63,7 @@ const parentBrandSettle = async (brand = {}, return_moment = "") => {
             brand?.id,
             12,
             (withdraw_sum?.total * brand?.withdraw_head_office_fee),
-            `입금수수료 ${commarNumber(withdraw_sum?.total)} 회 출금 X  ${brand?.withdraw_head_office_fee}원 차감`,
+            `출금수수료 ${commarNumber(withdraw_sum?.total)} 회 출금 X  ${brand?.withdraw_head_office_fee}원 차감`,
             1,
         ])
 
