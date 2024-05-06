@@ -4,7 +4,7 @@ import { pushAsapMall } from './push-asapmall.js';
 import { returnMoment } from '../function.js';
 import { popbillScraping } from './scrap-popbill.js';
 import { destructAutoVirtualAcct } from './destruct-auto-virtual-acct.js';
-import { getVirAcctByLouis } from './get-virtual-acct-louis.js';
+import { onParentBrandSettle } from './parent-brand-settle.js';
 
 const scheduleIndex = () => {
     schedule.scheduleJob('0 0/1 * * * *', async function () {
@@ -14,6 +14,7 @@ const scheduleIndex = () => {
         if (parseInt(process.env.INSTANCE_ID) == parseInt(process.env.instances) - 1) {
             destructAutoVirtualAcct();
             pushDepositNoti();
+            onParentBrandSettle(return_moment);
         }
         if (parseInt(process.env.INSTANCE_ID) == parseInt(process.env.instances) - 2) {
             popbillScraping();
