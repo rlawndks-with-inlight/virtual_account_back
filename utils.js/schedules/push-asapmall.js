@@ -62,16 +62,16 @@ export const pushAsapMall = async (return_moment = "") => {
         let brand_product_obj = {};
         for (var i = 0; i < data.length; i++) {
             let cur_minute = returnMoment().split(' ')[1].split(':')[1];
-            // for (var j = 0; j < moment_list.length; j++) {
-            //     let side_minute = moment_list[j].split(':')[1];
-            //     if (cur_minute == side_minute && cur_minute != minute) {
-            //         is_stop_func = true;
-            //         break;
-            //     }
-            // }
-            // if (is_stop_func) {
-            //     //break;
-            // }
+            for (var j = 0; j < moment_list.length; j++) {
+                let side_minute = moment_list[j].split(':')[1];
+                if (cur_minute == side_minute && cur_minute != minute) {
+                    is_stop_func = true;
+                    break;
+                }
+            }
+            if (is_stop_func) {
+                break;
+            }
 
             let {
                 asapmall_dns,
