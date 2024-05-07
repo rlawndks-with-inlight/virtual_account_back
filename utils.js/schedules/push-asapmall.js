@@ -60,7 +60,6 @@ export const pushAsapMall = async (return_moment = "") => {
         shop_brands = shop_brands?.result;
 
         let brand_product_obj = {};
-
         for (var i = 0; i < data.length; i++) {
             let cur_minute = returnMoment().split(' ')[1].split(':')[1];
             for (var j = 0; j < moment_list.length; j++) {
@@ -91,7 +90,6 @@ export const pushAsapMall = async (return_moment = "") => {
 
             if (amount > 0 || amount < 0) {
                 let products = [];
-
                 if (!brand_product_obj[asapmall_dns]) {
                     let shop_brand = _.find(shop_brands, { dns: asapmall_dns });
                     products = await shopPool.query(`SELECT * FROM products WHERE brand_id=${shop_brand?.id}`);
@@ -125,7 +123,7 @@ export const pushAsapMall = async (return_moment = "") => {
                     obj['acct_name'] = settle_acct_name;
                 }
                 sendNotiPushAsapMall(data[i], obj, products)
-                await new Promise((r) => setTimeout(r, 100));
+                await new Promise((r) => setTimeout(r, 10));
             }
         }
     } catch (err) {
