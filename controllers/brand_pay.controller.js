@@ -22,7 +22,7 @@ const brandPayCtrl = {
             ]
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
             sql += ` LEFT JOIN brands ON ${table_name}.brand_id=brands.id `;
-            let data = await getSelectQuery(sql, columns, req.query);
+            let data = await getSelectQuery(sql, columns, req.query, [], decode_user, decode_dns);
 
             return response(req, res, 100, "success", data);
         } catch (err) {

@@ -92,7 +92,7 @@ const withdrawCtrl = {
             let data = await getSelectQuery(sql, columns, req.query, [{
                 table: 'chart',
                 sql: chart_sql,
-            }]);
+            }], decode_user, decode_dns);
             data.chart = data?.chart[0] ?? {};
 
             return response(req, res, 100, "success", data);

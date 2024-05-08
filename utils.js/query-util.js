@@ -76,19 +76,31 @@ export const getTableNameBySelectQuery = (sql) => {// select query 가지고 불
     }
     return table;
 }
-export const getSelectQuery = async (sql_, columns, query, add_sql_list = []) => {
+export const getSelectQuery = async (sql_, columns, query, add_sql_list = [], decode_user, decode_dns) => {
 
-    const { page = 1, page_size = 100000, is_asc = false, order = 'id', s_dt, e_dt, } = query;
+    const { page = 1, page_size = 100000, is_asc = false, order = 'id', s_dt, e_dt, is_excel } = query;
 
 
     let sql = sql_;
     let table = getTableNameBySelectQuery(sql);
+    let attempt_excel_id = 0;
+    if (is_excel) {
+        let attempt_excel = await insertQuery(`excel_exports`, {
+            brand_id: decode_dns?.id,
+            user_id: decode_user?.id,
+            status: 1,
+            table_name: table,
+            query: JSON.stringify(query),
+        })
+        attempt_excel_id = attempt_excel?.result?.insertId;
+    }
     if (page_size >= 1000 && (differenceTwoDate(e_dt, s_dt) > 1 || !s_dt) && (table == 'deposits')) {
         return {
             total: 0,
             page,
             page_size,
             content: [],
+            chart: []
         }
     }
     sql = settingSelectQueryWhere(sql, query, table);
@@ -129,6 +141,11 @@ export const getSelectQuery = async (sql_, columns, query, add_sql_list = []) =>
     return_result.page_size = parseInt(return_result.page_size);
     for (var i = 0; i < return_result.content.length; i++) {
         return_result.content[i]['No_'] = getNumberByTable(return_result.total, return_result.page, return_result.page_size, i);
+    }
+    if (is_excel) {
+        let attempt_excel_update = await updateQuery(`excel_exports`, {
+            status: 0,
+        }, attempt_excel_id)
     }
     return return_result;
 }

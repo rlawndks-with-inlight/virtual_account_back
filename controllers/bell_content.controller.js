@@ -29,7 +29,7 @@ const bellContentCtrl = {
                 sql += ` AND ${table_name}.is_manager_delete=0 `;
             }
             sql += ` AND created_at >='${returnMoment(false, -3)}'`
-            let data = await getSelectQuery(sql, columns, req.query);
+            let data = await getSelectQuery(sql, columns, req.query, [], decode_user, decode_dns);
             return response(req, res, 100, "success", data);
         } catch (err) {
             console.log(err)

@@ -104,7 +104,7 @@ const userCtrl = {
                 where_sql += makeSearchQuery(search_columns, search);
             }
             sql = sql + where_sql;
-            let data = await getSelectQuery(sql, columns, req.query);
+            let data = await getSelectQuery(sql, columns, req.query, [], decode_user, decode_dns);
 
             return response(req, res, 100, "success", data);
 
@@ -251,7 +251,7 @@ const userCtrl = {
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM connected_ips `;
             sql += `  WHERE user_id=${id}  `;
 
-            let data = await getSelectQuery(sql, columns, req.query);
+            let data = await getSelectQuery(sql, columns, req.query, [], decode_user, decode_dns);
 
             return response(req, res, 100, "success", data);
         } catch (err) {

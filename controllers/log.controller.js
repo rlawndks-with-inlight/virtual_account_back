@@ -42,7 +42,7 @@ const logCtrl = {
             if (search) {
                 sql += makeSearchQuery(search_columns, search);
             }
-            let data = await getSelectQuery(sql, columns, req.query, sql_list);
+            let data = await getSelectQuery(sql, columns, req.query, sql_list, decode_user);
             return response(req, res, 100, "success", data);
         } catch (err) {
             console.log(err)

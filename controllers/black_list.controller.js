@@ -38,7 +38,7 @@ const blackListCtrl = {
             if (search) {
                 sql += makeSearchQuery(search_columns, search);
             }
-            let data = await getSelectQuery(sql, columns, req.query);
+            let data = await getSelectQuery(sql, columns, req.query, [], decode_user, decode_dns);
 
             return response(req, res, 100, "success", data);
         } catch (err) {

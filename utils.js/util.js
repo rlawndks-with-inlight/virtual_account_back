@@ -237,7 +237,7 @@ export function findParents(data, item) {
         return [...findParents(data, parent[0]), ...parent]
     }
 }
-export const makeUserTree = (user_list_ = [], decode_user) => {// 유저트리만들기
+export const makeUserTree = (user_list_ = [], decode_user, decode_dns) => {// 유저트리만들기
     let user_list = user_list_;
     let user_parent_obj = makeObjByList('parent_id', user_list);
     let result = [...user_parent_obj[decode_user?.parent_id ?? '-1'] ?? []];
@@ -266,7 +266,7 @@ export const isParentCheckByUsers = (children, parent, user_list, user_obj_) => 
     return is_parent;
 }
 
-export const makeUserChildrenList = (user_list_ = [], decode_user) => {// 자기 하위 유저들 자기포함 리스트로 불러오기
+export const makeUserChildrenList = (user_list_ = [], decode_user, decode_dns) => {// 자기 하위 유저들 자기포함 리스트로 불러오기
     let user_list = user_list_;
     let user_parent_obj = makeObjByList('parent_id', user_list);
     let user_obj = makeObjByList('id', user_list);

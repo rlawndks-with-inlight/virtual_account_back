@@ -32,7 +32,7 @@ const depositRequestCtrl = {
                 sql += ` AND ${table_name}.user_id=${decode_user?.id} `;
             }
 
-            let data = await getSelectQuery(sql, columns, req.query);
+            let data = await getSelectQuery(sql, columns, req.query, [], decode_user, decode_dns);
 
             return response(req, res, 100, "success", data);
         } catch (err) {
