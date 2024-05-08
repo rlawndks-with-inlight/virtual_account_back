@@ -83,7 +83,7 @@ export const getSelectQuery = async (sql_, columns, query, add_sql_list = []) =>
 
     let sql = sql_;
     let table = getTableNameBySelectQuery(sql);
-    if (page_size >= 1000 && (differenceTwoDate(e_dt, s_dt) > 7 || !s_dt) && (table == 'deposits')) {
+    if (page_size >= 1000 && (differenceTwoDate(e_dt, s_dt) > 1 || !s_dt) && (table == 'deposits')) {
         return {
             total: 0,
             page,
