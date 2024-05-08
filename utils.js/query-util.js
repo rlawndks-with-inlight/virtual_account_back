@@ -131,7 +131,6 @@ export const getSelectQuery = async (sql_, columns, query, add_sql_list = [], de
         { table: 'content', sql: content_sql },
         ...add_sql_list
     ]
-
     for (var i = 0; i < sql_list.length; i++) {
         result_list.push({
             table: sql_list[i].table,
@@ -173,15 +172,20 @@ const settingSelectQueryWhere = (sql_, query, table) => {
     let sql = sql_;
     const { s_dt, e_dt, search, is_delete } = query;
     sql += ` ${sql.includes('WHERE') ? 'AND' : 'WHERE'} ${table}.is_delete=${is_delete || '0'} `;
+    let add_sql = '';
     if (s_dt) {
-        sql += ` AND ${table}.created_at >= '${s_dt} 00:00:00' `;
+        add_sql += ` AND ${table}.created_at >= '${s_dt} 00:00:00' `;
     }
     if (e_dt) {
-        sql += ` AND ${table}.created_at <= '${e_dt} 23:59:59' `;
+        add_sql += ` AND ${table}.created_at <= '${e_dt} 23:59:59' `;
+    }
+    if (s_dt && e_dt) {
+        add_sql = ` AND (${table}.created_at BETWEEN '${s_dt} 00:00:00' AND '${e_dt} 23:59:59') `;
     }
     if (search) {
 
     }
+    sql += add_sql;
     return sql;
 }
 
