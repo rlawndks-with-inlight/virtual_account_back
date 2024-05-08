@@ -85,6 +85,20 @@ export const getSelectQuery = async (sql_, columns, query, add_sql_list = [], de
     let table = getTableNameBySelectQuery(sql);
     let attempt_excel_id = 0;
     if (is_excel) {
+        let check_attempt_excel_history_sql = `SELECT * FROM excel_exports`;
+        check_attempt_excel_history_sql += ` WHERE user_id=${decode_user?.id} AND table_name=? AND query=? `;
+        check_attempt_excel_history_sql += ` AND (created_at BETWEEN '${returnMoment().substring(0, 10)} 00:00:00' AND '${returnMoment().substring(0, 10)} 23:59:59')`;
+        let check_attempt_excel_histories = await pool.query(check_attempt_excel_history_sql, [table, JSON.stringify(query)]);
+        check_attempt_excel_histories = check_attempt_excel_histories?.result;
+        if (check_attempt_excel_histories.length >= 5) {
+            return {
+                total: 0,
+                page,
+                page_size,
+                content: [],
+                chart: []
+            }
+        }
         let attempt_excel = await insertQuery(`excel_exports`, {
             brand_id: decode_dns?.id,
             user_id: decode_user?.id,
