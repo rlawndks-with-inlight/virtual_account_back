@@ -42,6 +42,7 @@ const dashboardCtrl = {
             for (var i = 0; i < operator_list.length; i++) {
                 if (operator_list[i].value == decode_user?.level) {
                     sql += ` AND users.id IN (SELECT mcht_id FROM deposits WHERE pay_type=0 AND sales${operator_list[i].num}_id=${decode_user?.id}) `;
+                    break;
                 }
             }
 
@@ -50,7 +51,9 @@ const dashboardCtrl = {
             }
             sql += ` HAVING amount > 0 `;
             sql += ` ORDER BY amount DESC `;
+            console.log(sql)
             let result = await pool.query(sql);
+
             result = result?.result;
             return response(req, res, 100, "success", result);
         } catch (err) {
