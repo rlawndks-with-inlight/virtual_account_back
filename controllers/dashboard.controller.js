@@ -19,12 +19,14 @@ const dashboardCtrl = {
             let count_sub_sql = ` SELECT COUNT(*) FROM deposits `;
             let mcht_amount_sub_sql = ` SELECT SUM(mcht_amount) FROM deposits `;
             let sub_query_where_sql = ` WHERE mcht_id=users.id AND users.brand_id=${decode_dns?.id} AND pay_type=0 `;
+            let date_sql = '';
             if (s_dt) {
-                sub_query_where_sql += ` AND created_at >= '${s_dt} 00:00:00' `;
+                date_sql += ` AND created_at >= '${s_dt} 00:00:00' `;
             }
             if (e_dt) {
-                sub_query_where_sql += ` AND created_at <= '${e_dt} 23:59:59' `;
+                date_sql += ` AND created_at <= '${e_dt} 23:59:59' `;
             }
+            sub_query_where_sql += date_sql;
             amount_sub_sql += sub_query_where_sql;
             count_sub_sql += sub_query_where_sql;
             mcht_amount_sub_sql += sub_query_where_sql;
@@ -41,7 +43,7 @@ const dashboardCtrl = {
             let operator_list = getOperatorList(decode_dns);
             for (var i = 0; i < operator_list.length; i++) {
                 if (operator_list[i].value == decode_user?.level) {
-                    sql += ` AND users.id IN (SELECT mcht_id FROM deposits WHERE pay_type=0 AND sales${operator_list[i].num}_id=${decode_user?.id}) `;
+                    sql += ` AND users.id IN (SELECT mcht_id FROM deposits WHERE pay_type=0 AND sales${operator_list[i].num}_id=${decode_user?.id}) ${date_sql} `;
                 }
             }
 
