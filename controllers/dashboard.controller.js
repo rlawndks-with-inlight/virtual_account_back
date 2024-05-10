@@ -50,7 +50,7 @@ const dashboardCtrl = {
             }
             sql += ` HAVING amount > 0 `;
             sql += ` ORDER BY amount DESC `;
-            console.log(sql)
+
             let result = await pool.query(sql);
             result = result?.result;
             return response(req, res, 100, "success", result);
