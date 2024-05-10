@@ -13,6 +13,10 @@ router
     .put(virtualAccountCtrl.update)
     .delete(virtualAccountCtrl.remove);
 router
+    .route('/mcht/:id')
+    .delete(virtualAccountCtrl.removeAllByMcht);
+
+router
     .route('/balance/:id')
     .get(virtualAccountCtrl.getBalance)
 router

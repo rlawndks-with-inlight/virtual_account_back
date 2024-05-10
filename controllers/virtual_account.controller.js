@@ -6,7 +6,7 @@ import { checkIsManagerUrl, returnMoment } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, makeSearchQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, isItemBrandIdSameDnsId, lowLevelException, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
-
+import when from "when";
 const table_name = 'virtual_accounts';
 
 const virtualAccountCtrl = {
@@ -364,6 +364,37 @@ const virtualAccountCtrl = {
             let result3 = await deleteQuery(`${table_name}`, {
                 id
             })
+            return response(req, res, 100, "success", {})
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
+    removeAllByMcht: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = await checkLevel(req.cookies.token, 40, req);
+            const decode_dns = checkDns(req.cookies.dns);
+            console.log(req.params)
+            const {
+                id
+            } = req.params;
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
+            let virtual_accounts = await pool.query(`SELECT id FROM virtual_accounts WHERE mcht_id=${id} AND brand_id=${decode_dns?.id} AND is_delete=0`);
+            virtual_accounts = virtual_accounts?.result;
+            let result_list = [];
+            for (var i = 0; i < virtual_accounts.length; i++) {
+                result_list.push(virtualAccountCtrl.remove({ ...req, params: { id: virtual_accounts[i]?.id, IS_RETURN: true } }, res));
+            }
+            for (var i = 0; i < result_list.length; i++) {
+                await result_list[i];
+            }
+            let result = (await when(result_list));
+
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
