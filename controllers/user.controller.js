@@ -101,6 +101,14 @@ const userCtrl = {
                     `${table_name}.user_name`,
                     `${table_name}.nickname`,
                 ]
+                if (level == 10) {
+                    for (var i = 0; i < operator_list.length; i++) {
+                        if (operator_list[i]?.value == decode_user?.level) {
+                            search_columns.push(`sales${operator_list[i]?.num}.user_name`);
+                            search_columns.push(`sales${operator_list[i]?.num}.nickname`);
+                        }
+                    }
+                }
                 where_sql += makeSearchQuery(search_columns, search);
             }
             sql = sql + where_sql;
