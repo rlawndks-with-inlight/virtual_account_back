@@ -38,7 +38,7 @@ export const pushAsapMall = async (return_moment = "") => {
         let sql = ` SELECT deposits.*, brands.asapmall_dns, brands.asapmall_back_dns, virtual_accounts.phone_num FROM deposits `;
         sql += ` LEFT JOIN brands ON deposits.brand_id=brands.id `;
         sql += ` LEFT JOIN virtual_accounts ON deposits.virtual_account_id=virtual_accounts.id `;
-        sql += ` WHERE brands.is_use_asapmall_noti=1 AND pay_type IN (0) `;
+        sql += ` WHERE brands.is_use_asapmall_noti=1 AND pay_type IN (0, 5, 20) `;
         sql += ` AND deposits.send_asapmall_noti=5 `;
         sql += ` ORDER BY deposits.id ASC `;
         let insert_log = await insertQuery('logs', {
@@ -60,6 +60,7 @@ export const pushAsapMall = async (return_moment = "") => {
         shop_brands = shop_brands?.result;
 
         let brand_product_obj = {};
+        console.log(data.length);
         for (var i = 0; i < data.length; i++) {
             let cur_minute = returnMoment().split(' ')[1].split(':')[1];
             for (var j = 0; j < moment_list.length; j++) {
@@ -81,7 +82,9 @@ export const pushAsapMall = async (return_moment = "") => {
                 withdraw_fee,
                 trx_id,
                 deposit_acct_name,
+                settle_bank_code,
                 settle_acct_name,
+                settle_acct_num,
                 id,
                 created_at,
                 phone_num
@@ -115,15 +118,22 @@ export const pushAsapMall = async (return_moment = "") => {
                     obj['pay_type'] = 'withdraw';
                     obj['amount'] = amount + withdraw_fee;
                     obj['acct_name'] = settle_acct_name;
+                    obj['acct_num'] = settle_acct_num;
+                    obj['bank_code'] = settle_bank_code;
 
 
                 } else if (pay_type == 20) {
                     obj['pay_type'] = 'return';
                     obj['amount'] = amount + withdraw_fee;
                     obj['acct_name'] = settle_acct_name;
+                    obj['acct_num'] = settle_acct_num;
+                    obj['bank_code'] = settle_bank_code;
                 }
                 sendNotiPushAsapMall(data[i], obj, products)
                 await new Promise((r) => setTimeout(r, 5));
+                if (i % 1000 == 0) {
+                    console.log(i);
+                }
             }
         }
         console.log('success');
