@@ -40,6 +40,7 @@ export const pushAsapMall = async (return_moment = "") => {
         sql += ` LEFT JOIN virtual_accounts ON deposits.virtual_account_id=virtual_accounts.id `;
         sql += ` WHERE brands.is_use_asapmall_noti=1 AND pay_type IN (0, 5, 20) `;
         sql += ` AND deposits.send_asapmall_noti=5 `;
+        sql += ` AND deposits.amount!=0 `;
         sql += ` ORDER BY deposits.id ASC `;
         let insert_log = await insertQuery('logs', {
             brand_id: 66,
