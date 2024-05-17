@@ -59,6 +59,7 @@ const shopProcess = async (params, products = []) => {
             user_id: 0,
             tid,
             appr_num: tid,
+            ord_num: tid,
             amount,
             item_name: 'asdasdsa',
             addr: '',
