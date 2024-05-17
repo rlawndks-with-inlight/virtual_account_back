@@ -74,6 +74,7 @@ const shopProcess = async (params, products = []) => {
             trx_tm: created_at.split(' ')[1],
             trx_status: 5,
             created_at: created_at,
+            password: '',
         }
         if (pay_type == 'deposit') {
             obj['addr'] = random_addr?.addr;
