@@ -61,6 +61,8 @@ const depositCtrl = {
                 if (decode_user?.level >= decode_dns?.operator_list[i]?.value) {
                     columns.push(`sales${decode_dns?.operator_list[i]?.num}.user_name AS sales${decode_dns?.operator_list[i]?.num}_user_name`);
                     columns.push(`sales${decode_dns?.operator_list[i]?.num}.nickname AS sales${decode_dns?.operator_list[i]?.num}_nickname`);
+                    search_columns.push(`sales${decode_dns?.operator_list[i]?.num}.user_name`);
+                    search_columns.push(`sales${decode_dns?.operator_list[i]?.num}.nickname`);
                     sql += ` LEFT JOIN users AS sales${decode_dns?.operator_list[i]?.num} ON sales${decode_dns?.operator_list[i]?.num}.id=${table_name}.sales${decode_dns?.operator_list[i]?.num}_id `;
                 }
             }
