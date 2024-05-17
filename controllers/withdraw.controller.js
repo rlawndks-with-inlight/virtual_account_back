@@ -38,7 +38,8 @@ const withdrawCtrl = {
             let operator_list = getOperatorList(decode_dns);
 
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
-            sql += ` LEFT JOIN users ON ${table_name}.mcht_id=users.id `;
+            sql += ` LEFT JOIN users ON ${table_name}.user_id=users.id `;
+
             for (var i = 0; i < operator_list.length; i++) {
                 if (decode_user?.level >= operator_list[i]?.value) {
                     columns = [...columns, ...[
@@ -76,7 +77,6 @@ const withdrawCtrl = {
             }
 
             sql = sql + where_sql;
-            console.log(sql)
             let chart_columns = [
                 `SUM(${table_name}.expect_amount) AS expect_amount`,
                 `SUM(${table_name}.amount) AS amount`,
