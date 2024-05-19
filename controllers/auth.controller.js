@@ -328,7 +328,19 @@ const authCtrl = {
             const decode_user = await checkLevel(req.cookies.token, is_manager ? 1 : 0);
             const decode_dns = checkDns(req.cookies.dns);
             let deposit_column = [
-                `users.*`,
+                `users.id`,
+                `users.user_name`,
+                `users.name`,
+                `users.nickname`,
+                `users.level`,
+                `users.phone_num`,
+                `users.profile_img`,
+                `users.brand_id`,
+                `users.mid`,
+                `users.withdraw_bank_code`,
+                `users.withdraw_acct_num`,
+                `users.withdraw_acct_name`,
+                `users.can_return`,
                 `virtual_accounts.guid`,
                 `virtual_accounts.virtual_bank_code`,
                 `virtual_accounts.virtual_acct_num`,
