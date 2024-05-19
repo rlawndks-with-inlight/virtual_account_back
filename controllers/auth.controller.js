@@ -366,7 +366,6 @@ const authCtrl = {
                     deposit_sql += ` WHERE users.id=${decode_user?.id} `;
                     let deposit = await pool.query(deposit_sql);
                     deposit = deposit?.result[0];
-                    console.log(deposit)
                     return response(req, res, 100, "success", deposit)
                 } else {
                     return response(req, res, 100, "success", {})
