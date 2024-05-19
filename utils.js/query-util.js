@@ -84,7 +84,7 @@ export const getSelectQuery = async (sql_, columns, query, add_sql_list = [], de
     let sql = sql_;
     let table = getTableNameBySelectQuery(sql);
     let attempt_excel_id = 0;
-    if (is_excel) {
+    if (is_excel || page_size >= 500) {
         let check_attempt_excel_history_sql = `SELECT * FROM excel_exports`;
         check_attempt_excel_history_sql += ` WHERE user_id=${decode_user?.id} AND table_name=? AND query=? `;
         check_attempt_excel_history_sql += ` AND (created_at BETWEEN '${returnMoment().substring(0, 10)} 00:00:00' AND '${returnMoment().substring(0, 10)} 23:59:59')`;
@@ -155,7 +155,7 @@ export const getSelectQuery = async (sql_, columns, query, add_sql_list = [], de
     for (var i = 0; i < return_result.content.length; i++) {
         return_result.content[i]['No_'] = getNumberByTable(return_result.total, return_result.page, return_result.page_size, i);
     }
-    if (is_excel) {
+    if (is_excel || page_size >= 500) {
         let attempt_excel_update = await updateQuery(`excel_exports`, {
             status: 0,
         }, attempt_excel_id)
