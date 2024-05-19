@@ -341,6 +341,8 @@ const authCtrl = {
                 `users.withdraw_acct_num`,
                 `users.withdraw_acct_name`,
                 `users.can_return`,
+                `users.withdraw_fee`,
+                `users.min_withdraw_hold_price`,
                 `virtual_accounts.guid`,
                 `virtual_accounts.virtual_bank_code`,
                 `virtual_accounts.virtual_acct_num`,
@@ -364,6 +366,7 @@ const authCtrl = {
                     deposit_sql += ` WHERE users.id=${decode_user?.id} `;
                     let deposit = await pool.query(deposit_sql);
                     deposit = deposit?.result[0];
+                    console.log(deposit)
                     return response(req, res, 100, "success", deposit)
                 } else {
                     return response(req, res, 100, "success", {})
