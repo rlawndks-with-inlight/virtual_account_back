@@ -16,7 +16,21 @@ const userCtrl = {
             const decode_dns = checkDns(req.cookies.dns);
             const { level, level_list = [], search } = req.query;
             let columns = [
-                `${table_name}.*`,
+                `${table_name}.profile_img`,
+                `${table_name}.nickname`,
+                `${table_name}.name`,
+                `${table_name}.deposit_fee`,
+                `${table_name}.id`,
+                `${table_name}.mid`,
+                `${table_name}.virtual_acct_link_status`,
+                `${table_name}.withdraw_bank_code`,
+                `${table_name}.withdraw_acct_num`,
+                `${table_name}.withdraw_acct_name`,
+                `${table_name}.phone_num`,
+                `${table_name}.created_at`,
+                `${table_name}.last_login_time`,
+                `${table_name}.connected_ip`,
+                `${table_name}.status`,
                 `merchandise_columns.mcht_fee`,
                 `brands.name AS brand_name`,
                 `brands.dns`,
