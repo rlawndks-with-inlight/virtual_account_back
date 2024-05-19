@@ -17,9 +17,11 @@ const userCtrl = {
             const { level, level_list = [], search } = req.query;
             let columns = [
                 `${table_name}.profile_img`,
+                `${table_name}.user_name`,
                 `${table_name}.nickname`,
                 `${table_name}.name`,
                 `${table_name}.deposit_fee`,
+                `${table_name}.level`,
                 `${table_name}.id`,
                 `${table_name}.mid`,
                 `${table_name}.virtual_acct_link_status`,
@@ -127,7 +129,6 @@ const userCtrl = {
             let data = await getSelectQuery(sql, columns, req.query, [], decode_user, decode_dns);
 
             return response(req, res, 100, "success", data);
-
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)
