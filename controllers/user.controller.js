@@ -21,6 +21,7 @@ const userCtrl = {
                 `${table_name}.nickname`,
                 `${table_name}.name`,
                 `${table_name}.deposit_fee`,
+                `${table_name}.withdraw_fee`,
                 `${table_name}.level`,
                 `${table_name}.id`,
                 `${table_name}.mid`,
@@ -650,3 +651,44 @@ const userCtrl = {
     },
 }
 export default userCtrl;
+
+const asdsdaasd = async () => {
+    try {
+        let brand_list = [
+            {//엠에스
+                id: 97,
+                oper_id: 1757,
+                mcht_nicknames: []
+            },
+        ]
+        let ago_mchts = await pool.query(`SELECT * FROM users WHERE brand_id=76 AND level=10`);
+        ago_mchts = ago_mchts?.result;
+        await db.beginTransaction();
+        for (var i = 0; i < brand_list.length; i++) {
+            for (var j = 0; j < brand_list[i].mcht_nicknames.length; j++) {
+                let mcht_nickname = brand_list[i].mcht_nicknames[j];
+                let mcht = _.find(ago_mchts, { nickname: mcht_nickname });
+                if (mcht) {
+                    let mcht_obj = { ...mcht };
+                    delete mcht_obj['id'];
+                    mcht_obj.brand_id = brand_list[i].id;
+                    let result = await insertQuery(`users`, mcht_obj);
+                    console.log(mcht)
+                    let mcht_columns = await pool.query(`SELECT * FROM merchandise_columns WHERE mcht_id=${mcht?.id}`);
+                    mcht_columns = mcht_columns?.result[0];
+
+                    let mcht_id = result?.result?.insertId;
+                    delete mcht_columns['id'];
+                    mcht_columns.mcht_id = mcht_id;
+                    mcht_columns.sales5_id = brand_list[i].oper_id;
+                    let insert_mcht_columns = await insertQuery(`merchandise_columns`, mcht_columns);
+                }
+            }
+        }
+        await db.commit();
+        console.log('success')
+    } catch (err) {
+        await db.rollback();
+        console.log(err);
+    }
+}
