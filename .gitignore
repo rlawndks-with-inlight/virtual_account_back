@@ -9,3 +9,7 @@
 ./ssh-list.js
 ssh-list.js
 /ssh-list.js
+
+logs
+logs/
+/logs
