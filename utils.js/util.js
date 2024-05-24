@@ -119,6 +119,7 @@ const logRequestResponse = async (req, res, decode_user, decode_dns) => {//ë¡œê·
             brand_id = -1;
         }
         let data = {
+            brand_id: brand_id,
             request,
             res: {
                 data: res?.data,
@@ -129,9 +130,9 @@ const logRequestResponse = async (req, res, decode_user, decode_dns) => {//ë¡œê·
             user_id: user_id,
         }
         if (res?.result > 0) {
-            logger.info(JSON.stringify(data) + ` brand_id:${brand_id}`)
+            logger.info(JSON.stringify(data))
         } else {
-            logger.error(JSON.stringify(data) + ` brand_id:${brand_id}`)
+            logger.error(JSON.stringify(data))
         }
     } catch (err) {
         console.log(err);
