@@ -123,8 +123,16 @@ const getFileLogs = async (type, query = {}, decode_user, decode_dns) => {
             lines = lines.filter(line => line.includes(`"brand_id":${decode_dns?.id}`));
         }
         lines = lines.filter(line => line.includes(search));
-        let success_list = lines.filter(line => line.includes(`info:`));
-        let fail_list = lines.filter(line => line.includes(`error:`));
+        let success_list = [];
+        let fail_list = [];
+        if (type == 'back') {
+            success_list = lines.filter(line => line.includes(`info:`));
+            fail_list = lines.filter(line => line.includes(`error:`));
+        } else {
+            success_list = lines.filter(line => line.includes(`"res":"0000"`));
+            fail_list = lines.filter(line => !line.includes(`"res":"0000"`));
+        }
+
         if (response_result_type == 1) {
             lines = success_list;
         } else if (response_result_type == 2) {
