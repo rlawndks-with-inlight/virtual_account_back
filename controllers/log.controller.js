@@ -138,7 +138,11 @@ const getFileLogs = async (type, query = {}, decode_user, decode_dns) => {
                 break;
             }
             text = text.split(' ');
-            let json = JSON.parse(text[4])
+            let text_str = '';
+            for (var i = 4; i < text.length; i++) {
+                text_str += text[i];
+            }
+            let json = JSON.parse(text_str)
             let obj = {};
             if (type == 'back') {
                 obj = {
