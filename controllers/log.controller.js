@@ -6,7 +6,6 @@ import { deleteQuery, getSelectQuery, insertQuery, makeSearchQuery, updateQuery 
 import { checkDns, checkLevel, createHashedPassword, isItemBrandIdSameDnsId, lowLevelException, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 import fs from 'fs';
-import readline from 'readline';
 
 const table_name = 'logs'
 
