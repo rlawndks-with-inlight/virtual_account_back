@@ -160,6 +160,7 @@ export const getSelectQuery = async (sql_, columns, query, add_sql_list = [], de
     if (is_excel) {
         let attempt_excel_update = await updateQuery(`excel_exports`, {
             status: 0,
+            total: total,
         }, attempt_excel_id)
     }
     return_result.total = total;

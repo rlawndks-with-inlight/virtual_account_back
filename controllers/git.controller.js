@@ -16,7 +16,7 @@ const gitCtrl = {
                 return lowLevelException(req, res);
             }
             for (var i = 0; i < ssh_list.length; i++) {
-                execSSH(ssh_list[i]);
+                await execSSH(ssh_list[i]);
             }
             return response(req, res, 100, "success", {});
         } catch (err) {
@@ -28,33 +28,43 @@ const gitCtrl = {
     },
 };
 const execSSH = (ssh_obj_ = {}) => {
-    let ssh_obj = {
-        host: ssh_obj_?.host,
-        port: ssh_obj_?.port, // 기본 포트는 22번입니다.
-        username: ssh_obj_?.username,
-        dns: ssh_obj_?.dns,
-    }
-    if (ssh_obj_?.key_type == 'pem') {
-        ssh_obj['privateKey'] = ssh_obj_?.privateKey;
-    } else if (ssh_obj_?.key_type == 'password') {
-        ssh_obj['password'] = ssh_obj_?.password;
-    }
-    const conn = new Client();
-    conn.on('ready', () => {
-        console.log('Client :: ready');
-        conn.exec('cd front && git pull origin master && npm run deploy', (err, stream) => {
-            if (err) throw err;
-            stream.on('close', (code, signal) => {
-                console.log('Stream :: close :: code: ' + code + ', signal: ' + signal);
-                console.log(ssh_obj?.dns)
-                conn.end();
-            }).on('data', (data) => {
-                console.log('STDOUT: ' + data);
-            }).stderr.on('data', (data) => {
-                console.log('STDERR: ' + data);
+    try {
+        let ssh_obj = {
+            host: ssh_obj_?.host,
+            port: ssh_obj_?.port, // 기본 포트는 22번입니다.
+            username: ssh_obj_?.username,
+            dns: ssh_obj_?.dns,
+            readyTimeout: 1000 * 60 * 10 // 타임아웃 시간을 10분으로 설정
+        }
+        if (ssh_obj_?.key_type == 'pem') {
+            ssh_obj['privateKey'] = ssh_obj_?.privateKey;
+        } else if (ssh_obj_?.key_type == 'password') {
+            ssh_obj['password'] = ssh_obj_?.password;
+        }
+        const conn = new Client();
+        console.log('================================')
+        console.log(ssh_obj?.dns)
+        console.log('================================')
+        conn.on('ready', () => {
+            console.log('Client :: ready');
+            conn.exec('cd front && git pull origin master && npm run deploy', (err, stream) => {
+                if (err) throw err;
+                stream.on('close', (code, signal) => {
+                    console.log('Stream :: close :: code: ' + code + ', signal: ' + signal);
+                    console.log(ssh_obj?.dns)
+                    conn.end();
+                }).on('data', (data) => {
+                    console.log('STDOUT: ' + data);
+                }).stderr.on('data', (data) => {
+                    console.log('STDERR: ' + data);
+                });
             });
-        });
-    }).connect(ssh_obj);
+        }).connect(ssh_obj);
+    } catch (err) {
+        console.log(err)
+        console.log(ssh_obj_?.dns)
+    }
+
 }
 
 export default gitCtrl;
