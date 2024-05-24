@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": false,
+        "amount": 30
+    },
+    "auditLog": "C:\\Users\\pc\\Desktop\\project\\virtual-account\\back\\logs\\error\\.f4d1c304c73b570b4326f07771df377f933de7a3-audit.json",
+    "files": [
+        {
+            "date": 1716529144096,
+            "name": "C:\\Users\\pc\\Desktop\\project\\virtual-account\\back\\logs\\error\\2024-05-24.error.log",
+            "hash": "72e5f4ea2e9d7a3ad8c8d2b0a3e4a8ae038e34118776019e68a442b84bd325c4"
+        }
+    ],
+    "hashType": "sha256"
+}

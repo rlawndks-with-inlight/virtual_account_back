@@ -10,6 +10,7 @@ import { getUserWithDrawFee, returnMoment } from './function.js';
 import { getMultipleQueryByWhen, updateQuery } from './query-util.js';
 import axios from 'axios';
 import corpApi from './corp-util/index.js';
+import logger from './winston/index.js';
 
 const randomBytesPromise = util.promisify(crypto.randomBytes);
 const pbkdf2Promise = util.promisify(crypto.pbkdf2);
@@ -117,10 +118,21 @@ const logRequestResponse = async (req, res, decode_user, decode_dns) => {//ë¡œê·
         } else {
             brand_id = -1;
         }
-        let result = await pool.query(
-            "INSERT INTO logs (request, response_data, response_result, response_message, request_ip, user_id, brand_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            [request, JSON.stringify(res?.data), res?.result, res?.message, requestIp, user_id, brand_id]
-        )
+        let data = {
+            request,
+            res: {
+                data: res?.data,
+                result: res?.result,
+                message: res?.message,
+            },
+            ip: requestIp,
+            user_id: user_id,
+        }
+        if (res?.result > 0) {
+            logger.info(JSON.stringify(data))
+        } else {
+            logger.error(JSON.stringify(data))
+        }
     } catch (err) {
         console.log(err);
     }
