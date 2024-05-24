@@ -172,7 +172,7 @@ const getFileLogs = async (type, query = {}, decode_user, decode_dns) => {
                     response_result: json?.res,
                     response_message: json?.res,
                     response_data: JSON.stringify({}),
-                    request_ip: '',
+                    request_ip: json?.ip ?? "",
                     created_at: `${text[0]} ${text[1]}`,
                 }
             }
