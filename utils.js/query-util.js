@@ -108,15 +108,7 @@ export const getSelectQuery = async (sql_, columns, query, add_sql_list = [], de
         })
         attempt_excel_id = attempt_excel?.result?.insertId;
     }
-    if (page_size >= 1000 && (differenceTwoDate(e_dt, s_dt) > 1 || !s_dt) && (table == 'deposits')) {
-        return {
-            total: 0,
-            page,
-            page_size,
-            content: [],
-            chart: []
-        }
-    }
+
     sql = settingSelectQueryWhere(sql, query, table);
     for (var i = 0; i < add_sql_list.length; i++) {
         add_sql_list[i].sql = settingSelectQueryWhere(add_sql_list[i].sql, query, table);
@@ -125,9 +117,19 @@ export const getSelectQuery = async (sql_, columns, query, add_sql_list = [], de
     content_sql += ` ORDER BY ${table}.${order} ${is_asc ? 'ASC' : 'DESC'} `;
     content_sql += ` LIMIT ${(page - 1) * page_size}, ${page_size} `;
     let total_sql = sql.replaceAll(process.env.SELECT_COLUMN_SECRET, 'COUNT(*) as total');
+    let total = await pool.query(total_sql);
+    total = total?.result[0]?.total ?? 0;
+    if (total > 30000 && page_size > 30000) {
+        return {
+            total: 0,
+            page,
+            page_size,
+            content: [],
+            chart: []
+        }
+    }
     let result_list = [];
     let sql_list = [
-        { table: 'total', sql: total_sql },
         { table: 'content', sql: content_sql },
         ...add_sql_list
     ]
@@ -160,6 +162,7 @@ export const getSelectQuery = async (sql_, columns, query, add_sql_list = [], de
             status: 0,
         }, attempt_excel_id)
     }
+    return_result.total = total;
     return return_result;
 }
 const getNumberByTable = (total = 0, page = 1, page_size = 10, idx = 0) => {

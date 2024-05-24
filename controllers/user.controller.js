@@ -678,10 +678,14 @@ const asdsdaasd = async () => {
                     mcht_columns = mcht_columns?.result[0];
 
                     let mcht_id = result?.result?.insertId;
+                    let mid_update = await updateQuery(`users`, {
+                        mid: `${brand_list[i].id}${mcht_id}${new Date().getTime()}`,
+                    }, mcht_id);
                     delete mcht_columns['id'];
                     mcht_columns.mcht_id = mcht_id;
                     mcht_columns.sales5_id = brand_list[i].oper_id;
                     let insert_mcht_columns = await insertQuery(`merchandise_columns`, mcht_columns);
+                    await new Promise((r) => setTimeout(r, 100));
                 }
             }
         }
