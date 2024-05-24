@@ -120,7 +120,7 @@ const getFileLogs = async (type, query = {}, decode_user, decode_dns) => {
         let lines = file.split('\n');
         lines = lines.splice(0, lines.length - 1);
         if (decode_dns?.is_main_dns != 1 && type == 'back') {
-            lines = lines.filter(line => line.includes(`brand_id:${decode_dns?.id}`));
+            lines = lines.filter(line => line.includes(`"brand_id":${decode_dns?.id}`));
         }
         lines = lines.filter(line => line.includes(search));
         let success_list = lines.filter(line => line.includes(`info:`));
