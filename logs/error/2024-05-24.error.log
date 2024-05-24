@@ -1,0 +1,4 @@
+2024-05-24 14:43:26 [로그] error: {"request":"{\"url\":\"/api/auth\",\"query\":{},\"params\":{},\"body\":{},\"method\":\"GET\"}","res":{"data":{},"result":-150,"message":"권한이 없습니다."},"ip":"127.0.0.1","user_id":-1}
+2024-05-24 14:43:26 [로그] error: {"request":"{\"url\":\"/api/auth\",\"query\":{},\"params\":{},\"body\":{},\"method\":\"GET\"}","res":{"data":{},"result":-150,"message":"권한이 없습니다."},"ip":"127.0.0.1","user_id":-1}
+2024-05-24 14:43:28 [로그] error: {"request":"{\"url\":\"/api/auth\",\"query\":{},\"params\":{},\"body\":{},\"method\":\"GET\"}","res":{"data":{},"result":-150,"message":"권한이 없습니다."},"ip":"127.0.0.1","user_id":-1}
+2024-05-24 19:04:19 [로그] error: {"request":"{\"url\":\"/api/auth\",\"query\":{},\"params\":{},\"body\":{},\"method\":\"GET\"}","res":{"data":{},"result":-150,"message":"권한이 없습니다."},"ip":"127.0.0.1","user_id":-1}

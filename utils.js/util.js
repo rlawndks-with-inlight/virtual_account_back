@@ -129,9 +129,9 @@ const logRequestResponse = async (req, res, decode_user, decode_dns) => {//ë¡œê·
             user_id: user_id,
         }
         if (res?.result > 0) {
-            logger.info(JSON.stringify(data))
+            logger.info(JSON.stringify(data) + ` brand_id:${brand_id}`)
         } else {
-            logger.error(JSON.stringify(data))
+            logger.error(JSON.stringify(data) + ` brand_id:${brand_id}`)
         }
     } catch (err) {
         console.log(err);
