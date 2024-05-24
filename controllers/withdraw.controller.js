@@ -17,7 +17,7 @@ const withdrawCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = await checkLevel(req.cookies.token, 10, req);
             const decode_dns = checkDns(req.cookies.dns);
-            const { withdraw_status, search, s_dt, e_dt } = req.query;
+            const { withdraw_status, search, s_dt, e_dt, is_hand } = req.query;
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
@@ -71,6 +71,9 @@ const withdrawCtrl = {
             }
             if (withdraw_status) {
                 where_sql += ` AND ${table_name}.withdraw_status=${withdraw_status} `;
+            }
+            if (is_hand) {
+                where_sql += ` AND ${table_name}.is_hand=${is_hand} `;
             }
             if (search) {
                 where_sql += makeSearchQuery(search_columns, search);
