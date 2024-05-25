@@ -318,7 +318,7 @@ const userCtrl = {
                 deposit_fee = 0, withdraw_fee = 0, min_withdraw_price = 0, min_withdraw_remain_price = 0, min_withdraw_hold_price = 0, is_withdraw_hold = 0, can_return_ago_pay = 1, is_not_same_acct_withdraw_minute = 0, daily_withdraw_amount = 0,
                 withdraw_bank_code, withdraw_acct_num, withdraw_acct_name, telegram_chat_ids = '[]', otp_token = '', sign_key = '', deposit_noti_url = '', withdraw_noti_url = '',
                 children_brand_dns = '',
-                can_return = 1,
+                can_return = 0,
                 ip_list = [],
             } = req.body;
             console.log(req.body)
@@ -418,7 +418,7 @@ const userCtrl = {
                 withdraw_bank_code, withdraw_acct_num, withdraw_acct_name, telegram_chat_ids = '[]', otp_token = '', sign_key = '', deposit_noti_url = '', withdraw_noti_url = '',
                 children_brand_dns = "",
                 ip_list = [],
-                can_return = 1,
+                can_return = 0,
                 id
             } = req.body;
             let files = settingFiles(req.files);
