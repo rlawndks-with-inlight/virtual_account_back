@@ -42,6 +42,11 @@ export const pushAsapMall = async (return_moment = "") => {
         sql += ` AND deposits.send_asapmall_noti=5 `;
         sql += ` AND deposits.amount!=0 `;
         sql += ` ORDER BY deposits.id ASC `;
+        let return_moment = returnMoment();
+        let date = return_moment.split(' ')[0];
+        let time = return_moment.split(' ')[1];
+        date = date.split('-');
+        time = time.split(':');
         let insert_log = await insertQuery('logs', {
             brand_id: 66,
             request: JSON.stringify({
@@ -51,6 +56,12 @@ export const pushAsapMall = async (return_moment = "") => {
             response_result: 100,
             response_message: '스케줄링 시작',
             user_id: -1,
+            year: date[0],
+            month: date[1],
+            day: date[2],
+            hour: time[0],
+            minute: time[1],
+            second: time[2]
         })
 
         let data = await pool.query(sql);
