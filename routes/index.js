@@ -20,6 +20,7 @@ import reserveRoutes from './reserve.route.js';
 import bulkUploadRoutes from './bulk_upload.route.js';
 import gitRoutes from './git.route.js';
 import blackListRoutes from './black_list.route.js';
+import phoneAuthHistoryRoutes from './phone_auth_history.route.js';
 
 const router = express.Router(); // eslint-disable-line new-cap
 
@@ -39,6 +40,7 @@ router.use('/bell-contents', bellContentRoutes);
 router.use('/brand-pays', brandPayRoutes);
 router.use('/reserves', reserveRoutes);
 router.use('/black-lists', blackListRoutes);
+router.use('/phone-auth-histories', phoneAuthHistoryRoutes);
 
 
 //auth
