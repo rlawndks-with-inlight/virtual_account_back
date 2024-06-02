@@ -654,11 +654,15 @@ export default userCtrl;
 
 const asdsdaasd = async () => {
     try {
+        let mchts = await pool.query(`SELECT * FROM users WHERE level=10 AND brand_id=76 AND id=418`);
+        mchts = mchts?.result;
+        mchts = mchts.map(itm => { return itm?.nickname });
+        console.log()
         let brand_list = [
             {//엠에스
                 id: 97,
                 oper_id: 1757,
-                mcht_nicknames: []
+                mcht_nicknames: mchts
             },
         ]
         let ago_mchts = await pool.query(`SELECT * FROM users WHERE brand_id=76 AND level=10`);
@@ -673,7 +677,7 @@ const asdsdaasd = async () => {
                     delete mcht_obj['id'];
                     mcht_obj.brand_id = brand_list[i].id;
                     let result = await insertQuery(`users`, mcht_obj);
-                    console.log(mcht)
+                    console.log(result)
                     let mcht_columns = await pool.query(`SELECT * FROM merchandise_columns WHERE mcht_id=${mcht?.id}`);
                     mcht_columns = mcht_columns?.result[0];
 
