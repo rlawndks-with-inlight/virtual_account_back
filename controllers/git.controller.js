@@ -47,7 +47,7 @@ const execSSH = (ssh_obj_ = {}) => {
         console.log('================================')
         conn.on('ready', () => {
             console.log('Client :: ready');
-            conn.exec('cd front && git pull origin master && npm run deploy', (err, stream) => {
+            conn.exec('cd front && git pull origin master && npm run deploy && cd ~/shop_front && git pull origin master && npm run deploy', (err, stream) => {
                 if (err) throw err;
                 stream.on('close', (code, signal) => {
                     console.log('Stream :: close :: code: ' + code + ', signal: ' + signal);
