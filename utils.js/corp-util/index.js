@@ -4,6 +4,7 @@ import { findChildIds, findParents } from "../util.js";
 import { banknersApi } from "./bankners.js";
 import { cooconApi } from "./coocon.js";
 import { doznApi } from "./dozn.js";
+import { hectoApi } from "./hecto.js";
 import { koreaPaySystemApi } from "./korea-pay-system.js";
 import { paytusApi } from "./paytus.js";
 
@@ -178,7 +179,6 @@ const corpApi = {
                 if (pay_type) {
                     corp_type = dns_data[`${pay_type}_corp_type`];
                 }
-
                 if (corp_type == 2) {
                     result = await cooconApi.account.info(data);
                 }
@@ -233,6 +233,9 @@ const corpApi = {
             if (corp_type == 2) {
                 result = await cooconApi.balance.info(data);
             }
+            if (corp_type == 5) {
+                result = await hectoApi.balance.info(data);
+            }
             if (corp_type == 6) {
                 result = await koreaPaySystemApi.balance.info(data);
             }
@@ -263,6 +266,8 @@ const corpApi = {
                 result = await paytusApi.bank.list(data);
             } else if (corp_type == 4) {
                 result = await doznApi.bank.list(data);
+            } else if (corp_type == 5) {
+                result = await hectoApi.bank.list(data);
             } else if (corp_type == 6) {
                 result = await koreaPaySystemApi.bank.list(data);
             } else {
