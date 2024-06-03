@@ -7,7 +7,7 @@ import { returnMoment } from '../function.js';
 
 //const API_URL = process.env.API_ENV == 'production' ? "https://npay.settlebank.co.kr" : "https://tbnpay.settlebank.co.kr";
 const API_URL = "https://tbnpay.settlebank.co.kr";
-
+const GW_API_URL = process.env.API_ENV == 'production' ? "https://gw.settlebank.co.kr" : "https://tbgw.settlebank.co.kr"
 const getDefaultHeader = () => {
     return {
         'Content-Type': 'application/json;charset=utf-8',
@@ -62,7 +62,7 @@ function processWithdrawObj(obj_ = {}, dns_data = {}) {
     let obj = obj_;
     let keys = Object.keys(obj);
     for (var i = 0; i < keys.length; i++) {
-        let key = dns_data?.withdraw_sign_key;
+        let key = dns_data?.withdraw_api_id;
         obj[keys[i]] = getAES256(obj[keys[i]], key);
     }
     return obj;
@@ -71,7 +71,6 @@ export const hectoApi = {
     balance: {
         info: async (data) => {//잔액
             try {
-                const API_URL = process.env.API_ENV == 'production' ? "https://gw.settlebank.co.kr" : "https://tbgw.settlebank.co.kr"
                 let {
                     dns_data, pay_type, decode_user,
                     guid, amount,
@@ -80,17 +79,22 @@ export const hectoApi = {
                 let query = {
                     mchtId: dns_data?.withdraw_mid,
                 }
-                query = processWithdrawObj(query, dns_data);
+                //query = processWithdrawObj(query, dns_data);
 
-                let { data: response } = await axios.post(`${API_URL}/pyag/v1/fxBalance`, query);
+                let { data: response } = await axios.post(`${GW_API_URL}/pyag/v1/fxBalance`, query,
+                    {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        timeout: 30000 // 30초 타임아웃
+                    });
                 console.log(response)
                 if (response?.outStatCd == '0021') {
                     return {
                         code: 100,
                         message: '',
                         data: {
-                            tid: response?.tid,
-                            trd_no: response?.trdNo,
+                            amount: response?.blcKrw,
                         },
                     };
                 } else {
