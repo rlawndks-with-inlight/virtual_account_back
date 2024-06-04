@@ -414,7 +414,7 @@ const withdrawCtrl = {
                 virtual_acct_balance,
             }, withdraw_id);
 
-            if (dns_data?.withdraw_corp_type == 2) {
+            if ([2, 5].includes(dns_data?.withdraw_corp_type)) {
                 for (var i = 0; i < 3; i++) {
                     let api_result2 = await corpApi.withdraw.request_check({
                         pay_type: 'withdraw',
