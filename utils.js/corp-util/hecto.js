@@ -67,7 +67,7 @@ function processWithdrawObj(obj_ = {}, dns_data = {}, aes_list = []) {
     let keys = Object.keys(obj);
     for (var i = 0; i < keys.length; i++) {
         if (aes_list.includes(keys[i])) {
-            let key = '00000000000000000000000000000000';
+            let key = dns_data?.withdraw_sign_key;
             obj[keys[i]] = getAES256(obj[keys[i]], key);
         }
 
