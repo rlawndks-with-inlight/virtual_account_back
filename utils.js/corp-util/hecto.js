@@ -211,4 +211,126 @@ export const hectoApi = {
             }
         },
     },
+    withdraw: {
+        request: async (data) => {//출금요청
+            let {
+                dns_data, pay_type, decode_user,
+                bank_code, acct_num, amount, acct_name, trx_id
+            } = data;
+            try {
+
+                let return_moment = returnMoment();
+
+                let query = {
+                    mchtId: dns_data?.withdraw_mid,
+                    mchtTrdNo: trx_id,
+                    encCd: '23',
+                    trdDt: return_moment.split(' ')[0].replaceAll('-', ''),
+                    trdTm: return_moment.split(' ')[1].replaceAll(':', ''),
+                    bankCd: bank_code,
+                    custAcntNo: acct_num,
+                    custAcntSumry: acct_name,
+                    amt: amount.toString(),
+                }
+                query = processWithdrawObj(query, dns_data, [
+                    'custAcntNo',
+                    'amt',
+                ]);
+                query['custAcntNo'] = encodeURI(query['custAcntNo']);
+                query['amt'] = encodeURI(query['amt']);
+                let { data: response } = await axios.post(`${GW_API_URL}/pyag/v1/fxTransKrw`, new URLSearchParams(query).toString(),
+                    {
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        timeout: 30000 // 30초 타임아웃
+                    });
+                console.log(response)
+                if (response?.outStatCd == '0021') {
+                    return {
+                        code: 100,
+                        message: '',
+                        data: {
+                            amount: response?.amt,
+                            tid: response?.mchtTrdNo,
+                            virtual_acct_balance: response?.balance,
+                        },
+                    };
+                } else {
+                    return {
+                        code: -100,
+                        message: response?.outRsltMsg,
+                        data: {
+                            tid: response?.mchtTrdNo,
+                        },
+                    };
+                }
+            } catch (err) {
+                console.log(err)
+                console.log(err?.response?.data)
+                return {
+                    code: -100,
+                    message: '',
+                    data: {
+                        tid: trx_id,
+                    },
+                };
+
+            }
+        },
+        request_check: async (data) => {//출금요청
+            let {
+                dns_data, pay_type, decode_user,
+                date, tid
+            } = data;
+            let mcht_trd_no = `OID${dns_data?.id}${new Date().getTime()}${decode_user?.id}${generateRandomString(5)}`;
+            try {
+
+                let query = {
+                    mchtId: dns_data?.withdraw_mid,
+                    mchtTrdNo: mcht_trd_no,
+                    trdNo: tid,
+                    orgTrdDt: date,
+                }
+                query = processWithdrawObj(query, dns_data);
+
+                let { data: response } = await axios.post(`${GW_API_URL}/pyag/v1/fxResult`, new URLSearchParams(query).toString(),
+                    {
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        timeout: 30000 // 30초 타임아웃
+                    });
+                console.log(response)
+                if (response?.outStatCd == '0021') {
+                    return {
+                        code: 100,
+                        message: '',
+                        data: {
+                            amount: response?.TRSC_AMT,
+                            status: response?.status,
+                        },
+                    };
+                } else {
+                    return {
+                        code: -100,
+                        message: response?.outRsltMsg,
+                        data: {
+                            status: response?.status,
+                        },
+                    };
+                }
+            } catch (err) {
+                console.log(err)
+                console.log(err?.response?.data)
+                return {
+                    code: -100,
+                    message: '',
+                    data: {
+                    },
+                };
+
+            }
+        },
+    }
 }

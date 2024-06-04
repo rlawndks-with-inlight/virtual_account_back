@@ -432,6 +432,9 @@ const corpApi = {
             if (corp_type == 2) {
                 result = await cooconApi.withdraw.request(data);
             }
+            if (corp_type == 5) {
+                result = await hectoApi.withdraw.request(data);
+            }
             if (corp_type == 6) {
                 result = await koreaPaySystemApi.withdraw.request(data);
             }
@@ -456,6 +459,9 @@ const corpApi = {
 
             if (corp_type == 2) {
                 result = await cooconApi.withdraw.request_check(data);
+            }
+            if (corp_type == 5) {
+                result = await hectoApi.withdraw.request_check(data);
             }
             return result;
         },
