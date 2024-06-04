@@ -7,7 +7,7 @@ import { returnMoment } from '../function.js';
 
 //const API_URL = process.env.API_ENV == 'production' ? "https://npay.settlebank.co.kr" : "https://tbnpay.settlebank.co.kr";
 const API_URL = "https://tbnpay.settlebank.co.kr";
-const GW_API_URL = process.env.API_ENV == 'production' ? "https://gw.settlebank.co.kr" : "https://tbgw.settlebank.co.kr"
+const GW_API_URL = process.env.NODE_ENV == 'production' ? "https://gw.settlebank.co.kr" : "https://tbgw.settlebank.co.kr"
 const getDefaultHeader = () => {
     return {
         'Content-Type': 'application/json;charset=utf-8',
