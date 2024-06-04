@@ -87,10 +87,10 @@ export const hectoApi = {
                     mchtId: dns_data?.withdraw_mid,
                 }
                 query = processWithdrawObj(query);
-                let { data: response } = await axios.post(`${GW_API_URL}/pyag/v1/fxBalance`, query,
+                let { data: response } = await axios.post(`${GW_API_URL}/pyag/v1/fxBalance`, new URLSearchParams(query).toString(),
                     {
                         headers: {
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'application/x-www-form-urlencoded'
                         },
                         timeout: 30000 // 30초 타임아웃
                     });
