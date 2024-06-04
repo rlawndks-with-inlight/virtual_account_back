@@ -58,12 +58,19 @@ const processObj = (obj_ = {}, hash_list = [], encr_list = [], dns_data) => {
     }
     return obj;
 }
-function processWithdrawObj(obj_ = {}, dns_data = {}) {
+const hexEncode = (str) => {
+    // 문자열을 헥사 인코딩 값으로 변환
+    return Buffer.from(str).toString('hex');
+};
+function processWithdrawObj(obj_ = {}, dns_data = {}, aes_list = []) {
     let obj = obj_;
     let keys = Object.keys(obj);
     for (var i = 0; i < keys.length; i++) {
-        let key = dns_data?.withdraw_api_id;
-        obj[keys[i]] = getAES256(obj[keys[i]], key);
+        if (aes_list.includes(keys[i])) {
+            let key = '00000000000000000000000000000000';
+            obj[keys[i]] = getAES256(obj[keys[i]], key);
+        }
+
     }
     return obj;
 }
@@ -79,8 +86,7 @@ export const hectoApi = {
                 let query = {
                     mchtId: dns_data?.withdraw_mid,
                 }
-                //query = processWithdrawObj(query, dns_data);
-
+                query = processWithdrawObj(query);
                 let { data: response } = await axios.post(`${GW_API_URL}/pyag/v1/fxBalance`, query,
                     {
                         headers: {
