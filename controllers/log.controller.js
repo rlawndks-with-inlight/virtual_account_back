@@ -112,7 +112,7 @@ const getLogList = {
         return data;
     },
 }
-const getFileLogs = async (type, query = {}, decode_user, decode_dns) => {
+export const getFileLogs = async (type, query = {}, decode_user, decode_dns = {}) => {
     try {
         const { response_result_type, search = "", dt, page_size = 20, page = 1, } = query;
         let filePath = `${type == 'back' ? './' : '../api/'}logs/${dt}.log`;

@@ -654,24 +654,19 @@ export default userCtrl;
 
 const asdsdaasd = async () => {
     try {
-        let mchts = await pool.query(`SELECT * FROM users WHERE level=10 AND brand_id=97`);
+        let mchts = await pool.query(`SELECT * FROM users WHERE level=10 AND brand_id=100`);
         mchts = mchts?.result;
-        mchts = mchts.map(itm => { return itm?.nickname });
-        console.log()
         let brand_list = [
             {//엠에스
-                id: 100,
-                oper_id: 1880,
+                id: 99,
+                oper_id: 1933,
                 mcht_nuser_names: mchts
             },
         ]
-        let ago_mchts = await pool.query(`SELECT * FROM users WHERE brand_id=97 AND level=10`);
-        ago_mchts = ago_mchts?.result;
         await db.beginTransaction();
         for (var i = 0; i < brand_list.length; i++) {
             for (var j = 0; j < brand_list[i].mcht_nuser_names.length; j++) {
-                let mcht_nuser_name = brand_list[i].mcht_nuser_names[j];
-                let mcht = _.find(ago_mchts, { user_name: mcht_nuser_name });
+                let mcht = brand_list[i].mcht_nuser_names[j];
                 if (mcht) {
                     let mcht_obj = { ...mcht };
                     delete mcht_obj['id'];
