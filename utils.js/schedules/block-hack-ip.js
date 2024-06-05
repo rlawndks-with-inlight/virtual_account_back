@@ -29,6 +29,7 @@ export const blockHackIp = async () => {
                 }
             }
         }
+        console.log(noti_logs)
         let keys = Object.keys(ip_obj);
         for (var i = 0; i < keys.length; i++) {
             if (ip_obj[keys[i]] >= 5) {
