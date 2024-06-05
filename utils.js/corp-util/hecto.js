@@ -87,6 +87,7 @@ export const hectoApi = {
                     mchtId: dns_data?.withdraw_mid,
                 }
                 query = processWithdrawObj(query);
+                console.log(12321321321)
                 let { data: response } = await axios.post(`${GW_API_URL}/pyag/v1/fxBalance`, new URLSearchParams(query).toString(),
                     {
                         headers: {
