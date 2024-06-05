@@ -24,7 +24,7 @@ export const blockHackIp = async () => {
                     ip_obj[noti_logs[i]?.request_ip] = 0;
                 }
                 let request = JSON.parse(noti_logs[i]?.request ?? '{}');
-                if (request?.url != '/favicon.ico') {
+                if (request?.url != '/favicon.ico' && request?.url != '/') {
                     ip_obj[noti_logs[i]?.request_ip]++;
                 }
             }
