@@ -346,6 +346,17 @@ const withdrawCtrl = {
             dns_data['setting_obj'] = JSON.parse(dns_data?.setting_obj ?? '{}');
 
             let withdraw_amount = (withdraw?.expect_amount + withdraw?.withdraw_fee) * (-1);
+            if (dns_data?.withdraw_max_price > 0) {
+                let date = returnMoment().substring(0, 10);
+                let today_withdraw_sum_sql = ` SELECT SUM(amount) AS amount FROM deposits WHERE brand_id=${decode_dns?.id} `;
+                today_withdraw_sum_sql += ` AND pay_type IN (5, 10, 20) `;
+                today_withdraw_sum_sql += ` AND (created_at BETWEEN '${date} 00:00:00' AND '${date} 23:59:59')  `;
+                let today_withdraw_sum = await pool.query(today_withdraw_sum_sql);
+                today_withdraw_sum = today_withdraw_sum?.result[0]?.amount ?? 0;
+                if (dns_data?.withdraw_max_price < today_withdraw_sum + withdraw_amount) {
+                    return response(req, res, -100, "출금 실패 B", false)
+                }
+            }
             let user = await pool.query(`SELECT * FROM users WHERE id=${withdraw?.user_id} AND brand_id=${decode_dns?.id}`);
             user = user?.result[0];
 
