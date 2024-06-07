@@ -106,5 +106,4 @@ const insertCooconDeposit = async () => { //쿠콘 입금 누락건 추가
     }
 }
 
-
 export default utilCtrl;

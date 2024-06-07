@@ -88,7 +88,8 @@
     "when": "^3.7.8",
     "winston": "^3.13.0",
     "winston-daily-rotate-file": "^5.0.0",
-    "write-excel-file": "^1.4.30"
+    "write-excel-file": "^1.4.30",
+    "xlsx": "^0.18.5"
   },
   "type": "module",
   "babel": {

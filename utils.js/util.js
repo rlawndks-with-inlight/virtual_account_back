@@ -11,6 +11,7 @@ import { getMultipleQueryByWhen, updateQuery } from './query-util.js';
 import axios from 'axios';
 import corpApi from './corp-util/index.js';
 import logger from './winston/index.js';
+import xlsx from 'xlsx';
 
 const randomBytesPromise = util.promisify(crypto.randomBytes);
 const pbkdf2Promise = util.promisify(crypto.pbkdf2);
@@ -458,7 +459,7 @@ export const sendNotiPush = async (user = {}, pay_type, data = {}, id) => {
         console.log(err);
     }
 }
-export const getMotherDeposit = async (decode_dns) => {
+export const getMotherDeposit = async (decode_dns, type = 'all') => {
 
     let brand_columns = [
         `brands.*`,
@@ -721,4 +722,49 @@ export function generateRandomString(length = 1) {
     }
 
     return randomString;
+}
+const sadsafsafsa = async () => {//거래내역비교
+    try {
+        let deposits = await pool.query(`SELECT deposits.id, deposits.trx_id, deposits.amount, deposits.top_office_amount, deposits.created_at, users.nickname FROM deposits LEFT JOIN users ON users.id=deposits.mcht_id WHERE deposits.pay_type=0 AND deposits.brand_id=79 ORDER BY deposits.id DESC`);
+        deposits = deposits?.result;
+        console.log(deposits.length)
+        let first_list = getExcel('./충전정산 거래내역_0419까지.xlsx');
+        console.log(first_list.length)
+        let second_list = getExcel('./충전정산 거래내역_0420부터.xlsx');
+        console.log(second_list.length)
+
+        let excel_list = [...first_list, ...second_list];
+        let excel_obj = {};
+        for (var i = 0; i < excel_list.length; i++) {
+            excel_obj[`${excel_list[i]['참조번호'].toString()}`] = 1;
+        }
+        let over_deposits = [];
+        console.log(excel_list.length);
+        for (var i = 0; i < deposits.length; i++) {
+            if (i % 1000 == 0) {
+                console.log(i);
+            }
+            if (excel_obj[deposits[i]?.trx_id] != 1) {
+                over_deposits.push(deposits[i]);
+            }
+        }
+        console.log(over_deposits);
+        console.log(over_deposits.length);
+        //
+        /*
+        let second_list = getExcel('./충전정산 거래내역_0420부터.xlsx');
+        console.log(second_list.length)  
+        */
+    } catch (err) {
+        console.log(err)
+    }
+
+}
+const getExcel = (name) => {
+    const workbook = xlsx.readFile(name); // 액샐 파일 읽어오기
+    const firstSheetName = workbook.SheetNames[0]; // 첫 번째 시트 이름 가져오기
+    const firstShee = workbook.Sheets[firstSheetName]; // 시트 이름을 이용해 엑셀 파일의 첫 번째 시트 가져오기
+
+    const excel_list = xlsx.utils.sheet_to_json(firstShee);
+    return excel_list;
 }
