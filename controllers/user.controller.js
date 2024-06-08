@@ -103,9 +103,10 @@ const userCtrl = {
                 columns.push(`(SELECT SUM(${level_column}_amount) FROM deposits WHERE ${level_column}_id=${table_name}.id AND pay_type IN (25)) AS manager_plus_amount`);
                 columns.push(`(SELECT SUM(${level_column}_amount) FROM deposits WHERE ${level_column}_id=${table_name}.id AND pay_type IN (30)) AS manager_minus_amount`);
                 columns.push(`(SELECT SUM(withdraw_fee) FROM deposits WHERE ${level_column}_id=${table_name}.id AND pay_type IN (5, 20)) AS withdraw_fee_amount`);
+            }
+            if (level) {
                 where_sql += ` AND ${table_name}.level = ${level} `;
             }
-
             if (level_list.length > 0) {
                 where_sql += ` AND ${table_name}.level IN (${level_list}) `;
             }
