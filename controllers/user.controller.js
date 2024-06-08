@@ -94,7 +94,7 @@ const userCtrl = {
                 }
 
             }
-            if (level) {
+            if (level && level < 40) {
                 let level_column = level == 10 ? 'mcht' : `sales${_.find(operatorLevelList, { level: parseInt(level) }).num}`;
                 columns.push(`(SELECT SUM(${level_column}_amount) FROM deposits WHERE ${level_column}_id=${table_name}.id) AS settle_amount`);
                 columns.push(`(SELECT SUM(${level_column}_amount) FROM deposits WHERE ${level_column}_id=${table_name}.id AND pay_type IN (0)) AS deposit_amount`);
