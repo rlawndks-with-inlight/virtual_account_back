@@ -143,7 +143,6 @@ export const pushAsapMall = async (return_moment = "") => {
         console.log(err);
     }
 }
-pushAsapMall(':00:00')
 const sendNotiPushAsapMall = async (data, obj, products = []) => {
     try {
         let {
