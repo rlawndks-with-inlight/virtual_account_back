@@ -725,27 +725,38 @@ export function generateRandomString(length = 1) {
 }
 const sadsafsafsa = async () => {//거래내역비교
     try {
-        let deposits = await pool.query(`SELECT deposits.id, deposits.trx_id, deposits.amount, deposits.top_office_amount, deposits.created_at, users.nickname FROM deposits LEFT JOIN users ON users.id=deposits.mcht_id WHERE deposits.pay_type=0 AND deposits.brand_id=79 ORDER BY deposits.id DESC`);
+        let sql = ` SELECT deposits.id, deposits.brand_id, deposits.trx_id, deposits.amount, deposits.top_office_amount, deposits.created_at, users.nickname FROM deposits `;
+        sql += ` LEFT JOIN users ON users.id=deposits.mcht_id `;
+        sql += ` WHERE deposits.pay_type IN (5, 10, 20) `;
+        sql += ` AND deposits.brand_id IN (71, 72) AND deposits.created_at >= '2024-03-31 00:00:00' AND withdraw_status=0  ORDER BY deposits.id DESC `;
+        let deposits = await pool.query(sql);
         deposits = deposits?.result;
         console.log(deposits.length)
-        let first_list = getExcel('./충전정산 거래내역_0419까지.xlsx');
+        let first_list = getExcel('./asd4.xlsx');
         console.log(first_list.length)
-        let second_list = getExcel('./충전정산 거래내역_0420부터.xlsx');
+        let second_list = getExcel('./asd5.xlsx');
         console.log(second_list.length)
 
         let excel_list = [...first_list, ...second_list];
+        let deposit_obj = {};
+        for (var i = 0; i < deposits.length; i++) {
+            if (!deposit_obj[deposits[i]?.trx_id]) {
+                deposit_obj[deposits[i]?.trx_id] = [];
+            }
+            deposit_obj[deposits[i]?.trx_id].push(deposits[i]);
+        }
         let excel_obj = {};
         for (var i = 0; i < excel_list.length; i++) {
-            excel_obj[`${excel_list[i]['참조번호'].toString()}`] = 1;
+            excel_obj[`${excel_list[i]['거래ID'].toString()}`] = excel_list[i];
         }
         let over_deposits = [];
         console.log(excel_list.length);
-        for (var i = 0; i < deposits.length; i++) {
+        for (var i = 0; i < excel_list.length; i++) {
             if (i % 1000 == 0) {
                 console.log(i);
             }
-            if (excel_obj[deposits[i]?.trx_id] != 1) {
-                over_deposits.push(deposits[i]);
+            if (!deposit_obj[excel_list[i]['거래ID']]) {
+                over_deposits.push(excel_list[i]);
             }
         }
         console.log(over_deposits);
@@ -758,7 +769,6 @@ const sadsafsafsa = async () => {//거래내역비교
     } catch (err) {
         console.log(err)
     }
-
 }
 const getExcel = (name) => {
     const workbook = xlsx.readFile(name); // 액샐 파일 읽어오기
