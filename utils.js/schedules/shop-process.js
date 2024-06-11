@@ -101,7 +101,7 @@ const shopProcess = async (params, products = []) => {
                     parseFloat(result_products[i]?.order_amount),
                     parseInt(result_products[i]?.order_count),
                     '[]',
-                    result_products[i]?.delivery_fee,
+                    (isNaN(result_products[i]?.delivery_fee) ? 0 : (result_products[i]?.delivery_fee ?? 0)),
                     0,
                     0,
                 ]);
