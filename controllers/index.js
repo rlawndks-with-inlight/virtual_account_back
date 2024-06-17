@@ -22,6 +22,7 @@ import bulkUploadCtrl from './bulk_upload.controller.js';
 import gitCtrl from './git.controller.js';
 import blackListCtrl from './black_list.controller.js';
 import phoneAuthHistoryCtrl from './phone_auth_history.controller.js';
+import depositAccountCtrl from './deposit_account.controller.js';
 
 export {
     brandCtrl,
@@ -46,4 +47,5 @@ export {
     gitCtrl,
     blackListCtrl,
     phoneAuthHistoryCtrl,
+    depositAccountCtrl,
 };

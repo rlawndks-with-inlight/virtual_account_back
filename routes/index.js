@@ -21,6 +21,7 @@ import bulkUploadRoutes from './bulk_upload.route.js';
 import gitRoutes from './git.route.js';
 import blackListRoutes from './black_list.route.js';
 import phoneAuthHistoryRoutes from './phone_auth_history.route.js';
+import depositAccountRoutes from './deposit_account.route.js';
 
 const router = express.Router(); // eslint-disable-line new-cap
 
@@ -36,6 +37,7 @@ router.use('/settles', settleRoutes);
 router.use('/virtual-accounts', virtualAccountRoutes);
 router.use('/deposit-requests', depositRequestRoutes);
 router.use('/corp-accounts', corpAccountRoutes);
+router.use('/deposit-accounts', depositAccountRoutes);
 router.use('/bell-contents', bellContentRoutes);
 router.use('/brand-pays', brandPayRoutes);
 router.use('/reserves', reserveRoutes);
