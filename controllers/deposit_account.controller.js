@@ -91,7 +91,7 @@ const depositAccountCtrl = {
             } else {
                 return lowLevelException(req, res);
             }
-            let is_exist_another_mcht = await pool.query(`SELECT * FROM ${table_name} WHERE is_delete=0 AND mcht_id!=${result_mcht_id} AND acct_name=?`, [
+            let is_exist_another_mcht = await pool.query(`SELECT * FROM ${table_name} WHERE is_delete=0 AND mcht_id!=${result_mcht_id} AND acct_name=? AND brand_id=${decode_dns?.id}`, [
                 acct_name
             ]);
             if (is_exist_another_mcht?.result.length > 0) {
@@ -131,7 +131,7 @@ const depositAccountCtrl = {
             } else {
                 return lowLevelException(req, res);
             }
-            let is_exist_another_mcht = await pool.query(`SELECT * FROM ${table_name} WHERE is_delete=0 AND mcht_id!=${result_mcht_id} AND acct_name=?`, [
+            let is_exist_another_mcht = await pool.query(`SELECT * FROM ${table_name} WHERE is_delete=0 AND mcht_id!=${result_mcht_id} AND acct_name=? AND brand_id=${decode_dns?.id}`, [
                 acct_name
             ]);
             if (is_exist_another_mcht?.result.length > 0) {
