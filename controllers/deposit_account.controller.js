@@ -78,10 +78,10 @@ const depositAccountCtrl = {
                 return lowLevelException(req, res);
             }
             const {
-                brand_id, bank_code, acct_num, acct_name, mcht_id
+                brand_id, bank_code, acct_num, acct_name, mcht_id, detail,
             } = req.body;
             let obj = {
-                brand_id, bank_code, acct_num, acct_name, mcht_id
+                brand_id, bank_code, acct_num, acct_name, mcht_id, detail,
             };
             let result_mcht_id = mcht_id;
             if (decode_user?.level >= 40) {
@@ -117,11 +117,11 @@ const depositAccountCtrl = {
                 return lowLevelException(req, res);
             }
             const {
-                id, brand_id, bank_code, acct_num, acct_name, mcht_id
+                id, brand_id, bank_code, acct_num, acct_name, mcht_id, detail,
             } = req.body;
             let files = settingFiles(req.files);
             let obj = {
-                brand_id, bank_code, acct_num, acct_name, mcht_id
+                brand_id, bank_code, acct_num, acct_name, mcht_id, detail,
             };
             let result_mcht_id = mcht_id;
             if (decode_user?.level >= 40) {
