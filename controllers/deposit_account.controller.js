@@ -117,11 +117,11 @@ const depositAccountCtrl = {
                 return lowLevelException(req, res);
             }
             const {
-                id, brand_id, bank_code, acct_num, acct_name
+                id, brand_id, bank_code, acct_num, acct_name, mcht_id
             } = req.body;
             let files = settingFiles(req.files);
             let obj = {
-                brand_id, bank_code, acct_num, acct_name
+                brand_id, bank_code, acct_num, acct_name, mcht_id
             };
             let result_mcht_id = mcht_id;
             if (decode_user?.level >= 40) {
