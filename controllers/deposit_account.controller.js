@@ -91,8 +91,9 @@ const depositAccountCtrl = {
             } else {
                 return lowLevelException(req, res);
             }
-            let is_exist_another_mcht = await pool.query(`SELECT * FROM ${table_name} WHERE is_delete=0 AND mcht_id!=${result_mcht_id} AND acct_name=? AND brand_id=${decode_dns?.id}`, [
-                acct_name
+            let is_exist_another_mcht = await pool.query(`SELECT * FROM ${table_name} WHERE is_delete=0 AND mcht_id!=${result_mcht_id} AND acct_name=? AND detail=? AND brand_id=${decode_dns?.id}`, [
+                acct_name,
+                detail,
             ]);
             if (is_exist_another_mcht?.result.length > 0) {
                 return response(req, res, -100, "본사에 문의해 주세요.", false)
@@ -131,8 +132,9 @@ const depositAccountCtrl = {
             } else {
                 return lowLevelException(req, res);
             }
-            let is_exist_another_mcht = await pool.query(`SELECT * FROM ${table_name} WHERE is_delete=0 AND mcht_id!=${result_mcht_id} AND acct_name=? AND brand_id=${decode_dns?.id}`, [
-                acct_name
+            let is_exist_another_mcht = await pool.query(`SELECT * FROM ${table_name} WHERE is_delete=0 AND mcht_id!=${result_mcht_id} AND acct_name=? AND detail=? AND brand_id=${decode_dns?.id}`, [
+                acct_name,
+                detail,
             ]);
             if (is_exist_another_mcht?.result.length > 0) {
                 return response(req, res, -100, "본사에 문의해 주세요.", false)
