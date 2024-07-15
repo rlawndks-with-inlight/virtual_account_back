@@ -650,12 +650,12 @@ export default userCtrl;
 
 const asdsdaasd = async () => {
     try {
-        let mchts = await pool.query(`SELECT * FROM users WHERE level=10 AND brand_id=100`);
+        let mchts = await pool.query(`SELECT * FROM users WHERE level=10 AND brand_id=76 AND is_delete=0`);
         mchts = mchts?.result;
         let brand_list = [
             {//엠에스
-                id: 99,
-                oper_id: 1933,
+                id: 103,
+                oper_id: 2103,
                 mcht_nuser_names: mchts
             },
         ]

@@ -31,5 +31,8 @@ router
 router
     .route('/connect-mcht')
     .post(virtualAccountCtrl.connectMcht)
+router
+    .route('/request-deposit')
+    .post(virtualAccountCtrl.requestDeposit)
 
 export default router;

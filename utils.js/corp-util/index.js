@@ -5,6 +5,7 @@ import { banknersApi } from "./bankners.js";
 import { cooconApi } from "./coocon.js";
 import { doznApi } from "./dozn.js";
 import { hectoApi } from "./hecto.js";
+import { icbApi } from "./icb.js";
 import { koreaPaySystemApi } from "./korea-pay-system.js";
 import { paytusApi } from "./paytus.js";
 
@@ -239,6 +240,9 @@ const corpApi = {
             if (corp_type == 6) {
                 result = await koreaPaySystemApi.balance.info(data);
             }
+            if (corp_type == 7) {
+                result = await icbApi.balance.info(data);
+            }
             return result;
         },
     },
@@ -270,6 +274,8 @@ const corpApi = {
                 result = await hectoApi.bank.list(data);
             } else if (corp_type == 6) {
                 result = await koreaPaySystemApi.bank.list(data);
+            } else if (corp_type == 7) {
+                result = await icbApi.bank.list(data);
             } else {
                 result = await banknersApi.bank.list(data);
             }
@@ -553,6 +559,29 @@ const corpApi = {
             }
             if (corp_type == 1) {
                 result = await banknersApi.mcht.withdraw_request(data);
+            }
+            return result;
+        },
+    },
+    deposit: {
+        request: async (data_) => {//거래취소
+            let data = data_;
+            let { dns_data, pay_type } = data;
+            dns_data = await getDnsData(dns_data);
+            data['dns_data'] = dns_data;
+
+            let result = default_result;
+            let corp_type = dns_data?.deposit_corp_type || dns_data?.withdraw_corp_type;
+            if (dns_data?.setting_obj?.is_use_deposit == 1) {
+                corp_type = dns_data?.deposit_corp_type;
+            } else if (dns_data?.setting_obj?.is_use_withdraw == 1) {
+                corp_type = dns_data?.withdraw_corp_type;
+            }
+            if (pay_type) {
+                corp_type = dns_data[`${pay_type}_corp_type`];
+            }
+            if (corp_type == 7) {
+                result = await icbApi.deposit.request(data);
             }
             return result;
         },

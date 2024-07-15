@@ -461,6 +461,50 @@ const virtualAccountCtrl = {
 
         }
     },
+    requestDeposit: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = await checkLevel(req.cookies.token, 10, req);
+            const decode_dns = checkDns(req.cookies.dns);
+            const {
+                virtual_account_id, amount,
+            } = req.body;
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
+            if (!(amount > 0)) {
+                return response(req, res, -100, "입금예정액은 0원보다 커야합니다.", false)
+            }
+            let virtual_account = await pool.query(`SELECT * FROM ${table_name} WHERE id=${virtual_account_id}`);
+            virtual_account = virtual_account?.result[0];
+            let trx_id = `${decode_dns?.id}${decode_user?.id}${new Date().getTime()}`;
+            let result = await insertQuery(`deposits`, {
+                brand_id: decode_dns?.id,
+                mcht_id: virtual_account?.mcht_id,
+                virtual_account_id: virtual_account_id,
+                expect_amount: amount,
+                trx_id,
+                deposit_status: 5,
+                pay_type: 0,
+            })
+            let api_result = await corpApi.deposit.request({
+                pay_type: 'deposit',
+                dns_data: decode_dns,
+                ci: virtual_account?.ci,
+                amount,
+                trx_id,
+            });
+            if (api_result?.code != 100) {
+                return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
+            }
+            return response(req, res, 100, "success", {})
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
 };
 
 export default virtualAccountCtrl;
