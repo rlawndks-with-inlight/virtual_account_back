@@ -18,7 +18,6 @@ const withdrawCtrl = {
             const decode_user = await checkLevel(req.cookies.token, 10, req);
             const decode_dns = checkDns(req.cookies.dns);
             const { withdraw_status, search, s_dt, e_dt, is_hand } = req.query;
-            console.log(req.query)
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
@@ -425,7 +424,7 @@ const withdrawCtrl = {
                 virtual_acct_balance,
             }, withdraw_id);
 
-            if ([2, 5].includes(dns_data?.withdraw_corp_type)) {
+            if ([2, 5, 7].includes(dns_data?.withdraw_corp_type)) {
                 for (var i = 0; i < 3; i++) {
                     let api_result2 = await corpApi.withdraw.request_check({
                         pay_type: 'withdraw',

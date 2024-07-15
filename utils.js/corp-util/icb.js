@@ -36,7 +36,8 @@ export const icbApi = {
                     code: 100,
                     message: response?.message,
                     data: {
-                        amount: result.data?.balance,
+                        amount: response.data?.balAmt,
+                        hold_deposit_amount: response.data?.depositAmt,
                     },
                 };
 
@@ -454,5 +455,41 @@ export const icbApi = {
 
             }
         },
-    }
+    },
+    vaccount_delete: async (data) => {
+        try {
+            let {
+                dns_data,
+                pay_type,
+                ci,
+            } = data;
+            let query = {
+                memKey: ci,
+            }
+            let { data: response } = await axios.post(`${API_URL}/v1/merchant/member/quit`, query, {
+                headers: getDefaultHeader(dns_data, pay_type,)
+            });
+            if (response?.code != 200) {
+                return {
+                    code: -100,
+                    message: response?.message,
+                    data: {},
+                };
+            }
+            return {
+                code: 100,
+                message: response?.message,
+                data: {},
+            };
+
+        } catch (err) {
+            console.log(err)
+            return {
+                code: -200,
+                message: '',
+                data: {},
+            };
+
+        }
+    },
 }

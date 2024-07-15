@@ -347,6 +347,9 @@ const corpApi = {
         if (corp_type == 6) {
             result = await koreaPaySystemApi.vaccount_delete(data);
         }
+        if (corp_type == 7) {
+            result = await icbApi.vaccount_delete(data);
+        }
         return result;
     },
     push: {

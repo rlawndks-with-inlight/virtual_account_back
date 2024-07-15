@@ -268,7 +268,7 @@ const virtualAccountCtrl = {
                 guid: virtual_account?.guid,
             })
             let amount = user_amount.data?.amount ?? 0
-            if (amount > 0) {
+            if (amount > 0 && dns_data?.withdraw_corp_type != 7) {
                 let mother_to_result = await corpApi.transfer.pass({
                     pay_type: 'deposit',
                     dns_data,
@@ -286,7 +286,7 @@ const virtualAccountCtrl = {
                     deposit_acct_num: virtual_account?.deposit_acct_num,
                     deposit_acct_name: virtual_account?.deposit_acct_name,
                     pay_type: 15,
-                    trx_id: mother_to_result.data?.tid,
+                    trx_id: mother_to_result.data?.tid ?? "",
                 };
                 let result = await insertQuery(`deposits`, obj);
             }
@@ -296,6 +296,7 @@ const virtualAccountCtrl = {
                     dns_data: decode_dns,
                     decode_user,
                     guid: virtual_account?.guid,
+                    ci: virtual_account?.ci,
                     bank_id: virtual_account?.virtual_bank_code,
                     virtual_acct_num: virtual_account?.virtual_acct_num,
                     phone_num: virtual_account?.phone_num,
