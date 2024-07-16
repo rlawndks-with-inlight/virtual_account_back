@@ -456,6 +456,102 @@ export const icbApi = {
             }
         },
     },
+    withdraw: {
+        request: async (data) => {//출금신청
+            try {
+                let {
+                    dns_data,
+                    pay_type,
+                    ci,
+                    trx_id,
+                    amount,
+                } = data;
+                let query = {
+                    memKey: ci,
+                    trxAmt: amount,
+                    partnerTrxNo: trx_id,
+                }
+                console.log(getDefaultHeader(dns_data, pay_type,))
+                let { data: response } = await axios.post(`${API_URL}/v1/merchant/settle/member/request/amt`, query, {
+                    headers: getDefaultHeader(dns_data, pay_type,)
+                });
+                if (response?.code != 200) {
+                    return {
+                        code: -100,
+                        message: response?.message,
+                        data: {},
+                    };
+                }
+                return {
+                    code: 100,
+                    message: response?.message,
+                    data: {
+                        tid: response?.data?.partnerTrxNo,
+                    },
+                };
+
+            } catch (err) {
+                console.log(err)
+                return {
+                    code: -200,
+                    message: '',
+                    data: {},
+                };
+
+            }
+        },
+        request_check: async (data) => {//출금확인
+            try {
+                let {
+                    dns_data,
+                    pay_type,
+                    ci,
+                    tid,
+                } = data;
+                let query = {
+                    memKey: ci,
+                    partnerTrxNos: tid,
+                }
+                let { data: response } = await axios.post(`${API_URL}/v1/merchant/settle/member/inquiry`, query, {
+                    headers: getDefaultHeader(dns_data, pay_type,)
+                });
+                let status = 10;
+                let result = response?.data?.result[0];
+                if (result?.trxStat == 'WT' || result?.trxStat == 'IP') {
+                    status = 6;
+                } else if (result?.trxStat == 'RF') {
+                    status = 3;
+                }
+                if (response?.code != 200) {
+                    return {
+                        code: -100,
+                        message: response?.message,
+                        data: {
+                            status,
+                        },
+                    };
+                }
+                return {
+                    code: 100,
+                    message: response?.message,
+                    data: {
+                        status,
+                    },
+                };
+
+            } catch (err) {
+                console.log(err)
+                return {
+                    code: -200,
+                    message: '',
+                    data: {
+
+                    },
+                };
+
+            }
+        },
+    },
     vaccount_delete: async (data) => {
         try {
             let {
