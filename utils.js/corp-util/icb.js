@@ -1,12 +1,22 @@
 import axios from "axios";
 import { returnMoment } from "../function.js";
+import crypto from 'crypto';
 
 const API_URL = process.env.API_ENV == 'production' ? "https://www.i-connect.co.kr" : "https://testwww.i-connect.co.kr";
 
-const getDefaultHeader = (dns_data, pay_type) => {
+const getDefaultHeader = (dns_data, pay_type, timestamp) => {
+    let mid = dns_data[`${pay_type}_api_id`];
+    let secretkey = dns_data[`${pay_type}_sign_key`];
+    const TEXT_A = `${mid}${secretkey}${timestamp}`;
+    const SALT = secretkey;
+    const TEXT_B = `${TEXT_A}${SALT}`;
+    const hash = crypto.createHash('sha256');
+    hash.update(TEXT_B, 'utf8');
+    const TEXT_C = hash.digest('hex');
+    // TEXT_B 생성
     return {
-        'mid': dns_data[`${pay_type}_api_id`],
-        'sign': dns_data[`${pay_type}_sign_key`],
+        'mid': mid,
+        'sign': TEXT_C
     }
 }
 export const icbApi = {
@@ -19,11 +29,13 @@ export const icbApi = {
                     ci,
 
                 } = data;
+                let timestamp = await returnMoment().replaceAll(' ', '').replaceAll('-', '').replaceAll(':', '')
                 let query = {
+                    timestamp,
                     memKey: ci,
                 }
                 let { data: response } = await axios.post(`${API_URL}/v1/merchant/settle/balance/getInfo`, query, {
-                    headers: getDefaultHeader(dns_data, pay_type,)
+                    headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
                 if (response?.code != 200) {
                     return {
@@ -60,11 +72,13 @@ export const icbApi = {
                 ci,
 
             } = data;
+            let timestamp = await returnMoment().replaceAll(' ', '').replaceAll('-', '').replaceAll(':', '')
             let query = {
+                timestamp,
                 memKey: ci,
             }
             let { data: response } = await axios.post(`${API_URL}/v1/pg/publishVirtAcnt`, query, {
-                headers: getDefaultHeader(dns_data, pay_type,)
+                headers: getDefaultHeader(dns_data, pay_type, timestamp)
             });
             if (response?.code != 200) {
                 return {
@@ -192,14 +206,16 @@ export const icbApi = {
                     acct_num,
                     name,
                 } = data;
+                let timestamp = await returnMoment().replaceAll(' ', '').replaceAll('-', '').replaceAll(':', '')
                 let query = {
+                    timestamp,
                     memKey: ci,
                     bankCd: bank_code,
                     depoAcntNo: acct_num,
                     depoNm: name,
                 }
                 let { data: response } = await axios.post(`${API_URL}/v1/pg/acntCert/request`, query, {
-                    headers: getDefaultHeader(dns_data, pay_type,)
+                    headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
                 if (response?.code != 200) {
                     return {
@@ -239,7 +255,9 @@ export const icbApi = {
                 } = data;
                 let return_moment = returnMoment();
                 let date = return_moment.split(' ')[0].replaceAll('-', '');
+                let timestamp = await returnMoment().replaceAll(' ', '').replaceAll('-', '').replaceAll(':', '')
                 let query = {
+                    timestamp,
                     memKey: ci,
                     bankCd: bank_code,
                     depoAcntNo: acct_num,
@@ -248,7 +266,7 @@ export const icbApi = {
                     acntCertTrxNo: tid,
                 }
                 let { data: response } = await axios.post(`${API_URL}/v1/pg/acntCert/confirm`, query, {
-                    headers: getDefaultHeader(dns_data, pay_type,)
+                    headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
                 if (response?.code != 200) {
                     return {
@@ -287,14 +305,16 @@ export const icbApi = {
                     acct_num,
                     name,
                 } = data;
+                let timestamp = await returnMoment().replaceAll(' ', '').replaceAll('-', '').replaceAll(':', '')
                 let query = {
+                    timestamp,
                     memKey: ci,
                     bankCd: bank_code,
                     depoAcntNo: acct_num,
                     depoNm: name,
                 }
                 let { data: response } = await axios.post(`${API_URL}/v1/pg/withdrawAcntCert`, query, {
-                    headers: getDefaultHeader(dns_data, pay_type,)
+                    headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
                 if (response?.code != 200) {
                     return {
@@ -334,7 +354,9 @@ export const icbApi = {
                     tel_com,
                     phone_num,
                 } = data;
+                let timestamp = await returnMoment().replaceAll(' ', '').replaceAll('-', '').replaceAll(':', '')
                 let query = {
+                    timestamp,
                     memKey: ci,
                     name: name,
                     birthday: birth,
@@ -344,7 +366,7 @@ export const icbApi = {
                     telNo: phone_num,
                 }
                 let { data: response } = await axios.post(`${API_URL}/v1/pg/hpCert/request`, query, {
-                    headers: getDefaultHeader(dns_data, pay_type,)
+                    headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
                 if (response?.code != 200) {
                     return {
@@ -381,14 +403,16 @@ export const icbApi = {
                     vrf_word,
                     tid,
                 } = data;
+                let timestamp = await returnMoment().replaceAll(' ', '').replaceAll('-', '').replaceAll(':', '')
                 let query = {
+                    timestamp,
                     memKey: ci,
                     telNo: phone_num,
                     hpCertCd: vrf_word,
                     hpCertTrxNo: tid,
                 }
                 let { data: response } = await axios.post(`${API_URL}/v1/pg/hpCert/confirm`, query, {
-                    headers: getDefaultHeader(dns_data, pay_type,)
+                    headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
                 if (response?.code != 200) {
                     return {
@@ -424,13 +448,15 @@ export const icbApi = {
                     amount,
                     trx_id,
                 } = data;
+                let timestamp = await returnMoment().replaceAll(' ', '').replaceAll('-', '').replaceAll(':', '')
                 let query = {
+                    timestamp,
                     memKey: ci,
                     trxAmt: amount,
                     partnerTrxNo: trx_id,
                 }
                 let { data: response } = await axios.post(`${API_URL}/v1/pg/paymentRequest`, query, {
-                    headers: getDefaultHeader(dns_data, pay_type,)
+                    headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
                 if (response?.code != 200) {
                     return {
@@ -466,14 +492,16 @@ export const icbApi = {
                     trx_id,
                     amount,
                 } = data;
+                let timestamp = await returnMoment().replaceAll(' ', '').replaceAll('-', '').replaceAll(':', '')
                 let query = {
+                    timestamp,
                     memKey: ci,
                     trxAmt: amount,
                     partnerTrxNo: trx_id,
                 }
                 console.log(getDefaultHeader(dns_data, pay_type,))
                 let { data: response } = await axios.post(`${API_URL}/v1/merchant/settle/member/request/amt`, query, {
-                    headers: getDefaultHeader(dns_data, pay_type,)
+                    headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
                 if (response?.code != 200) {
                     return {
@@ -508,12 +536,14 @@ export const icbApi = {
                     ci,
                     tid,
                 } = data;
+                let timestamp = await returnMoment().replaceAll(' ', '').replaceAll('-', '').replaceAll(':', '')
                 let query = {
+                    timestamp,
                     memKey: ci,
                     partnerTrxNos: tid,
                 }
                 let { data: response } = await axios.post(`${API_URL}/v1/merchant/settle/member/inquiry`, query, {
-                    headers: getDefaultHeader(dns_data, pay_type,)
+                    headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
                 let status = 10;
                 let result = response?.data?.result[0];
@@ -559,12 +589,16 @@ export const icbApi = {
                 pay_type,
                 ci,
             } = data;
+            let timestamp = await returnMoment().replaceAll(' ', '').replaceAll('-', '').replaceAll(':', '')
             let query = {
+                timestamp,
                 memKey: ci,
             }
             let { data: response } = await axios.post(`${API_URL}/v1/merchant/member/quit`, query, {
-                headers: getDefaultHeader(dns_data, pay_type,)
+                headers: getDefaultHeader(dns_data, pay_type, timestamp)
             });
+            console.log(response)
+
             if (response?.code != 200) {
                 return {
                     code: -100,
