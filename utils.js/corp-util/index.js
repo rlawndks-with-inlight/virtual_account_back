@@ -563,6 +563,9 @@ const corpApi = {
             if (corp_type == 1) {
                 result = await banknersApi.mcht.withdraw_request(data);
             }
+            if (corp_type == 7) {
+                result = await icbApi.mcht.withdraw_request(data);
+            }
             return result;
         },
     },

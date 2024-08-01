@@ -241,7 +241,8 @@ const withdrawCtrl = {
                 return lowLevelException(req, res);
             }
             const {
-                withdraw_amount, pay_type = 10, note = ""
+                withdraw_amount, pay_type = 10, note = "",
+                is_deposit = 0,
             } = req.body;
 
             let data = await getMotherDeposit(decode_dns);
@@ -251,6 +252,10 @@ const withdrawCtrl = {
             if (decode_dns?.parent_id > 0) {
                 return response(req, res, -100, "출금 실패 A", false)
             }
+            let trx_id = `${decode_dns?.id}${new Date().getTime()}`;
+            let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
+            dns_data = dns_data?.result[0];
+            dns_data['setting_obj'] = JSON.parse(dns_data?.setting_obj ?? '{}');
             let deposit_obj = {
                 brand_id: decode_dns?.id,
                 pay_type,
@@ -300,6 +305,8 @@ const withdrawCtrl = {
                     decode_user: {},
                     guid: data?.brand?.withdraw_guid,
                     amount: withdraw_amount,
+                    is_deposit,
+                    trx_id,
                 })
                 if (api_withdraw_request_result.code != 100) {
                     return response(req, res, -100, (api_withdraw_request_result?.message || "서버 에러 발생"), api_withdraw_request_result?.data)
@@ -311,7 +318,39 @@ const withdrawCtrl = {
                 trx_id: api_withdraw_request_result.data?.tid,
                 top_office_amount: api_withdraw_request_result.data?.top_amount ?? 0,
             }, withdraw_id);
+            let tid = api_withdraw_request_result.data?.tid;
 
+            if ([2, 5, 7].includes(dns_data?.withdraw_corp_type)) {
+                for (var i = 0; i < 3; i++) {
+                    let api_result2 = await corpApi.withdraw.request_check({
+                        pay_type: 'withdraw',
+                        dns_data: dns_data,
+                        decode_user: {},
+                        date: returnMoment().substring(0, 10).replaceAll('-', ''),
+                        tid,
+                    })
+                    let status = 0;
+                    if (api_result2.data?.status == 3) {
+                        status = 10;
+                    } else if (api_result2.data?.status == 6) {
+                        continue;
+                    }
+                    if (api_result2.code == 100 || status == 10) {
+                        let update_obj = {
+                            withdraw_status: status,
+                            amount: deposit_obj?.expect_amount,
+                        }
+                        if (status == 0) {
+                            update_obj = {
+                                ...update_obj,
+                            }
+                        }
+
+                        let result = await updateQuery(`deposits`, update_obj, withdraw_id)
+                        break;
+                    }
+                }
+            }
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)

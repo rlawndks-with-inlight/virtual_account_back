@@ -37,7 +37,6 @@ export const icbApi = {
                 let { data: response } = await axios.post(`${API_URL}/v1/merchant/settle/balance/getInfo`, query, {
                     headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
-                console.log(response)
                 if (response?.code != 200) {
                     return {
                         code: -100,
@@ -578,6 +577,51 @@ export const icbApi = {
                     data: {
 
                     },
+                };
+
+            }
+        },
+    },
+    mcht: {
+        withdraw_request: async (data) => {//모계좌출금
+            try {
+                let {
+                    dns_data,
+                    pay_type,
+                    trx_id,
+                    amount,
+                    is_deposit,//보류금인지
+                } = data;
+                let timestamp = await returnMoment().replaceAll(' ', '').replaceAll('-', '').replaceAll(':', '')
+                let query = {
+                    timestamp,
+                    trxAmt: amount,
+                    partnerTrxNo: trx_id,
+                }
+                let { data: response } = await axios.post(`${API_URL}/v1/merchant/settle/request${is_deposit == 1 ? '/deposit' : ''}/amt`, query, {
+                    headers: getDefaultHeader(dns_data, pay_type, timestamp)
+                });
+                if (response?.code != 200) {
+                    return {
+                        code: -100,
+                        message: response?.message,
+                        data: {},
+                    };
+                }
+                return {
+                    code: 100,
+                    message: response?.message,
+                    data: {
+                        tid: response?.data?.partnerTrxNo,
+                    },
+                };
+
+            } catch (err) {
+                console.log(err)
+                return {
+                    code: -200,
+                    message: '',
+                    data: {},
                 };
 
             }
