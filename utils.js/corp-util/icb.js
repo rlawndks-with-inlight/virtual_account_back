@@ -2,7 +2,7 @@ import axios from "axios";
 import { returnMoment } from "../function.js";
 import crypto from 'crypto';
 
-const API_URL = process.env.API_ENV == 'production' ? "https://www.i-connect.co.kr" : "https://testwww.i-connect.co.kr";
+const API_URL = process.env.NODE_ENV == 'production' ? "https://www.i-connect.co.kr" : "https://testwww.i-connect.co.kr";
 
 const getDefaultHeader = (dns_data, pay_type, timestamp) => {
     let mid = dns_data[`${pay_type}_api_id`];
