@@ -62,11 +62,6 @@ const authCtrl = {
                     // return response(req, res, -150, "권한이 없습니다.", {})
                 }
             }
-            let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${user?.id} AND is_delete=0`);
-            ip_list = ip_list?.result;
-            if (user?.level < 50 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp)) && ip_list.length > 0) {
-                return response(req, res, -150, "권한이 없습니다.", {})
-            }
 
             if (is_manager && user.level <= 0) {
                 return response(req, res, -100, "가입되지 않은 회원입니다.", {})
@@ -90,6 +85,7 @@ const authCtrl = {
                 let add_login_fail_count = await updateQuery(`users`, login_fail_obj, user?.id);
                 return response(req, res, -100, err_message, {});
             }
+
             if (dns_data?.is_use_otp == 1 && user?.level < 45) {
                 let otp_token = '';
                 if (!otp_num) {
@@ -113,7 +109,11 @@ const authCtrl = {
                     return response(req, res, -100, "OTP번호가 잘못되었습니다.", {})
                 }
             }
-
+            let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${user?.id} AND is_delete=0`);
+            ip_list = ip_list?.result;
+            if (user?.level < 50 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp)) && ip_list.length > 0) {
+                return response(req, res, -150, "권한이 없습니다.", {})
+            }
             let user_obj = {
                 id: user.id,
                 user_name: user.user_name,
