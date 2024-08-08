@@ -58,6 +58,7 @@ const memberCtrl = {
                 values.push(ci)
             }
             sql += ` AND ${table_name}.brand_id=${decode_dns?.id} `;
+            console.log(sql)
             let data = await pool.query(sql, values)
             data = data?.result[0];
             return response(req, res, 100, "success", data)
