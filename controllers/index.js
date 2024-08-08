@@ -23,7 +23,7 @@ import gitCtrl from './git.controller.js';
 import blackListCtrl from './black_list.controller.js';
 import phoneAuthHistoryCtrl from './phone_auth_history.controller.js';
 import depositAccountCtrl from './deposit_account.controller.js';
-import memberCtrl from './mamber.controller.js';
+import memberCtrl from './member.controller.js';
 
 export {
     brandCtrl,

@@ -15,6 +15,7 @@ const userCtrl = {
             const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
             const { level, level_list = [], search } = req.query;
+            let table = decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account' : 'member'
             let columns = [
                 `${table_name}.profile_img`,
                 `${table_name}.user_name`,
@@ -40,19 +41,20 @@ const userCtrl = {
             ]
             if (decode_dns?.withdraw_type == 0) {
                 columns = [...columns, ...[
-                    `virtual_accounts.guid`,
+                    `${table}s.guid`,
                     `virtual_accounts.virtual_bank_code`,
                     `virtual_accounts.virtual_acct_num`,
                     `virtual_accounts.virtual_acct_name`,
-                    `virtual_accounts.deposit_bank_code AS settle_bank_code`,
-                    `virtual_accounts.deposit_acct_num AS settle_acct_num`,
-                    `virtual_accounts.deposit_acct_name AS settle_acct_name`,
+                    `${table}s.deposit_bank_code AS settle_bank_code`,
+                    `${table}s.deposit_acct_num AS settle_acct_num`,
+                    `${table}s.deposit_acct_name AS settle_acct_name`,
                 ]]
             }
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
             sql += ` LEFT JOIN merchandise_columns ON merchandise_columns.mcht_id=${table_name}.id `;
             sql += ` LEFT JOIN brands ON brands.id=${table_name}.brand_id `;
             sql += ` LEFT JOIN virtual_accounts ON ${table_name}.virtual_account_id=virtual_accounts.id `;
+            sql += ` LEFT JOIN members ON ${table_name}.member_id=members.id `;
             let operator_list = decode_dns?.operator_list;
             for (var i = 0; i < operator_list.length; i++) {
                 columns.push(`merchandise_columns.sales${operator_list[i]?.num}_id`);
@@ -157,16 +159,17 @@ const userCtrl = {
                 return lowLevelException(req, res);
             }
             const { id } = req.params;
+            let table = decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account' : 'member'
             let columns = [
                 `${table_name}.*`,
                 `merchandise_columns.mcht_fee`,
-                `virtual_accounts.guid`,
+                `${table}s.guid`,
                 `virtual_accounts.virtual_bank_code`,
                 `virtual_accounts.virtual_acct_num`,
                 `virtual_accounts.virtual_acct_name`,
-                `virtual_accounts.deposit_bank_code AS settle_bank_code`,
-                `virtual_accounts.deposit_acct_num AS settle_acct_num`,
-                `virtual_accounts.deposit_acct_name AS settle_acct_name`,
+                `${table}s.deposit_bank_code AS settle_bank_code`,
+                `${table}s.deposit_acct_num AS settle_acct_num`,
+                `${table}s.deposit_acct_name AS settle_acct_name`,
             ]
             let operator_list = decode_dns?.operator_list;
             for (var i = 0; i < operator_list.length; i++) {
@@ -178,6 +181,7 @@ const userCtrl = {
             let sql = `SELECT ${columns.join()} FROM ${table_name} `;
             sql += ` LEFT JOIN merchandise_columns ON merchandise_columns.mcht_id=${table_name}.id `;
             sql += ` LEFT JOIN virtual_accounts ON ${table_name}.virtual_account_id=virtual_accounts.id `;
+            sql += ` LEFT JOIN members ON ${table_name}.member_id=members.id `;
             sql += ` WHERE ${table_name}.id=${id} AND (level < ${decode_user?.level} OR ${table_name}.id=${decode_user?.id})  `;
             let data = await pool.query(sql)
             data = data?.result[0];
@@ -334,14 +338,15 @@ const userCtrl = {
                 can_return
             };
             if (guid) {
-                let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE guid=? AND brand_id=${decode_dns?.id}`, [guid]);
+                let table = decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account' : 'member'
+                let virtual_account = await pool.query(`SELECT * FROM ${table}s WHERE guid=? AND brand_id=${decode_dns?.id}`, [guid]);
                 virtual_account = virtual_account?.result[0];
                 if (!virtual_account) {
-                    return response(req, res, -100, "가상계좌가 존재하지 않습니다.", false)
+                    return response(req, res, -100, "guid가 존재하지 않습니다.", false)
                 }
-                obj['virtual_account_id'] = virtual_account?.id;
+                obj[`${table}_id`] = virtual_account?.id;
             } else {
-                obj['virtual_account_id'] = 0;
+                obj[`${table}_id`]
             }
             if (children_brand_dns) {
                 let children_brand = await pool.query(`SELECT * FROM brands WHERE dns=?`, [children_brand_dns]);
@@ -426,7 +431,7 @@ const userCtrl = {
             };
             obj = { ...obj, ...files };
             if (guid) {
-                let table = decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account' : 'mamber'
+                let table = decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account' : 'member'
                 let virtual_account = await pool.query(`SELECT * FROM ${table}s WHERE guid=? AND brand_id=${decode_dns?.id}`, [guid]);
                 virtual_account = virtual_account?.result[0];
                 if (!virtual_account) {
