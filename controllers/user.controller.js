@@ -337,8 +337,8 @@ const userCtrl = {
                 withdraw_bank_code, withdraw_acct_num, withdraw_acct_name, telegram_chat_ids, otp_token, sign_key, deposit_noti_url, withdraw_noti_url,
                 can_return
             };
+            let table = decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account' : 'member'
             if (guid) {
-                let table = decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account' : 'member'
                 let virtual_account = await pool.query(`SELECT * FROM ${table}s WHERE guid=? AND brand_id=${decode_dns?.id}`, [guid]);
                 virtual_account = virtual_account?.result[0];
                 if (!virtual_account) {
@@ -430,8 +430,8 @@ const userCtrl = {
                 can_return,
             };
             obj = { ...obj, ...files };
+            let table = decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account' : 'member'
             if (guid) {
-                let table = decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account' : 'member'
                 let virtual_account = await pool.query(`SELECT * FROM ${table}s WHERE guid=? AND brand_id=${decode_dns?.id}`, [guid]);
                 virtual_account = virtual_account?.result[0];
                 if (!virtual_account) {
