@@ -36,6 +36,7 @@ const domainCtrl = {
                 'withdraw_head_office_fee',
                 'deposit_head_office_fee',
                 'deposit_corp_type',
+                'deposit_type',
                 'api_key',
                 'virtual_account_id',
                 'withdraw_type',

@@ -426,14 +426,15 @@ const userCtrl = {
             };
             obj = { ...obj, ...files };
             if (guid) {
-                let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE guid=? AND brand_id=${decode_dns?.id}`, [guid]);
+                let table = decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account' : 'mamber'
+                let virtual_account = await pool.query(`SELECT * FROM ${table}s WHERE guid=? AND brand_id=${decode_dns?.id}`, [guid]);
                 virtual_account = virtual_account?.result[0];
                 if (!virtual_account) {
-                    return response(req, res, -100, "가상계좌가 존재하지 않습니다.", false)
+                    return response(req, res, -100, "guid가 존재하지 않습니다.", false)
                 }
-                obj['virtual_account_id'] = virtual_account?.id;
+                obj[`${table}_id`] = virtual_account?.id;
             } else {
-                obj['virtual_account_id'] = 0;
+                obj[`${table}_id`]
             }
             if (children_brand_dns) {
                 let children_brand = await pool.query(`SELECT * FROM brands WHERE dns=?`, [children_brand_dns]);

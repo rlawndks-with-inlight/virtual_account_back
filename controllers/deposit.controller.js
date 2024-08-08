@@ -45,10 +45,14 @@ const depositCtrl = {
                 `users.user_name`,
                 `users.nickname`,
                 `users.level`,
+                `members.guid AS member_guid`,
+                `members.name AS member_name`,
+                `members.phone_num AS member_phone_num`,
             ]
 
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
             sql += ` LEFT JOIN virtual_accounts ON ${table_name}.virtual_account_id=virtual_accounts.id `;
+            sql += ` LEFT JOIN members ON ${table_name}.member_id=members.id `;
             if (decode_dns?.is_use_corp_account == 1) {
                 columns.push(`corp_accounts.bank_code AS corp_bank_code`)
                 columns.push(`corp_accounts.acct_num AS corp_acct_num`)

@@ -401,7 +401,7 @@ const withdrawCtrl = {
             if (!user) {
                 return response(req, res, -100, "잘못된 유저 입니다.", false)
             }
-            let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE id=${withdraw?.virtual_account_id}`);
+            let virtual_account = await pool.query(`SELECT * FROM ${decode_dns?.deposit_type == 'virtual_account' ? 'virtual_accounts' : 'members'} WHERE id=${withdraw[`${decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account_id' : 'member_id'}`]}`);
             virtual_account = virtual_account?.result[0];
 
             let return_time = returnMoment().substring(11, 16);
@@ -530,7 +530,7 @@ const withdrawCtrl = {
             if (!user) {
                 return response(req, res, -100, "잘못된 유저 입니다.", false)
             }
-            let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE id=${withdraw?.virtual_account_id}`);
+            let virtual_account = await pool.query(`SELECT * FROM ${decode_dns?.deposit_type == 'virtual_account' ? 'virtual_accounts' : 'members'} WHERE id=${withdraw[`${decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account_id' : 'member_id'}`]}`);
             virtual_account = virtual_account?.result[0];
             let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
             dns_data = dns_data?.result[0];
@@ -599,7 +599,7 @@ const withdrawCtrl = {
             if (!user) {
                 return response(req, res, -100, "잘못된 유저 입니다.", false)
             }
-            let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE id=${withdraw?.virtual_account_id}`);
+            let virtual_account = await pool.query(`SELECT * FROM ${decode_dns?.deposit_type == 'virtual_account' ? 'virtual_accounts' : 'members'} WHERE id=${withdraw[`${decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account_id' : 'member_id'}`]}`);
             virtual_account = virtual_account?.result[0];
             let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
             dns_data = dns_data?.result[0];
@@ -623,7 +623,8 @@ const withdrawCtrl = {
                 })
                 let obj = {
                     brand_id: decode_dns?.id,
-                    virtual_account_id: virtual_account?.id,
+                    virtual_account_id: decode_dns?.deposit_type == 'virtual_account' ? virtual_account?.id : null,
+                    member_id: decode_dns?.deposit_type == 'virtual_account' ? null : virtual_account?.id,
                     amount,
                     expect_amount: amount,
                     deposit_bank_code: virtual_account?.deposit_bank_code,
@@ -697,7 +698,7 @@ const withdrawCtrl = {
             if (!user) {
                 return response(req, res, -100, "잘못된 유저 입니다.", false)
             }
-            let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE id=${withdraw?.virtual_account_id}`);
+            let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE id=${withdraw[`${decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account_id' : 'member_id'}`]}`);
             virtual_account = virtual_account?.result[0];
             let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
             dns_data = dns_data?.result[0];

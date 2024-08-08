@@ -22,6 +22,7 @@ import gitRoutes from './git.route.js';
 import blackListRoutes from './black_list.route.js';
 import phoneAuthHistoryRoutes from './phone_auth_history.route.js';
 import depositAccountRoutes from './deposit_account.route.js';
+import memberRoutes from './member.route.js';
 
 const router = express.Router(); // eslint-disable-line new-cap
 
@@ -43,6 +44,7 @@ router.use('/brand-pays', brandPayRoutes);
 router.use('/reserves', reserveRoutes);
 router.use('/black-lists', blackListRoutes);
 router.use('/phone-auth-histories', phoneAuthHistoryRoutes);
+router.use('/members', memberRoutes);
 
 
 //auth
