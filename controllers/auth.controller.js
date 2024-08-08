@@ -332,6 +332,7 @@ const authCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = await checkLevel(req.cookies.token, is_manager ? 1 : 0);
             const decode_dns = checkDns(req.cookies.dns);
+            let table = decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account' : 'member'
             let deposit_column = [
                 `users.id`,
                 `users.user_name`,
@@ -348,13 +349,13 @@ const authCtrl = {
                 `users.can_return`,
                 `users.withdraw_fee`,
                 `users.min_withdraw_hold_price`,
-                `virtual_accounts.guid`,
+                `${table}s.guid`,
                 `virtual_accounts.virtual_bank_code`,
                 `virtual_accounts.virtual_acct_num`,
                 `virtual_accounts.virtual_acct_name`,
-                `virtual_accounts.deposit_bank_code AS settle_bank_code`,
-                `virtual_accounts.deposit_acct_num AS settle_acct_num`,
-                `virtual_accounts.deposit_acct_name AS settle_acct_name`,
+                `${table}s.deposit_bank_code AS settle_bank_code`,
+                `${table}s.deposit_acct_num AS settle_acct_num`,
+                `${table}s.deposit_acct_name AS settle_acct_name`,
             ];
             if (decode_user?.level >= 40) {
                 return response(req, res, 100, "success", {})
@@ -368,6 +369,7 @@ const authCtrl = {
                     }
                     let deposit_sql = ` SELECT ${deposit_column.join()} FROM users `;
                     deposit_sql += ` LEFT JOIN virtual_accounts ON users.virtual_account_id=virtual_accounts.id `;
+                    deposit_sql += ` LEFT JOIN members ON users.member_id=members.id `;
                     deposit_sql += ` WHERE users.id=${decode_user?.id} `;
                     let deposit = await pool.query(deposit_sql);
                     deposit = deposit?.result[0];
