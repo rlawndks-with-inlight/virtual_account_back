@@ -476,11 +476,6 @@ const virtualAccountCtrl = {
             }
             let virtual_account = await pool.query(`SELECT * FROM ${table_name} WHERE id=${virtual_account_id}`);
             virtual_account = virtual_account?.result[0];
-            let is_not_confirm_deposit = await pool.query(`SELECT id FROM deposits WHERE virtual_account_id=${virtual_account_id} AND pay_type=0 AND deposit_status=5`);
-            is_not_confirm_deposit = is_not_confirm_deposit?.result[0];
-            if (is_not_confirm_deposit) {
-                return response(req, res, -100, "아직 완료되지 않은 입금건이 있습니다.", false)
-            }
             let trx_id = `${decode_dns?.id}${decode_user?.id ?? generateRandomString(6)}${new Date().getTime()}`;
             let result = await insertQuery(`deposits`, {
                 brand_id: decode_dns?.id,
