@@ -4,7 +4,7 @@ import db, { pool } from "../config/db.js";
 import corpApi from "../utils.js/corp-util/index.js";
 import { checkIsManagerUrl, returnMoment } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, makeSearchQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
-import { checkDns, checkLevel, isItemBrandIdSameDnsId, lowLevelException, response, settingFiles } from "../utils.js/util.js";
+import { checkDns, checkLevel, generateRandomString, isItemBrandIdSameDnsId, lowLevelException, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 import when from "when";
 const table_name = 'virtual_accounts';
@@ -470,15 +470,13 @@ const virtualAccountCtrl = {
             const {
                 virtual_account_id, amount,
             } = req.body;
-            if (!decode_user) {
-                return lowLevelException(req, res);
-            }
+
             if (!(amount > 0)) {
                 return response(req, res, -100, "입금예정액은 0원보다 커야합니다.", false)
             }
             let virtual_account = await pool.query(`SELECT * FROM ${table_name} WHERE id=${virtual_account_id}`);
             virtual_account = virtual_account?.result[0];
-            let trx_id = `${decode_dns?.id}${decode_user?.id}${new Date().getTime()}`;
+            let trx_id = `${decode_dns?.id}${decode_user?.id ?? generateRandomString(6)}${new Date().getTime()}`;
             let result = await insertQuery(`deposits`, {
                 brand_id: decode_dns?.id,
                 mcht_id: virtual_account?.mcht_id,
