@@ -476,6 +476,7 @@ const virtualAccountCtrl = {
             }
             let virtual_account = await pool.query(`SELECT * FROM ${table_name} WHERE id=${virtual_account_id}`);
             virtual_account = virtual_account?.result[0];
+
             let trx_id = `${decode_dns?.id}${decode_user?.id ?? generateRandomString(6)}${new Date().getTime()}`;
             let result = await insertQuery(`deposits`, {
                 brand_id: decode_dns?.id,
