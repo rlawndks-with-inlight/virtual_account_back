@@ -30,6 +30,9 @@ const depositCtrl = {
                 `${table_name}.trx_id`,
                 `virtual_accounts.virtual_acct_num`,
                 `virtual_accounts.virtual_user_name`,
+                `virtual_accounts.deposit_bank_code`,
+                `virtual_accounts.deposit_acct_num`,
+                `virtual_accounts.deposit_acct_name`,
             ]
             let columns = [
                 `${table_name}.*`,
