@@ -28,8 +28,25 @@ const withdrawCtrl = {
                 `${table_name}.settle_acct_name`,
                 `${table_name}.trx_id`,
             ]
+            let default_columns = [
+                `${table_name}.id`,
+                `${table_name}.created_at`,
+                `${table_name}.pay_type`,
+                `${table_name}.note`,
+                `${table_name}.virtual_acct_balance`,
+                `${table_name}.amount`,
+                `${table_name}.expect_amount`,
+                `${table_name}.trx_id`,
+                `${table_name}.settle_bank_code`,
+                `${table_name}.settle_acct_num`,
+                `${table_name}.settle_acct_name`,
+                `${table_name}.withdraw_fee`,
+                `${table_name}.withdraw_status`,
+                `${table_name}.is_withdraw_hold`,
+                `${table_name}.is_hand`,
+            ]
             let columns = [
-                `${table_name}.*`,
+                ...default_columns,
                 `users.user_name`,
                 `users.nickname`,
                 `users.level`,

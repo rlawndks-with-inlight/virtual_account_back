@@ -21,6 +21,7 @@ const depositCtrl = {
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
+            let operator_list = getOperatorList(decode_dns);
 
             let search_columns = [
                 `users.user_name`,
@@ -34,31 +35,74 @@ const depositCtrl = {
                 `virtual_accounts.deposit_acct_num`,
                 `virtual_accounts.deposit_acct_name`,
             ]
+            let default_columns = [
+                `${table_name}.id`,
+                `${table_name}.is_cancel`,
+                `${table_name}.created_at`,
+                `${table_name}.pay_type`,
+                `${table_name}.note`,
+                `${table_name}.virtual_acct_num`,
+                `${table_name}.virtual_acct_balance`,
+                `${table_name}.amount`,
+                `${table_name}.expect_amount`,
+                `${table_name}.corp_account_balance`,
+                `${table_name}.trx_id`,
+                `${table_name}.head_office_fee`,
+                `${table_name}.head_office_amount`,
+                `${table_name}.mcht_fee`,
+                `${table_name}.mcht_amount`,
+                ...operator_list.map(oper => {
+                    return [
+                        `${table_name}.sales${oper.num}_fee`,
+                        `${table_name}.sales${oper.num}_amount`,
+                    ]
+                }).flat(),
+                `${table_name}.deposit_bank_code`,
+                `${table_name}.deposit_detail`,
+                `${table_name}.deposit_acct_num`,
+                `${table_name}.deposit_fee`,
+                `${table_name}.deposit_status`,
+                `${table_name}.withdraw_fee`,
+                `${table_name}.is_check_user`,
+                `${table_name}.is_type_withdraw_acct`,
+                `${table_name}.trans_date`,
+                `${table_name}.trans_time`,
+                `${table_name}.gift_card_code`,
+            ]
             let columns = [
-                `${table_name}.*`,
-                `CASE WHEN ${table_name}.virtual_account_id > 0  THEN virtual_accounts.virtual_bank_code ELSE ${table_name}.virtual_bank_code END AS virtual_bank_code`,
-                `CASE WHEN ${table_name}.virtual_account_id > 0  THEN virtual_accounts.virtual_acct_num ELSE ${table_name}.virtual_acct_num END AS virtual_acct_num`,
-                `CASE WHEN ${table_name}.virtual_account_id > 0  THEN virtual_accounts.virtual_acct_name ELSE ${table_name}.virtual_acct_name END AS virtual_acct_name`,
-                `virtual_accounts.birth AS virtual_birth`,
-                `virtual_accounts.created_at AS virtual_created_at`,
-                `virtual_accounts.virtual_user_name AS virtual_user_name`,
-                `virtual_accounts.deposit_bank_code AS virtual_deposit_bank_code`,
-                `virtual_accounts.deposit_acct_num AS virtual_deposit_acct_num`,
-                `virtual_accounts.deposit_acct_name AS virtual_deposit_acct_name`,
+                ...default_columns,
                 `mchts.user_name AS mcht_user_name`,
                 `mchts.nickname AS mcht_nickname`,
                 `mchts.brand_id AS mcht_brand_id`,
                 `users.user_name`,
                 `users.nickname`,
                 `users.level`,
-                `members.guid AS member_guid`,
-                `members.name AS member_name`,
-                `members.phone_num AS member_phone_num`,
             ]
 
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
-            sql += ` LEFT JOIN virtual_accounts ON ${table_name}.virtual_account_id=virtual_accounts.id `;
-            sql += ` LEFT JOIN members ON ${table_name}.member_id=members.id `;
+            if (decode_dns?.deposit_type == 'gift_card') {
+                sql += ` LEFT JOIN members ON ${table_name}.member_id=members.id `;
+                columns = [
+                    ...columns,
+                    `members.guid AS member_guid`,
+                    `members.name AS member_name`,
+                    `members.phone_num AS member_phone_num`,
+                ]
+            } else if (decode_dns?.deposit_type == 'virtual_account') {
+                sql += ` LEFT JOIN virtual_accounts ON ${table_name}.virtual_account_id=virtual_accounts.id `;
+                columns = [
+                    ...columns,
+                    `CASE WHEN ${table_name}.virtual_account_id > 0  THEN virtual_accounts.virtual_bank_code ELSE ${table_name}.virtual_bank_code END AS virtual_bank_code`,
+                    `CASE WHEN ${table_name}.virtual_account_id > 0  THEN virtual_accounts.virtual_acct_num ELSE ${table_name}.virtual_acct_num END AS virtual_acct_num`,
+                    `CASE WHEN ${table_name}.virtual_account_id > 0  THEN virtual_accounts.virtual_acct_name ELSE ${table_name}.virtual_acct_name END AS virtual_acct_name`,
+                    `virtual_accounts.birth AS virtual_birth`,
+                    `virtual_accounts.created_at AS virtual_created_at`,
+                    `virtual_accounts.virtual_user_name AS virtual_user_name`,
+                    `virtual_accounts.deposit_bank_code AS virtual_deposit_bank_code`,
+                    `virtual_accounts.deposit_acct_num AS virtual_deposit_acct_num`,
+                    `virtual_accounts.deposit_acct_name AS virtual_deposit_acct_name`,
+                ]
+            }
             if (decode_dns?.is_use_corp_account == 1) {
                 columns.push(`corp_accounts.bank_code AS corp_bank_code`)
                 columns.push(`corp_accounts.acct_num AS corp_acct_num`)
@@ -106,7 +150,6 @@ const depositCtrl = {
                     where_sql += ` AND ${table_name}.sales${sales_num}_id=${decode_user?.id} `;
                 }
             }
-            let operator_list = getOperatorList(decode_dns);
             for (var i = 0; i < operator_list.length; i++) {
                 if (req.query[`sales${operator_list[i]?.num}_id`] > 0) {
                     where_sql += ` AND ${table_name}.sales${operator_list[i]?.num}_id=${req.query[`sales${operator_list[i]?.num}_id`]} `;
