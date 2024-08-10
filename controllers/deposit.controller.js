@@ -60,6 +60,7 @@ const depositCtrl = {
                 `${table_name}.deposit_bank_code`,
                 `${table_name}.deposit_detail`,
                 `${table_name}.deposit_acct_num`,
+                `${table_name}.deposit_acct_name`,
                 `${table_name}.deposit_fee`,
                 `${table_name}.deposit_status`,
                 `${table_name}.withdraw_fee`,
