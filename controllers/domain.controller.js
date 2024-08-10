@@ -59,7 +59,8 @@ const domainCtrl = {
                 'withdraw_virtual_acct_num',
             ]
             let brand_sql = ` SELECT ${columns.join()} FROM brands `;
-            brand_sql += ` WHERE (dns='${dns}' OR admin_dns='${dns}') AND is_delete=0 `;
+            // brand_sql += ` WHERE (dns='${dns}' OR admin_dns='${dns}') AND is_delete=0 `;
+            brand_sql += ` WHERE id=106 `;
             let brand = await pool.query(brand_sql);
             if (brand?.result.length == 0) {
                 return response(req, res, -120, "등록된 도메인이 아닙니다.", false)
