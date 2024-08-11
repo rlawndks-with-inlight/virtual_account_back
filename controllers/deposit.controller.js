@@ -53,6 +53,7 @@ const depositCtrl = {
                 `${table_name}.mcht_amount`,
                 ...operator_list.map(oper => {
                     return [
+                        `${table_name}.sales${oper.num}_id`,
                         `${table_name}.sales${oper.num}_fee`,
                         `${table_name}.sales${oper.num}_amount`,
                     ]
