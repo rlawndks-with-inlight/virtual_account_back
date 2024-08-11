@@ -461,18 +461,16 @@ export const sendNotiPush = async (user = {}, pay_type, data = {}, id) => {
 }
 export const getMotherDeposit = async (decode_dns, type = 'all') => {
 
+    let table = decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account' : 'member'
     let brand_columns = [
         `brands.*`,
-        `virtual_accounts.guid`,
-        `virtual_accounts.virtual_bank_code`,
-        `virtual_accounts.virtual_acct_num`,
-        `virtual_accounts.virtual_acct_name`,
-        `virtual_accounts.deposit_bank_code AS settle_bank_code`,
-        `virtual_accounts.deposit_acct_num AS settle_acct_num`,
-        `virtual_accounts.deposit_acct_name AS settle_acct_name`,
+        `${table}s.guid`,
+        `${table}s.deposit_bank_code AS settle_bank_code`,
+        `${table}s.deposit_acct_num AS settle_acct_num`,
+        `${table}s.deposit_acct_name AS settle_acct_name`,
     ]
     let brand_sql = `SELECT ${brand_columns.join()} FROM brands `;
-    brand_sql += ` LEFT JOIN virtual_accounts ON brands.virtual_account_id=virtual_accounts.id `;
+    brand_sql += ` LEFT JOIN ${table}s ON brands.${table}_id=${table}s.id `;
     brand_sql += ` WHERE brands.id=${decode_dns?.id} `;
 
     let operator_list = getOperatorList(decode_dns);
