@@ -202,17 +202,17 @@ const brandCtrl = {
 
             let ago_brand = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id}`);
             ago_brand = ago_brand?.result[0];
-
+            let table = decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account' : 'member'
             if (guid) {
-                let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE guid=? AND brand_id=${id}`, [guid]);
+                let virtual_account = await pool.query(`SELECT * FROM ${table}s WHERE guid=? AND brand_id=${id}`, [guid]);
                 virtual_account = virtual_account?.result[0];
                 if (!virtual_account) {
                     await db.rollback();
                     return response(req, res, -100, "가상계좌가 존재하지 않습니다.", false)
                 }
-                obj['virtual_account_id'] = virtual_account?.id;
+                obj[`${table}_id`] = virtual_account?.id;
             } else {
-                obj['virtual_account_id'] = 0;
+                obj[`${table}_id`] = null;
             }
 
             if (deposit_noti_url != ago_brand?.deposit_noti_url && deposit_noti_url) {
