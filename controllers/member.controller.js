@@ -57,7 +57,7 @@ const memberCtrl = {
                 sql += ` WHERE ${table_name}.ci=? `;
                 values.push(ci.replaceAll(' ', '+'))
             } else if (name && phone_num) {
-                sql += ` WHERE ${table_name}.name=? AND ${table_name}.phone_num=? AND `;
+                sql += ` WHERE ${table_name}.name=? AND ${table_name}.phone_num=? `;
                 values.push(name)
                 values.push(phone_num)
             }
