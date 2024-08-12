@@ -46,7 +46,7 @@ const memberCtrl = {
             const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
             const { id } = req.params;
-            const { ci = "" } = req.query;
+            const { ci = "", name, phone_num, mid, } = req.query;
             let values = [];
             let sql = ` SELECT ${table_name}.*, users.mid FROM ${table_name} `;
             sql += ` LEFT JOIN users ON ${table_name}.mcht_id=users.id `;
@@ -56,6 +56,10 @@ const memberCtrl = {
             } else if (ci) {
                 sql += ` WHERE ${table_name}.ci=? `;
                 values.push(ci.replaceAll(' ', '+'))
+            } else if (name && phone_num) {
+                sql += ` WHERE ${table_name}.name=? AND ${table_name}.phone_num=? AND `;
+                values.push(name)
+                values.push(phone_num)
             }
             sql += ` AND ${table_name}.brand_id=${decode_dns?.id} `;
             let data = await pool.query(sql, values)
