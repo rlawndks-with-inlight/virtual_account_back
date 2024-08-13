@@ -540,7 +540,7 @@ const virtualAccountCtrl = {
                     return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
                 }
             }
-            let result2 = await updateQuery(`deposit`, {
+            let result2 = await updateQuery(`deposits`, {
                 is_delete: 1,
                 cancel_trx_id: cancel_trx_id,
             }, id)
