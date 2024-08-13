@@ -551,6 +551,8 @@ const virtualAccountCtrl = {
                         return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
                     }
                 }
+            } else if (trx?.deposit_status == 20) {
+                delete update_obj['cancel_trx_id'];
             }
             let result2 = await updateQuery(`deposits`, update_obj, id)
             return response(req, res, 100, "success", {})
