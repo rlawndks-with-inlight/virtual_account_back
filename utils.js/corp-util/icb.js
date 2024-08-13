@@ -499,17 +499,21 @@ export const icbApi = {
                     headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
                 console.log(response)
+                let obj = {};
                 if (response?.code != 200) {
+                    if (response?.code == 2002) {
+                        obj['is_not_exist_deposit'] = 1
+                    }
                     return {
                         code: -100,
                         message: response?.message,
-                        data: {},
+                        data: obj,
                     };
                 }
                 return {
                     code: 100,
                     message: response?.message,
-                    data: {},
+                    data: obj,
                 };
 
             } catch (err) {

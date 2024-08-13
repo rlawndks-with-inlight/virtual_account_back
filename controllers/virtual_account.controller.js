@@ -529,6 +529,10 @@ const virtualAccountCtrl = {
                 return response(req, res, -100, "존재하지 않는 거래건 입니다.", false)
             }
             let cancel_trx_id = `cancel${decode_dns?.id}${decode_user?.id ?? generateRandomString(6)}${new Date().getTime() % 10000}`;
+            let update_obj = {
+                is_delete: 1,
+                cancel_trx_id: cancel_trx_id,
+            }
             if (trx?.deposit_status == 5) {
                 let api_result = await corpApi.deposit.cancel({
                     pay_type: 'deposit',
@@ -537,13 +541,14 @@ const virtualAccountCtrl = {
                     cancel_trx_id,
                 });
                 if (api_result?.code != 100) {
-                    return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
+                    if (api_result?.data?.is_not_exist_deposit == 1) {
+                        update_obj['deposit_status'] = 20;
+                    } else {
+                        return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
+                    }
                 }
             }
-            let result2 = await updateQuery(`deposits`, {
-                is_delete: 1,
-                cancel_trx_id: cancel_trx_id,
-            }, id)
+            let result2 = await updateQuery(`deposits`, update_obj, id)
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
