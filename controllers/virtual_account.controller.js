@@ -505,6 +505,44 @@ const virtualAccountCtrl = {
 
         }
     },
+    cancelDeposit: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = await checkLevel(req.cookies.token, 10, req);
+            const decode_dns = checkDns(req.cookies.dns);
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
+            const {
+                id,
+            } = req.body;
+
+            let trx = await pool.query(`SELECT * FROM deposits WHERE id=${id}`);
+            trx = trx?.result[0];
+            if (!trx) {
+                return response(req, res, -100, "존재하지 않는 거래건 입니다.", false)
+            }
+            let cancel_trx_id = `cancel${decode_dns?.id}${decode_user?.id ?? generateRandomString(6)}${new Date().getTime()}`;
+            let api_result = await corpApi.deposit.cancel({
+                pay_type: 'deposit',
+                dns_data: decode_dns,
+                trx_id: trx?.trx_id,
+                cancel_trx_id,
+            });
+            if (api_result?.code != 100) {
+                return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
+            }
+            let result = await deleteQuery(`deposits`, {
+                id
+            })
+            return response(req, res, 100, "success", {})
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
 };
 
 export default virtualAccountCtrl;

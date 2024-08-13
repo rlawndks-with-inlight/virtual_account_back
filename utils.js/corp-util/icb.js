@@ -481,6 +481,46 @@ export const icbApi = {
 
             }
         },
+        cancel: async (data) => {
+            try {
+                let {
+                    dns_data,
+                    pay_type,
+                    trx_id,
+                    cancel_trx_id,
+                } = data;
+                let timestamp = await returnMoment().replaceAll(' ', '').replaceAll('-', '').replaceAll(':', '')
+                let query = {
+                    timestamp,
+                    partnerCnclNo: cancel_trx_id,
+                    partnerTrxNo: trx_id,
+                }
+                let { data: response } = await axios.post(`${API_URL}/v1/merchant/payment/cancel`, query, {
+                    headers: getDefaultHeader(dns_data, pay_type, timestamp)
+                });
+                if (response?.code != 200) {
+                    return {
+                        code: -100,
+                        message: response?.message,
+                        data: {},
+                    };
+                }
+                return {
+                    code: 100,
+                    message: response?.message,
+                    data: {},
+                };
+
+            } catch (err) {
+                console.log(err)
+                return {
+                    code: -200,
+                    message: '',
+                    data: {},
+                };
+
+            }
+        },
     },
     withdraw: {
         request: async (data) => {//출금신청
