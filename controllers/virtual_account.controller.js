@@ -531,7 +531,7 @@ const virtualAccountCtrl = {
             if (trx?.deposit_status == 0) {
                 return response(req, res, -100, "이미 완료된 건입니다.", false)
             }
-            let cancel_trx_id = `cancel${decode_dns?.id}${decode_user?.id ?? generateRandomString(6)}${new Date().getTime() % 10000}`;
+            let cancel_trx_id = `cancel${decode_dns?.id}${decode_user?.id ?? generateRandomString(6)}${new Date().getTime() % 1000000}`;
             let update_obj = {
                 is_delete: 1,
                 cancel_trx_id: cancel_trx_id,
