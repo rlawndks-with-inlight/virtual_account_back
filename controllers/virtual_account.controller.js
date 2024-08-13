@@ -532,9 +532,10 @@ const virtualAccountCtrl = {
             if (api_result?.code != 100) {
                 return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
             }
-            let result = await deleteQuery(`deposits`, {
-                id
-            })
+            let result2 = await updateQuery(`deposts`, {
+                is_delete: 1,
+                cancel_trx_id: cancel_trx_id,
+            }, id)
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)

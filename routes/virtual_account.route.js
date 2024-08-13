@@ -34,5 +34,8 @@ router
 router
     .route('/request-deposit')
     .post(virtualAccountCtrl.requestDeposit)
+router
+    .route('/cancel-deposit')
+    .post(virtualAccountCtrl.cancelDeposit)
 
 export default router;
