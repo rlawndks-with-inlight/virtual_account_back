@@ -477,7 +477,9 @@ const virtualAccountCtrl = {
             let virtual_account = await pool.query(`SELECT * FROM ${table_name} WHERE id=${virtual_account_id}`);
             virtual_account = virtual_account?.result[0];
             let is_exist_not_confirm_deposit = await pool.query(`SELECT id FROM deposits WHERE virtual_account_id=${virtual_account_id} AND deposit_status=5 AND is_delete=0`);
+            console.log('#######################')
             console.log(is_exist_not_confirm_deposit)
+            console.log('#######################')
             if (is_exist_not_confirm_deposit) {
                 return response(req, res, -100, "아직 처리되지 않은 건이 있습니다.", false)
             }
