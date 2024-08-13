@@ -529,14 +529,16 @@ const virtualAccountCtrl = {
                 return response(req, res, -100, "존재하지 않는 거래건 입니다.", false)
             }
             let cancel_trx_id = `cancel${decode_dns?.id}${decode_user?.id ?? generateRandomString(6)}${new Date().getTime()}`;
-            let api_result = await corpApi.deposit.cancel({
-                pay_type: 'deposit',
-                dns_data: decode_dns,
-                trx_id: trx?.trx_id,
-                cancel_trx_id,
-            });
-            if (api_result?.code != 100) {
-                return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
+            if (trx?.deposit_status == 5) {
+                let api_result = await corpApi.deposit.cancel({
+                    pay_type: 'deposit',
+                    dns_data: decode_dns,
+                    trx_id: trx?.trx_id,
+                    cancel_trx_id,
+                });
+                if (api_result?.code != 100) {
+                    return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
+                }
             }
             let result2 = await updateQuery(`deposts`, {
                 is_delete: 1,
