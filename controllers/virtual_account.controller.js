@@ -476,7 +476,10 @@ const virtualAccountCtrl = {
             }
             let virtual_account = await pool.query(`SELECT * FROM ${table_name} WHERE id=${virtual_account_id}`);
             virtual_account = virtual_account?.result[0];
-
+            let is_exist_not_confirm_deposit = await pool.query(`SELECT id FROM deposits WHERE virtual_account_id=${virtual_account_id} AND deposit_status=5 AND is_delete=0`);
+            if (is_exist_not_confirm_deposit) {
+                return response(req, res, -100, "아직 처리되지 않은 건이 있습니다.", false)
+            }
             let trx_id = `${decode_dns?.id}${decode_user?.id ?? generateRandomString(6)}${new Date().getTime()}`;
             let result = await insertQuery(`deposits`, {
                 brand_id: decode_dns?.id,
@@ -484,7 +487,7 @@ const virtualAccountCtrl = {
                 virtual_account_id: virtual_account_id,
                 expect_amount: amount,
                 trx_id,
-                deposit_status: 5,
+                deposit_status: 20,
                 pay_type: 0,
             })
             let api_result = await corpApi.deposit.request({
@@ -497,6 +500,9 @@ const virtualAccountCtrl = {
             if (api_result?.code != 100) {
                 return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
             }
+            let result2 = await updateQuery(`deposits`, {
+                deposit_status: 5
+            }, result?.result?.insertId)
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
