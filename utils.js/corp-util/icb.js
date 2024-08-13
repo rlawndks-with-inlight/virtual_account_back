@@ -498,6 +498,7 @@ export const icbApi = {
                 let { data: response } = await axios.post(`${API_URL}/v1/merchant/payment/cancel`, query, {
                     headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
+                console.log(response)
                 if (response?.code != 200) {
                     return {
                         code: -100,
