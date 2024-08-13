@@ -528,7 +528,7 @@ const virtualAccountCtrl = {
             if (!trx) {
                 return response(req, res, -100, "존재하지 않는 거래건 입니다.", false)
             }
-            let cancel_trx_id = `cancel${decode_dns?.id}${decode_user?.id ?? generateRandomString(6)}${new Date().getTime()}`;
+            let cancel_trx_id = `cancel${decode_dns?.id}${decode_user?.id ?? generateRandomString(6)}${new Date().getTime() % 10000}`;
             if (trx?.deposit_status == 5) {
                 let api_result = await corpApi.deposit.cancel({
                     pay_type: 'deposit',
