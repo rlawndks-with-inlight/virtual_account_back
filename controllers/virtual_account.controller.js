@@ -528,6 +528,9 @@ const virtualAccountCtrl = {
             if (!trx) {
                 return response(req, res, -100, "존재하지 않는 거래건 입니다.", false)
             }
+            if (trx?.deposit_status == 0) {
+                return response(req, res, -100, "이미 완료된 건입니다.", false)
+            }
             let cancel_trx_id = `cancel${decode_dns?.id}${decode_user?.id ?? generateRandomString(6)}${new Date().getTime() % 10000}`;
             let update_obj = {
                 is_delete: 1,
