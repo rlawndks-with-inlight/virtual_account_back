@@ -543,6 +543,7 @@ const virtualAccountCtrl = {
                 if (api_result?.code != 100) {
                     if (api_result?.data?.is_not_exist_deposit == 1) {
                         update_obj['deposit_status'] = 20;
+                        delete update_obj['cancel_trx_id']
                     } else {
                         return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
                     }
