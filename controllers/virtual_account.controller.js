@@ -434,14 +434,15 @@ const virtualAccountCtrl = {
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
+            let table = decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account' : 'member'
             const {
                 virtual_account_id,
                 mcht_id,
             } = req.body;
-            let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE brand_id=${decode_dns?.id} AND id=${virtual_account_id}`);
+            let virtual_account = await pool.query(`SELECT * FROM ${table}s WHERE brand_id=${decode_dns?.id} AND id=${virtual_account_id}`);
             virtual_account = virtual_account?.result[0];
             if (!virtual_account) {
-                return response(req, res, -100, "가상계좌가 존재하지 않습니다.", false)
+                return response(req, res, -100, "정보가 존재하지 않습니다.", false)
             }
             let mcht = await pool.query(`SELECT * FROM users WHERE level=10 AND brand_id=${decode_dns?.id} AND id=?`, [
                 mcht_id,
@@ -450,7 +451,7 @@ const virtualAccountCtrl = {
             if (!mcht) {
                 return response(req, res, -100, "존재하지 않는 가맹점 입니다.", false)
             }
-            let result = await updateQuery(`${table_name}`, {
+            let result = await updateQuery(`${table}s`, {
                 mcht_id: mcht?.id,
             }, virtual_account_id);
 
