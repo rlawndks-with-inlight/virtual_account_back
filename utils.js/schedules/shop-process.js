@@ -52,6 +52,7 @@ const shopProcess = async (params, products = []) => {
             }
             phone_num = '010' + phone_num
         }
+        phone_num = (phone_num ?? "").replaceAll('null', '')
         let random_addr = await shopPool.query(`SELECT * FROM user_addresses ORDER BY RAND() LIMIT 1`);
         random_addr = random_addr?.result[0];
         let obj = {
