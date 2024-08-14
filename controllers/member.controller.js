@@ -227,6 +227,43 @@ const memberCtrl = {
 
         }
     },
+    connectMcht: async (req, res, next) => {//가맹점과 매칭
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = await checkLevel(req.cookies.token, 40, req);
+            const decode_dns = checkDns(req.cookies.dns);
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
+            let table = decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account' : 'member'
+            const {
+                virtual_account_id,
+                mcht_id,
+            } = req.body;
+            let virtual_account = await pool.query(`SELECT * FROM ${table}s WHERE brand_id=${decode_dns?.id} AND id=${virtual_account_id}`);
+            virtual_account = virtual_account?.result[0];
+            if (!virtual_account) {
+                return response(req, res, -100, "정보가 존재하지 않습니다.", false)
+            }
+            let mcht = await pool.query(`SELECT * FROM users WHERE level=10 AND brand_id=${decode_dns?.id} AND id=?`, [
+                mcht_id,
+            ]);
+            mcht = mcht?.result[0];
+            if (!mcht) {
+                return response(req, res, -100, "존재하지 않는 가맹점 입니다.", false)
+            }
+            let result = await updateQuery(`${table}s`, {
+                mcht_id: mcht?.id,
+            }, virtual_account_id);
+
+            return response(req, res, 100, "success", {})
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
     remove: async (req, res, next) => {
         try {
             const decode_user = await checkLevel(req.cookies?.token, 10, req);

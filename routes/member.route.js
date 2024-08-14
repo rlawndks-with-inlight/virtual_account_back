@@ -21,5 +21,7 @@ router
 router
     .route('/mother')
     .post(memberCtrl.moveMother)
-
+router
+    .route('/connect-mcht')
+    .post(memberCtrl.connectMcht)
 export default router;
