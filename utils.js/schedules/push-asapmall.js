@@ -35,7 +35,7 @@ export const pushAsapMall = async (return_moment = "") => {
         if (!is_process_func) {
             return;
         }
-        let sql = ` SELECT deposits.*, brands.asapmall_dns, brands.asapmall_back_dns, virtual_accounts.phone_num FROM deposits `;
+        let sql = ` SELECT deposits.*, brands.asapmall_dns, brands.asapmall_back_dns, virtual_accounts.phone_num, brands.deposit_type FROM deposits `;
         sql += ` LEFT JOIN brands ON deposits.brand_id=brands.id `;
         sql += ` LEFT JOIN virtual_accounts ON deposits.virtual_account_id=virtual_accounts.id `;
         sql += ` WHERE brands.is_use_asapmall_noti=1 AND pay_type IN (0, 5, 20) `;
@@ -89,7 +89,8 @@ export const pushAsapMall = async (return_moment = "") => {
                 settle_acct_num,
                 id,
                 created_at,
-                phone_num
+                phone_num,
+                deposit_type
             } = data[i];
 
 
@@ -111,6 +112,7 @@ export const pushAsapMall = async (return_moment = "") => {
                     tid: trx_id,
                     created_at,
                     phone_num,
+                    deposit_type,
                 };
                 if (pay_type == 0) {
                     obj['pay_type'] = 'deposit';

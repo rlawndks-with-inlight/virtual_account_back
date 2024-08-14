@@ -33,7 +33,8 @@ const shopProcess = async (params, products = []) => {
             tid,
             dns,
             created_at,
-            phone_num
+            phone_num,
+            deposit_type
         } = params;
         let brand = await shopPool.query(`SELECT * FROM brands WHERE dns=?`, [dns]);
         brand = brand?.result[0];
@@ -67,7 +68,7 @@ const shopProcess = async (params, products = []) => {
             detail_addr: '',
             buyer_name: acct_name,
             buyer_phone: phone_num,
-            trx_method: 10,
+            trx_method: deposit_type == 'virtual_account' ? 10 : 11,
             virtual_bank_code,
             virtual_acct_num,
             bank_code,
