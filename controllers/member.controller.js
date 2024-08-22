@@ -64,9 +64,7 @@ const memberCtrl = {
             sql += ` AND ${table_name}.brand_id=${decode_dns?.id} `;
             let data = await pool.query(sql, values)
             data = data?.result[0];
-            if (data?.mid != mid) {
-                return response(req, res, -100, "본사에 문의해 주세요.", false)
-            }
+
             return response(req, res, 100, "success", data)
         } catch (err) {
             console.log(err)
