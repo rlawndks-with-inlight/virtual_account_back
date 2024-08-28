@@ -270,6 +270,9 @@ const withdrawCtrl = {
             if (decode_dns?.parent_id > 0) {
                 return response(req, res, -100, "출금 실패 A", false)
             }
+            if (dns_data?.withdraw_corp_type != 7) {
+                return response(req, res, -100, "출금 실패 C", false)
+            }
             let trx_id = `${decode_dns?.id}${new Date().getTime()}`;
             let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
             dns_data = dns_data?.result[0];
