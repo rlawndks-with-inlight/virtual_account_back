@@ -3,7 +3,7 @@ import axios from "axios";
 import { pool } from "../config/db.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, makeSearchQuery, updateQuery } from "../utils.js/query-util.js";
-import { checkDns, checkLevel, createHashedPassword, isItemBrandIdSameDnsId, lowLevelException, response, settingFiles } from "../utils.js/util.js";
+import { checkDns, checkLevel, createHashedPassword, getReqIp, isItemBrandIdSameDnsId, lowLevelException, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 import fs from 'fs';
 
@@ -18,6 +18,21 @@ const logCtrl = {
             const decode_dns = checkDns(req.cookies.dns);
             if (!decode_user) {
                 return lowLevelException(req, res)
+            }
+            let requestIp = getReqIp(req);
+
+            let user = await pool.query(`SELECT only_connect_ip FROM users WHERE user_name=? AND ( brand_id=${decode_dns?.id} ${parent_where_sql} OR level >=50 ) AND is_delete=0 LIMIT 1 `, user_name);
+            user = user?.result[0];
+            if (user?.only_connect_ip) {
+                if (requestIp != user?.only_connect_ip) {
+                    return response(req, res, -150, "권한이 없습니다.", {})
+                }
+            }
+            let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${decode_user?.id} AND is_delete=0`);
+            ip_list = ip_list?.result;
+            if (decode_user?.level < 50 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp)) && ip_list.length > 0) {
+                res.clearCookie('token');
+                return response(req, res, -150, "권한이 없습니다.", {})
             }
             const { type, dt } = req.query;
             let data = {};
@@ -41,13 +56,8 @@ const logCtrl = {
             if (!decode_user) {
                 return lowLevelException(req, res)
             }
-            const { id } = req.params;
-            let data = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id}`)
-            data = data?.result[0];
-            if (!isItemBrandIdSameDnsId(decode_dns, data)) {
-                return lowLevelException(req, res);
-            }
-            return response(req, res, 100, "success", data)
+
+            return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)
