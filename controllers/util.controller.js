@@ -7,6 +7,8 @@ import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuer
 import { checkDns, checkLevel, isItemBrandIdSameDnsId, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 import { asd_list } from "../asd.js";
+import xlsx from 'xlsx';
+import axios from "axios";
 
 const utilCtrl = {
     setting: async (req, res, next) => {
@@ -105,5 +107,31 @@ const insertCooconDeposit = async () => { //쿠콘 입금 누락건 추가
         console.log(err);
     }
 }
-
+const getExcel = (name, num = 0) => {
+    const workbook = xlsx.readFile(name); // 액샐 파일 읽어오기
+    const firstSheetName = workbook.SheetNames[num]; // 첫 번째 시트 이름 가져오기
+    const firstShee = workbook.Sheets[firstSheetName]; // 시트 이름을 이용해 엑셀 파일의 첫 번째 시트 가져오기
+    const excel_list = xlsx.utils.sheet_to_json(firstShee);
+    return excel_list;
+}
+const adsadsadsad = async () => {
+    try {
+        let excel_list = getExcel('./icb누락.xlsx');
+        console.log(excel_list)
+        for (var i = 0; i < excel_list.length; i++) {
+            if (excel_list[i]['거래상태'] == '결제완료') {
+                let result = await axios.post(`http://localhost:2500/api/push/icb`, {
+                    mid: 'M00000000008',
+                    memKey: excel_list[i]['VA번호'],
+                    partnerTrxNo: excel_list[i]['파트너사거래번호'],
+                    payCmpDts: excel_list[i]['완료일시'].replaceAll(' ', '').replaceAll(':', '').replaceAll('-', ''),
+                    realTrxAmt: excel_list[i]['거래금액'],
+                })
+                console.log(result);
+            }
+        }
+    } catch (err) {
+        console.log(err);
+    }
+}
 export default utilCtrl;
