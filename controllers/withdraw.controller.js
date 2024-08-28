@@ -31,6 +31,7 @@ const withdrawCtrl = {
             let default_columns = [
                 `${table_name}.id`,
                 `${table_name}.created_at`,
+                `${table_name}.updated_at`,
                 `${table_name}.pay_type`,
                 `${table_name}.note`,
                 `${table_name}.virtual_acct_balance`,
