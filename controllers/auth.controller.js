@@ -149,8 +149,14 @@ const authCtrl = {
                 login_fail_count: 0,
                 connected_ip: requestIp,
             }, user.id)
-
-            return response(req, res, 100, "success", user_obj)
+            let REQ = {
+                ...req,
+                body: {
+                    ...req.body,
+                    user_pw: '',
+                }
+            }
+            return response(REQ, res, 100, "success", user_obj)
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)
