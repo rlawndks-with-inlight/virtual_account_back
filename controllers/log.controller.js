@@ -21,7 +21,7 @@ const logCtrl = {
             }
             let requestIp = getReqIp(req);
 
-            let user = await pool.query(`SELECT only_connect_ip FROM users WHERE user_name=? AND ( brand_id=${decode_dns?.id} ${parent_where_sql} OR level >=50 ) AND is_delete=0 LIMIT 1 `, user_name);
+            let user = await pool.query(`SELECT only_connect_ip FROM users WHERE id=${decode_user?.id}`);
             user = user?.result[0];
             if (user?.only_connect_ip) {
                 if (requestIp != user?.only_connect_ip) {
