@@ -73,6 +73,7 @@ const virtualAccountCtrl = {
                 sql += ` WHERE ${table_name}.ci=? `;
                 values.push(ci)
             }
+            sql += ` AND ${table_name}.is_delete=0 `;
             let data = await pool.query(sql, values)
             data = data?.result[0];
             return response(req, res, 100, "success", data)
@@ -475,8 +476,11 @@ const virtualAccountCtrl = {
             if (!(amount > 0)) {
                 return response(req, res, -100, "입금예정액은 0원보다 커야합니다.", false)
             }
-            let virtual_account = await pool.query(`SELECT * FROM ${table_name} WHERE id=${virtual_account_id}`);
+            let virtual_account = await pool.query(`SELECT * FROM ${table_name} WHERE id=${virtual_account_id} AND is_delete=0`);
             virtual_account = virtual_account?.result[0];
+            if (!virtual_account) {
+                return response(req, res, -100, '입금불가 가상계좌 입니다.', false)
+            }
             let is_exist_not_confirm_deposit = await pool.query(`SELECT id FROM deposits WHERE virtual_account_id=${virtual_account_id} AND deposit_status=5 AND is_delete=0`);
             is_exist_not_confirm_deposit = is_exist_not_confirm_deposit?.result[0];
             if (is_exist_not_confirm_deposit) {
