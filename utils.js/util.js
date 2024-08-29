@@ -123,11 +123,14 @@ const logRequestResponse = async (req, res, decode_user, decode_dns) => {//ë¡œê·
         } else {
             brand_id = -1;
         }
+        let data = res?.data ?? {};
+        delete data['otp_token'];
+
         let result = await pool.query(
             "INSERT INTO logs (request, response_data, response_result, response_message, request_ip, user_id, brand_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
             [
                 request,
-                JSON.stringify(res?.data),
+                JSON.stringify(data),
                 res?.result,
                 res?.message,
                 requestIp,
