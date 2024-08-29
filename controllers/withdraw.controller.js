@@ -7,6 +7,7 @@ import { deleteQuery, getMultipleQueryByWhen, getSelectQuery, insertQuery, makeS
 import { checkDns, checkLevel, commarNumber, getMotherDeposit, getOperatorList, isItemBrandIdSameDnsId, lowLevelException, operatorLevelList, response, setWithdrawAmountSetting, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 import userCtrl from "./user.controller.js";
+import axios from "axios";
 
 const table_name = 'deposits';
 
@@ -742,6 +743,26 @@ const withdrawCtrl = {
             }
             */
             return response(req, res, 100, "success", {})
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
+    request: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = await checkLevel(req.cookies.token, 10, req);
+            const decode_dns = checkDns(req.cookies.dns);
+            let {
+            } = req.body;
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
+
+            let { data: resp } = await axios.post(`${process.env.API_URL}/api/withdraw/v${decode_dns?.setting_obj?.api_withdraw_version}`, req.body);
+            return response(req, res, resp?.result, resp?.message, resp?.data)
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)

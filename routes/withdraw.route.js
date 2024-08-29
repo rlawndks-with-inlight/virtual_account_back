@@ -23,6 +23,10 @@ router
     .route('/fail')
     .post(withdrawCtrl.fail)
 router
+    .route('/request')
+    .post(withdrawCtrl.request)
+
+router
     .route('/trx-id/:id')
     .put(withdrawCtrl.updateTrxId);
 
