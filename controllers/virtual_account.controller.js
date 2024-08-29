@@ -528,7 +528,6 @@ const virtualAccountCtrl = {
             const {
                 id,
             } = req.body;
-            console.log(req.body)
             let trx = await pool.query(`SELECT * FROM deposits WHERE id=${id} AND brand_id=${decode_dns?.id}`);
             trx = trx?.result[0];
             if (!trx) {
