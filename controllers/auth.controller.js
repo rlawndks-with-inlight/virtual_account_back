@@ -42,7 +42,7 @@ const authCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
-            let { user_name, user_pw, otp_num } = req.body;
+            let { user_name, user_pw, otp_num } = req_.body;
 
             let dns_data = await pool.query(`SELECT brands.* FROM brands WHERE id=${decode_dns?.id}`);
             dns_data = dns_data?.result[0];
