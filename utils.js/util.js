@@ -104,7 +104,7 @@ const logRequestResponse = async (req, res, decode_user, decode_dns) => {//ë¡œê·
             url: req.originalUrl,
             query: req.query,
             params: req.params,
-            body: req.body,
+            body: body,
             method: req.method,
         }
         if (request.url.includes('/logs')) {
