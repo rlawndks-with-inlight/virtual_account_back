@@ -176,7 +176,6 @@ const withdrawCtrl = {
             let obj = {
             };
 
-            let result = await updateQuery(`${table_name}`, obj, id);
 
             return response(req, res, 100, "success", {})
         } catch (err) {
@@ -219,10 +218,7 @@ const withdrawCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
-            const { id } = req.params;
-            let result = await deleteQuery(`${table_name}`, {
-                id
-            })
+
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
