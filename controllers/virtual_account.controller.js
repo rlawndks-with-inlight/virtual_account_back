@@ -528,8 +528,8 @@ const virtualAccountCtrl = {
             const {
                 id,
             } = req.body;
-
-            let trx = await pool.query(`SELECT * FROM deposits WHERE id=${id}`);
+            console.log(req.body)
+            let trx = await pool.query(`SELECT * FROM deposits WHERE id=${id} AND brand_id=${decode_dns?.id}`);
             trx = trx?.result[0];
             if (!trx) {
                 return response(req, res, -100, "존재하지 않는 거래건 입니다.", false)
