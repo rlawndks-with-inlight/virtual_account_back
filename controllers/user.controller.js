@@ -508,7 +508,7 @@ const userCtrl = {
     changePassword: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = await checkLevel(req.cookies.token, 0, req);
+            const decode_user = await checkLevel(req.cookies.token, 10, req);
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
