@@ -69,6 +69,9 @@ const brandCtrl = {
             sql += ` LEFT JOIN virtual_accounts ON ${table_name}.virtual_account_id=virtual_accounts.id `;
             sql += ` LEFT JOIN brands AS parent_brands ON ${table_name}.parent_id=parent_brands.id `;
             sql += ` WHERE ${table_name}.id=${id} `;
+            if (decode_dns?.is_main_dns != 1) {
+                sql += ` AND ${table_name}.id=${decode_dns?.id} `;
+            }
             let data = await pool.query(sql)
             data = data?.result[0];
             data['theme_css'] = JSON.parse(data?.theme_css ?? '{}');
