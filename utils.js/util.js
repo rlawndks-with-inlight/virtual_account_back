@@ -99,6 +99,7 @@ const logRequestResponse = async (req, res, decode_user, decode_dns) => {//ë¡œê·
         delete body['user_pw'];
         delete body['password'];
         delete body['new_password'];
+        delete body['otp_token'];
         let request = {
             url: req.originalUrl,
             query: req.query,
