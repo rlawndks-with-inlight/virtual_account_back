@@ -67,12 +67,10 @@ const corpAccountCtrl = {
             const {
                 brand_id, bank_code, acct_num, acct_name
             } = req.body;
-            let files = settingFiles(req.files);
             let obj = {
                 brand_id, bank_code, acct_num, acct_name
             };
 
-            obj = { ...obj, ...files };
 
             let result = await insertQuery(`${table_name}`, obj);
 
@@ -95,11 +93,9 @@ const corpAccountCtrl = {
             const {
                 id, brand_id, bank_code, acct_num, acct_name
             } = req.body;
-            let files = settingFiles(req.files);
             let obj = {
                 brand_id, bank_code, acct_num, acct_name
             };
-            obj = { ...obj, ...files };
 
             let result = await updateQuery(`${table_name}`, obj, id);
 

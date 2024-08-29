@@ -80,12 +80,10 @@ const memberCtrl = {
             const decode_dns = checkDns(req.cookies.dns);
             const {
             } = req.body;
-            let files = settingFiles(req.files);
             let obj = {
                 brand_id, name, note, price, category_id
             };
 
-            obj = { ...obj, ...files };
 
             let result = await insertQuery(`${table_name}`, obj);
 
@@ -105,10 +103,8 @@ const memberCtrl = {
             const {
                 id
             } = req.body;
-            let files = settingFiles(req.files);
             let obj = {
             };
-            obj = { ...obj, ...files };
 
             let result = await updateQuery(`${table_name}`, obj, id);
 

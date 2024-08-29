@@ -124,10 +124,8 @@ const virtualAccountCtrl = {
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
-            let files = settingFiles(req.files);
             let obj = {
             };
-            obj = { ...obj, ...files };
 
             let result = await updateQuery(`${table_name}`, obj, id);
 

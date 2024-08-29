@@ -105,7 +105,6 @@ const brandCtrl = {
                 is_use_fee_operator = 1, is_use_deposit_operator = 0, is_use_withdraw_operator = 0, hold_amount = 0,
                 is_use_corp_account = 0, corp_account_corp_type = 0, is_can_add_deposit = 0, is_use_asapmall_noti = 0, asapmall_dns = "", asapmall_back_dns = "", is_use_destruct_auto_virtual_acct = 0, destruct_auto_virtual_acct_minute = 0,
             } = req.body;
-            let files = settingFiles(req.files);
             let obj = {
                 name, dns, og_description, company_name, business_num, pvcy_rep_name, ceo_name, addr, addr_detail, resident_num, phone_num, fax_num, pay_day, pay_amount, note, theme_css, setting_obj, level_obj, bizppurio_obj,
                 deposit_corp_type, deposit_guid, deposit_api_id, deposit_sign_key, deposit_encr_key, deposit_iv, deposit_type,
@@ -130,7 +129,6 @@ const brandCtrl = {
             obj['api_key'] = api_key;
 
 
-            obj = { ...obj, ...files };
             await db.beginTransaction();
 
             let result = await insertQuery(`${table_name}`, obj);
@@ -177,7 +175,6 @@ const brandCtrl = {
             if ((decode_user?.level < 45 && decode_user?.brand_id != id) || decode_user?.level < 40) {
                 return lowLevelException(req, res);
             }
-            let files = settingFiles(req.files);
 
             let obj = {
                 name, dns, og_description, company_name, business_num, pvcy_rep_name, ceo_name, addr, addr_detail, resident_num, phone_num, fax_num, pay_day, pay_amount, note, theme_css, setting_obj, level_obj, bizppurio_obj,
@@ -193,7 +190,6 @@ const brandCtrl = {
             obj['setting_obj'] = JSON.stringify(obj.setting_obj);
             obj['level_obj'] = JSON.stringify(obj.level_obj);
             obj['bizppurio_obj'] = JSON.stringify(obj.bizppurio_obj);
-            obj = { ...obj, ...files };
             if (parent_dns) {
                 let parent_dns_data = await pool.query(`SELECT * FROM brands WHERE dns=?`, [parent_dns]);
                 parent_dns_data = (parent_dns_data?.result[0] ?? {});

@@ -67,12 +67,10 @@ const bellContentCtrl = {
             const decode_dns = checkDns(req.cookies.dns);
             const {
             } = req.body;
-            let files = settingFiles(req.files);
             let obj = {
                 brand_id, name, note, price, category_id
             };
 
-            obj = { ...obj, ...files };
 
 
             return response(req, res, 100, "success", {})
@@ -91,10 +89,8 @@ const bellContentCtrl = {
             const {
                 id
             } = req.body;
-            let files = settingFiles(req.files);
             let obj = {
             };
-            obj = { ...obj, ...files };
 
 
             return response(req, res, 100, "success", {})

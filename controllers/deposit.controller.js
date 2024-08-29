@@ -262,10 +262,8 @@ const depositCtrl = {
             const {
                 id
             } = req.body;
-            let files = settingFiles(req.files);
             let obj = {
             };
-            obj = { ...obj, ...files };
 
             let result = await updateQuery(`${table_name}`, obj, id);
 

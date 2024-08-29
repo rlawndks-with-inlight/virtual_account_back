@@ -83,7 +83,6 @@ const blackListCtrl = {
                 acct_name,
                 phone_num,
             } = req.body;
-            let files = settingFiles(req.files);
             if (
                 !brand_id ||
                 !mcht_id ||
@@ -112,7 +111,6 @@ const blackListCtrl = {
                 acct_name,
                 phone_num,
             };
-            obj = { ...obj, ...files };
 
             let result = await insertQuery(`${table_name}`, obj);
 

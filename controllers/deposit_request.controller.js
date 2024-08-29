@@ -70,7 +70,6 @@ const depositRequestCtrl = {
                 amount,
                 note
             } = req.body;
-            let files = settingFiles(req.files);
             let obj = {
                 brand_id: decode_dns?.id,
                 user_id: decode_user?.id,
@@ -78,7 +77,6 @@ const depositRequestCtrl = {
                 note,
             };
 
-            obj = { ...obj, ...files };
 
             let result = await insertQuery(`${table_name}`, obj);
             let bell_data = {
@@ -106,10 +104,8 @@ const depositRequestCtrl = {
             const {
                 id
             } = req.body;
-            let files = settingFiles(req.files);
             let obj = {
             };
-            obj = { ...obj, ...files };
 
             let result = await updateQuery(`${table_name}`, obj, id);
 

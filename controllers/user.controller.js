@@ -329,7 +329,6 @@ const userCtrl = {
             let pw_data = await createHashedPassword(user_pw);
             user_pw = pw_data.hashedPassword;
             let user_salt = pw_data.salt;
-            let files = settingFiles(req.files);
 
             let obj = {
                 brand_id, user_name, user_pw, user_salt, name, nickname, level, phone_num, profile_img, note,
@@ -359,7 +358,6 @@ const userCtrl = {
                 }
             }
 
-            obj = { ...obj, ...files };
 
             await db.beginTransaction();
 
@@ -422,14 +420,12 @@ const userCtrl = {
                 can_return = 0,
                 id
             } = req.body;
-            let files = settingFiles(req.files);
             let obj = {
                 name, nickname, level, phone_num, profile_img, note,
                 deposit_fee, withdraw_fee, min_withdraw_price, min_withdraw_remain_price, min_withdraw_hold_price, is_withdraw_hold, can_return_ago_pay, is_not_same_acct_withdraw_minute, daily_withdraw_amount,
                 withdraw_bank_code, withdraw_acct_num, withdraw_acct_name, telegram_chat_ids, otp_token, sign_key, deposit_noti_url, withdraw_noti_url,
                 can_return,
             };
-            obj = { ...obj, ...files };
             let table = decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account' : 'member'
             if (guid) {
                 let virtual_account = await pool.query(`SELECT * FROM ${table}s WHERE guid=? AND brand_id=${decode_dns?.id}`, [guid]);
