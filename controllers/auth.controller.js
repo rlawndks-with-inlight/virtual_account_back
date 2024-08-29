@@ -30,7 +30,14 @@ const authCtrl = {
 
         }
     },
-    signIn: async (req, res, next) => {
+    signIn: async (req_, res, next) => {
+        let req = {
+            ...req_,
+            body: {
+                ...req_.body,
+                user_pw: '',
+            }
+        }
         try {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = await checkLevel(req.cookies.token, 0, req);
@@ -149,14 +156,8 @@ const authCtrl = {
                 login_fail_count: 0,
                 connected_ip: requestIp,
             }, user.id)
-            let REQ = {
-                ...req,
-                body: {
-                    ...req.body,
-                    user_pw: '',
-                }
-            }
-            return response(REQ, res, 100, "success", user_obj)
+
+            return response(req, res, 100, "success", user_obj)
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)
