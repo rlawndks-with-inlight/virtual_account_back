@@ -44,7 +44,7 @@ app.use((req, res, next) => {
     limiter(req, res, next);
   }
 });
-//app.use('/api', upload.fields(imageFieldList), routes);
+app.use('/api', routes);
 
 app.get('/', (req, res) => {
   console.log("back-end initialized")
