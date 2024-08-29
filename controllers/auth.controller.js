@@ -69,7 +69,6 @@ const authCtrl = {
             if (user?.level < 45 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp))) {
                 return response(req, res, -150, "권한이 없습니다.", {})
             }
-
             if (is_manager && user.level <= 0) {
                 return response(req, res, -100, "가입되지 않은 회원입니다.", {})
             }

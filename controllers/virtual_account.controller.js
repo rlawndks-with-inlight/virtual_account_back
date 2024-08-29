@@ -474,10 +474,16 @@ const virtualAccountCtrl = {
             if (!(amount > 0)) {
                 return response(req, res, -100, "입금예정액은 0원보다 커야합니다.", false)
             }
+
             let virtual_account = await pool.query(`SELECT * FROM ${table_name} WHERE id=${virtual_account_id} AND is_delete=0`);
             virtual_account = virtual_account?.result[0];
             if (!virtual_account) {
                 return response(req, res, -100, '입금불가 가상계좌 입니다.', false)
+            }
+            let mcht = await pool.query(`SELECT virtual_acct_link_status, is_delete FROM users WHERE id=${virtual_account?.mcht_id}`);
+            mcht = mcht?.result[0];
+            if ((mcht?.virtual_acct_link_status ?? 0) != 0 || mcht?.is_delete == 1) {
+                return response(req, res, -100, "입금 불가한 가맹점 입니다.", false)
             }
             let is_exist_not_confirm_deposit = await pool.query(`SELECT id FROM deposits WHERE virtual_account_id=${virtual_account_id} AND deposit_status=5 AND is_delete=0`);
             is_exist_not_confirm_deposit = is_exist_not_confirm_deposit?.result[0];
