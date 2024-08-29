@@ -38,13 +38,7 @@ const authCtrl = {
             const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
             let { user_name, user_pw, otp_num } = req.body;
-            req = {
-                ...req,
-                body: {
-                    ...req.body,
-                    user_pw: '',
-                }
-            }
+
             let dns_data = await pool.query(`SELECT brands.* FROM brands WHERE id=${decode_dns?.id}`);
             dns_data = dns_data?.result[0];
 
@@ -98,7 +92,6 @@ const authCtrl = {
                 let add_login_fail_count = await updateQuery(`users`, login_fail_obj, user?.id);
                 return response(req, res, -100, err_message, {});
             }
-
             if (dns_data?.is_use_otp == 1 && user?.level < 45) {
                 let otp_token = '';
                 if (!otp_num) {
@@ -158,7 +151,13 @@ const authCtrl = {
                 login_fail_count: 0,
                 connected_ip: requestIp,
             }, user.id)
-
+            req = {
+                ...req,
+                body: {
+                    ...req.body,
+                    user_pw: '',
+                }
+            }
             return response(req, res, 100, "success", user_obj)
         } catch (err) {
             console.log(err)
