@@ -279,6 +279,7 @@ const authCtrl = {
             user = user?.result[0];
             if (user?.only_connect_ip) {
                 if (requestIp != user?.only_connect_ip) {
+                    res.clearCookie('token');
                     return response(req, res, -150, "권한이 없습니다.", {})
                 }
             }
