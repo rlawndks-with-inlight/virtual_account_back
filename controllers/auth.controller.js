@@ -275,6 +275,13 @@ const authCtrl = {
                 return response(req, res, -150, "권한이 없습니다.", {})
             }
             let requestIp = getReqIp(req);
+            let user = await pool.query(`SELECT only_connect_ip FROM users WHERE id=${decode_user?.id} `);
+            user = user?.result[0];
+            if (user?.only_connect_ip) {
+                if (requestIp != user?.only_connect_ip) {
+                    return response(req, res, -150, "권한이 없습니다.", {})
+                }
+            }
             let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${decode_user?.id} AND is_delete=0`);
             ip_list = ip_list?.result;
             if (decode_user?.level < 50 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp)) && ip_list.length > 0) {
@@ -320,6 +327,7 @@ const authCtrl = {
                 user_pw,
                 user_salt,
             }, decode_user?.id)
+
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
