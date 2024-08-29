@@ -265,6 +265,20 @@ const withdrawCtrl = {
             if (decode_dns?.parent_id > 0) {
                 return response(req, res, -100, "출금 실패 A", false)
             }
+            let user = await pool.query(`SELECT only_connect_ip FROM users WHERE id=${decode_dns?.id}`);
+            user = user?.result[0];
+
+            let requestIp = getReqIp(req);
+            if (user?.only_connect_ip) {
+                if (requestIp != user?.only_connect_ip) {
+                    return response(req, res, -150, "권한이 없습니다.", {})
+                }
+            }
+            let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${user?.id} AND is_delete=0`);
+            ip_list = ip_list?.result;
+            if (user?.level < 45 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp))) {
+                return response(req, res, -150, "권한이 없습니다.", {})
+            }
 
             let trx_id = `${decode_dns?.id}${new Date().getTime()}`;
             let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
