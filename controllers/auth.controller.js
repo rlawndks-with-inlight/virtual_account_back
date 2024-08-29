@@ -151,13 +151,6 @@ const authCtrl = {
                 login_fail_count: 0,
                 connected_ip: requestIp,
             }, user.id)
-            req = {
-                ...req,
-                body: {
-                    ...req.body,
-                    user_pw: '',
-                }
-            }
             return response(req, res, 100, "success", user_obj)
         } catch (err) {
             console.log(err)
@@ -327,15 +320,7 @@ const authCtrl = {
                 user_pw,
                 user_salt,
             }, decode_user?.id)
-            let REQ = {
-                ...req,
-                body: {
-                    ...req.body,
-                    password: '',
-                    new_password: '',
-                }
-            }
-            return response(REQ, res, 100, "success", {})
+            return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)

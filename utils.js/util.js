@@ -95,7 +95,10 @@ export const checkDns = (token) => { //dns 정보 뿌려주기
 const logRequestResponse = async (req, res, decode_user, decode_dns) => {//로그찍기
     try {
         let requestIp = getReqIp(req);
-
+        let body = req.body;
+        delete body['user_pw'];
+        delete body['password'];
+        delete body['new_password'];
         let request = {
             url: req.originalUrl,
             query: req.query,
