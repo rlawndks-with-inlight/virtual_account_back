@@ -31,18 +31,13 @@ const authCtrl = {
         }
     },
     signIn: async (req_, res, next) => {
-        let req = {
-            ...req_,
-            body: {
-                ...req_.body,
-                user_pw: '',
-            }
-        }
+        let req = req_;
+
         try {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
-            let { user_name, user_pw, otp_num } = req_.body;
+            let { user_name, user_pw, otp_num } = req.body;
 
             let dns_data = await pool.query(`SELECT brands.* FROM brands WHERE id=${decode_dns?.id}`);
             dns_data = dns_data?.result[0];
@@ -156,7 +151,13 @@ const authCtrl = {
                 login_fail_count: 0,
                 connected_ip: requestIp,
             }, user.id)
-
+            req = {
+                ...req,
+                body: {
+                    ...req.body,
+                    user_pw: '',
+                }
+            }
             return response(req, res, 100, "success", user_obj)
         } catch (err) {
             console.log(err)
