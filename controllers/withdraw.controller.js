@@ -4,7 +4,7 @@ import db, { pool } from "../config/db.js";
 import corpApi from "../utils.js/corp-util/index.js";
 import { checkIsManagerUrl, returnMoment } from "../utils.js/function.js";
 import { deleteQuery, getMultipleQueryByWhen, getSelectQuery, insertQuery, makeSearchQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
-import { checkDns, checkLevel, commarNumber, getMotherDeposit, getOperatorList, isItemBrandIdSameDnsId, lowLevelException, operatorLevelList, response, setWithdrawAmountSetting, settingFiles } from "../utils.js/util.js";
+import { checkDns, checkLevel, commarNumber, getMotherDeposit, getOperatorList, getReqIp, isItemBrandIdSameDnsId, lowLevelException, operatorLevelList, response, setWithdrawAmountSetting, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 import userCtrl from "./user.controller.js";
 import axios from "axios";
@@ -760,9 +760,15 @@ const withdrawCtrl = {
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
-
+            let requestIp = getReqIp(req);
+            let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${decode_user?.id} AND is_delete=0`);
+            ip_list = ip_list?.result;
+            if (decode_user?.level < 40 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp)) && ip_list.length > 0) {
+                return response(req, res, -150, "ip 권한이 없습니다.", false)
+            }
             let { data: resp } = await axios.post(`${process.env.API_URL}/api/withdraw/v${decode_dns?.setting_obj?.api_withdraw_version}`, req.body);
             return response(req, res, resp?.result, resp?.message, resp?.data)
+
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)
