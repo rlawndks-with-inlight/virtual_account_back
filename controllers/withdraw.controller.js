@@ -770,10 +770,13 @@ const withdrawCtrl = {
             const decode_user = await checkLevel(req.cookies.token, 10, req);
             const decode_dns = checkDns(req.cookies.dns);
             let {
+                mid
             } = req.body;
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
+            let user = await pool.query(`SELECT mid FROM users WHERE id=${decode_user?.id}`);
+            user = user?.result[0]
             let requestIp = getReqIp(req);
             let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${decode_user?.id} AND is_delete=0`);
             ip_list = ip_list?.result;
