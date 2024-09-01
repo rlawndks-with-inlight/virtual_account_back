@@ -475,6 +475,9 @@ const corpApi = {
             if (corp_type == 5) {
                 result = await hectoApi.withdraw.request_check(data);
             }
+            if (corp_type == 7) {
+                result = await icbApi.withdraw.request_check(data);
+            }
             return result;
         },
     },
