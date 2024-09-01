@@ -626,7 +626,7 @@ export const settingMchtFee = async (decode_dns, user_id, body) => {
                 mother_withdraw_fee = body[`sales${operator_list[i]?.num}_withdraw_fee`];
                 mother_deposit_fee = body[`sales${operator_list[i]?.num}_deposit_fee`];
             }
-            mcht_obj[`sales${operator_list[i]?.num}_id`] = body[`sales${operator_list[i]?.num}_id`];
+            mcht_obj[`sales${operator_list[i]?.num}_id`] = body[`sales${operator_list[i]?.num}_id`] ?? null;
             mcht_obj[`sales${operator_list[i]?.num}_fee`] = body[`sales${operator_list[i]?.num}_fee`] ?? 0;
             mcht_obj[`sales${operator_list[i]?.num}_withdraw_fee`] = body[`sales${operator_list[i]?.num}_withdraw_fee`] ?? 0;
             mcht_obj[`sales${operator_list[i]?.num}_deposit_fee`] = body[`sales${operator_list[i]?.num}_deposit_fee`] ?? 0;

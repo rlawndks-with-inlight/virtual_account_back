@@ -16,7 +16,7 @@ export const emitSocket = async (item) => {
             message = `${data?.nickname}님이 보유정산금 ${commarNumber(data?.amount)} 원을 요청하였습니다.`;
             let result = await insertQuery(`bell_contents`, {
                 brand_id,
-                user_id: data?.user_id ?? 0,
+                user_id: data?.user_id ?? null,
                 title,
                 message,
                 link: `/manager/settle/request-list`,
@@ -26,7 +26,7 @@ export const emitSocket = async (item) => {
             message = `${data?.nickname}님이 보유정산금 ${commarNumber(data?.amount)} 원을 지급 받았습니다.`
             let result = await insertQuery(`bell_contents`, {
                 brand_id,
-                user_id: data?.user_id ?? 0,
+                user_id: data?.user_id ?? null,
                 title,
                 message,
                 link: `/manager/settle/list`,
