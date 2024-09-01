@@ -447,6 +447,9 @@ const corpApi = {
             if (corp_type == 6) {
                 result = await koreaPaySystemApi.withdraw.request(data);
             }
+            if (corp_type == 7) {
+                result = await icbApi.withdraw.request(data);
+            }
             return result;
         },
         request_check: async (data_) => {//출금요청

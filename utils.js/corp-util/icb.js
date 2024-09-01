@@ -538,13 +538,14 @@ export const icbApi = {
                     amount,
                 } = data;
                 let timestamp = await returnMoment().replaceAll(' ', '').replaceAll('-', '').replaceAll(':', '')
+
                 let query = {
                     timestamp,
                     memKey: ci,
                     trxAmt: amount,
                     partnerTrxNo: trx_id,
                 }
-                console.log(getDefaultHeader(dns_data, pay_type,))
+                console.log(getDefaultHeader(dns_data, pay_type, timestamp))
                 let { data: response } = await axios.post(`${API_URL}/v1/merchant/settle/member/request/amt`, query, {
                     headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
@@ -582,6 +583,7 @@ export const icbApi = {
                     tid,
                 } = data;
                 let timestamp = await returnMoment().replaceAll(' ', '').replaceAll('-', '').replaceAll(':', '')
+
                 let query = {
                     timestamp,
                     memKey: ci,
