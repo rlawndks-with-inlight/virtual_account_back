@@ -785,13 +785,6 @@ const withdrawCtrl = {
             if (user?.mid != mid) {
                 return response(req, res, -100, "잘못된 가맹점 접근입니다.", false)
             }
-            let requestIp = getReqIp(req);
-
-            let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${decode_user?.id} AND is_delete=0`);
-            ip_list = ip_list?.result;
-            if (decode_user?.level < 40 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp)) && ip_list.length > 0) {
-                return response(req, res, -150, "ip 권한이 없습니다.", false)
-            }
             let result = undefined;
             if (decode_dns?.setting_obj?.api_withdraw_version == 1) {
                 result = await withdrawV1Ctrl.request(req, res);
