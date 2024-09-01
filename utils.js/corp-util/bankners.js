@@ -322,7 +322,6 @@ export const banknersApi = {
                     trx_amt: amount,
                     trx_curr: 'KRW'
                 }
-                console.log(query)
                 query = makeBody(query, dns_data, pay_type)
                 let result = await postRequest('/api/transfer/auth/pass', query, makeHeaderData(dns_data, pay_type, decode_user));
                 if (result?.code != '0000') {

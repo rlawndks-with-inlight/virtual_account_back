@@ -806,7 +806,6 @@ const withdrawCtrl = {
             } else {
                 return response(req, res, -100, "존재하지 않습니다.", false)
             }
-            console.log(decode_dns?.setting_obj?.api_withdraw_version)
             return response(req, res, result?.result, result?.message, result?.data)
 
         } catch (err) {
