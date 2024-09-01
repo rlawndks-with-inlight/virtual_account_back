@@ -4,6 +4,7 @@ import 'dotenv/config';
 import crypto from 'crypto';
 import https from 'https';
 import { returnMoment } from '../function.js';
+import { generateRandomString } from '../util.js';
 
 //const API_URL = process.env.API_ENV == 'production' ? "https://npay.settlebank.co.kr" : "https://tbnpay.settlebank.co.kr";
 const API_URL = "https://tbnpay.settlebank.co.kr";
@@ -292,7 +293,6 @@ export const hectoApi = {
                     orgTrdDt: date,
                 }
                 query = processWithdrawObj(query, dns_data);
-                console.log(query)
 
                 let { data: response } = await axios.post(`${GW_API_URL}/pyag/v1/fxResult`, new URLSearchParams(query).toString(),
                     {
@@ -301,6 +301,8 @@ export const hectoApi = {
                         },
                         timeout: 30000 // 30초 타임아웃
                     });
+                console.log(response)
+
                 if (response?.status == '99' || response?.status == '29') {
                     response.status = 6;
                 } else if (response?.status != '21') {
