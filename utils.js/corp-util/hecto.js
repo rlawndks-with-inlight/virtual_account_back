@@ -301,7 +301,6 @@ export const hectoApi = {
                         },
                         timeout: 30000 // 30초 타임아웃
                     });
-                console.log(response)
 
                 if (response?.status == '99' || response?.status == '29') {
                     response.status = 6;
