@@ -241,7 +241,7 @@ const withdrawCtrl = {
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
-            let data = await getMotherDeposit(decode_dns);
+            let data = await getMotherDeposit(decode_dns, true);
             return response(req, res, 100, "success", data)
         } catch (err) {
             console.log(err)

@@ -467,7 +467,7 @@ export const sendNotiPush = async (user = {}, pay_type, data = {}, id) => {
         console.log(err);
     }
 }
-export const getMotherDeposit = async (decode_dns) => {
+export const getMotherDeposit = async (decode_dns, is_detail) => {
 
     let brand_columns = [
         `brands.id`,
@@ -504,11 +504,13 @@ export const getMotherDeposit = async (decode_dns) => {
     let sum_sql = `SELECT ${sum_columns.join()} FROM deposits WHERE brand_id=${decode_dns?.id} `;
     let sql_list = [
         { table: 'brand', sql: brand_sql },
-        { table: 'sum', sql: sum_sql },
+        ...((is_detail || decode_dns?.parent_id > 0) ? [
+            { table: 'sum', sql: sum_sql },
+        ] : []),
     ]
     let data = await getMultipleQueryByWhen(sql_list);
     data['brand'] = data['brand'][0];
-    data['sum'] = data['sum'][0];
+    data['sum'] = data['sum'] ? data['sum'][0] : {};
     data['sum'].total_oper_amount = 0;
     data['sum'].total_attempt_oper_withdraw_amount = 0;
     data['sum'].total_manager_oper_give_amount = 0;
