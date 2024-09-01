@@ -150,7 +150,7 @@ export const response = async (req, res, code, message, data) => { //응답 포�
         'message': message,
         'data': data,
     }
-    const decode_user = await checkLevel(req.cookies.token, 0, res)
+    const decode_user = await checkLevel(req.cookies.token, 0, req)
     const decode_dns = checkDns(req.cookies.dns, 0)
     if (req.originalUrl?.includes('/auth') || req.method == 'DELETE' || req.method == 'POST' || req.method == 'PUT' || req.query?.page_size >= 500) {
         let save_log = await logRequestResponse(req, resDict, decode_user, decode_dns);
@@ -438,13 +438,14 @@ export const getDailyWithdrawAmount = async (user) => {
     let return_moment = returnMoment().substring(0, 10);
     let s_dt = return_moment + ` 00:00:00`;
     let e_dt = return_moment + ` 23:59:59`;
-    let sql = `SELECT SUM(mcht_fee) AS withdraw_amount FROM deposits `;
+    let sql = `SELECT SUM(mcht_amount) AS withdraw_amount FROM deposits `;
     sql += ` WHERE mcht_id=${user?.id} `;
     sql += ` AND pay_type IN (5, 20) `;
-    sql += ` created_at >='${s_dt}' AND created_at <='${e_dt}' `;
+    sql += ` AND withdraw_status IN (0, 5, 20) `;
+    sql += ` AND created_at >='${s_dt}' AND created_at <='${e_dt}' `;
     let result = await pool.query(sql);
     result = result?.result[0];
-    console.log(result);
+    return result;
 }
 export const sendNotiPush = async (user = {}, pay_type, data = {}, id) => {
     try {
@@ -466,18 +467,20 @@ export const sendNotiPush = async (user = {}, pay_type, data = {}, id) => {
         console.log(err);
     }
 }
-export const getMotherDeposit = async (decode_dns, type = 'all') => {
+export const getMotherDeposit = async (decode_dns) => {
 
-    let table = decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account' : 'member'
     let brand_columns = [
-        `brands.*`,
-        `${table}s.guid`,
-        `${table}s.deposit_bank_code AS settle_bank_code`,
-        `${table}s.deposit_acct_num AS settle_acct_num`,
-        `${table}s.deposit_acct_name AS settle_acct_name`,
+        `brands.id`,
+        `virtual_accounts.guid`,
+        `virtual_accounts.virtual_bank_code`,
+        `virtual_accounts.virtual_acct_num`,
+        `virtual_accounts.virtual_acct_name`,
+        `virtual_accounts.deposit_bank_code AS settle_bank_code`,
+        `virtual_accounts.deposit_acct_num AS settle_acct_num`,
+        `virtual_accounts.deposit_acct_name AS settle_acct_name`,
     ]
     let brand_sql = `SELECT ${brand_columns.join()} FROM brands `;
-    brand_sql += ` LEFT JOIN ${table}s ON brands.${table}_id=${table}s.id `;
+    brand_sql += ` LEFT JOIN virtual_accounts ON brands.virtual_account_id=virtual_accounts.id `;
     brand_sql += ` WHERE brands.id=${decode_dns?.id} `;
 
     let operator_list = getOperatorList(decode_dns);
@@ -528,7 +531,6 @@ export const getMotherDeposit = async (decode_dns, type = 'all') => {
         })
     }
     data['real_amount'] = real_amount.data?.amount ?? 0;
-    data['hold_deposit_amount'] = real_amount.data?.hold_deposit_amount ?? 0;
     data['childrens'] = [];
     let children_brands = await pool.query(`SELECT * FROM brands WHERE parent_id=${decode_dns?.id}`);
     children_brands = children_brands?.result;
@@ -539,6 +541,7 @@ export const getMotherDeposit = async (decode_dns, type = 'all') => {
     data['hold_amount'] = data['brand']?.hold_amount;
     return data;
 }
+
 export const settingMchtFee = async (decode_dns, user_id, body) => {
     try {
         let {
@@ -783,4 +786,13 @@ const getExcel = (name) => {
 
     const excel_list = xlsx.utils.sheet_to_json(firstShee);
     return excel_list;
+}
+export const findBlackList = async (word, type, decode_dns = {}) => {
+    try {
+        let black_item = await pool.query(`SELECT * FROM black_lists WHERE is_delete=0 AND acct_num=? AND brand_id=${decode_dns?.id}`, [word]);
+        return black_item?.result[0];
+
+    } catch (err) {
+        console.log(err);
+    }
 }

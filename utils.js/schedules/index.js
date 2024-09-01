@@ -22,6 +22,7 @@ const scheduleIndex = () => {
             pushAsapMall(return_moment);
         }
         if (parseInt(process.env.INSTANCE_ID) == parseInt(process.env.instances) - 3) {
+
         }
     })
 }

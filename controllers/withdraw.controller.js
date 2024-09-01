@@ -8,6 +8,11 @@ import { checkDns, checkLevel, commarNumber, getMotherDeposit, getOperatorList, 
 import 'dotenv/config';
 import userCtrl from "./user.controller.js";
 import axios from "axios";
+import withdrawV1Ctrl from "./withdraw/v1.js";
+import withdrawV2Ctrl from "./withdraw/v2.js";
+import withdrawV3Ctrl from "./withdraw/v3.js";
+import withdrawV4Ctrl from "./withdraw/v4.js";
+import withdrawV5Ctrl from "./withdraw/v5.js";
 
 const table_name = 'deposits';
 
@@ -777,14 +782,32 @@ const withdrawCtrl = {
             }
             let user = await pool.query(`SELECT mid FROM users WHERE id=${decode_user?.id}`);
             user = user?.result[0]
+            if (user?.mid != mid) {
+                return response(req, res, -100, "잘못된 가맹점 접근입니다.", false)
+            }
             let requestIp = getReqIp(req);
+
             let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${decode_user?.id} AND is_delete=0`);
             ip_list = ip_list?.result;
             if (decode_user?.level < 40 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp)) && ip_list.length > 0) {
                 return response(req, res, -150, "ip 권한이 없습니다.", false)
             }
-            let { data: resp } = await axios.post(`${process.env.API_URL}/api/withdraw/v${decode_dns?.setting_obj?.api_withdraw_version}`, req.body);
-            return response(req, res, resp?.result, resp?.message, resp?.data)
+            let result = undefined;
+            if (decode_dns?.setting_obj?.api_withdraw_version == 1) {
+                result = await withdrawV1Ctrl.request(req, res);
+            } else if (decode_dns?.setting_obj?.api_withdraw_version == 2) {
+                result = await withdrawV2Ctrl.request(req, res);
+            } else if (decode_dns?.setting_obj?.api_withdraw_version == 3) {
+                result = await withdrawV3Ctrl.request(req, res);
+            } else if (decode_dns?.setting_obj?.api_withdraw_version == 4) {
+                result = await withdrawV4Ctrl.request(req, res);
+            } else if (decode_dns?.setting_obj?.api_withdraw_version == 5) {
+                result = await withdrawV5Ctrl.request(req, res);
+            } else {
+                return response(req, res, -100, "존재하지 않습니다.", false)
+            }
+            console.log(decode_dns?.setting_obj?.api_withdraw_version)
+            return response(req, res, result?.result, result?.message, result?.data)
 
         } catch (err) {
             console.log(err)
