@@ -125,7 +125,6 @@ const logRequestResponse = async (req, res, decode_user, decode_dns) => {//ë¡œê·
         }
         let data = res?.data ?? {};
         delete data['otp_token'];
-        delete data['content'];
 
         let result = await pool.query(
             "INSERT INTO logs (request, response_data, response_result, response_message, request_ip, user_id, brand_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
