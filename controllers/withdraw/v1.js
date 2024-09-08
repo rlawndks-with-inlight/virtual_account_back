@@ -122,10 +122,10 @@ const withdrawV1Ctrl = {
             }
 
 
-            let operator_list = getOperatorList(dns_data);
             if (!dns_data) {
                 return response(req, res, -100, "api key가 잘못되었습니다.", false);
             }
+            let operator_list = getOperatorList(dns_data);
             req.body.brand_id = dns_data?.id;
             dns_data['setting_obj'] = JSON.parse(dns_data?.setting_obj ?? '{}');
 
