@@ -83,8 +83,14 @@ const withdrawV2Ctrl = {
             }
 
             let requestIp = getReqIp(req);
-            let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${user?.id} AND is_delete=0`);
-            ip_list = ip_list?.result;
+            let ip_list = await redisCtrl.get(`user_ip_list_${user?.id}`);
+            if (ip_list) {
+                ip_list = JSON.parse(ip_list ?? "[]")
+            } else {
+                ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${user?.id} AND is_delete=0`);
+                ip_list = ip_list?.result;
+                await redisCtrl.set(`user_ip_list_${user?.id}`, JSON.stringify(ip_list), 60);
+            }
             if ((!ip_list.map(itm => { return itm?.ip }).includes(requestIp))) {
                 return response(req, res, -150, "ip 권한이 없습니다.", false)
             }
