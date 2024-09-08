@@ -29,6 +29,7 @@ export const createHashedPassword = async (password, salt_) => {
     const hashedPassword = key.toString("base64");
     return { hashedPassword, salt };
 };
+
 export const makeUserToken = (obj, type = 'user') => {
     let token = jwt.sign({ ...obj },
         type == 'user' ? process.env.JWT_SECRET : process.env.DNS_JWT_SECRET,
