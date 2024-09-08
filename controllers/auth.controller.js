@@ -7,6 +7,7 @@ import { createHashedPassword, checkLevel, makeUserToken, response, checkDns, lo
 import 'dotenv/config';
 import speakeasy from 'speakeasy';
 import crypto from 'crypto';
+import redisCtrl from "../redis/index.js";
 
 const authCtrl = {
     setting: async (req, res, next) => {
@@ -274,16 +275,30 @@ const authCtrl = {
                 return response(req, res, -150, "권한이 없습니다.", {})
             }
             let requestIp = getReqIp(req);
-            let user = await pool.query(`SELECT only_connect_ip FROM users WHERE id=${decode_user?.id} `);
-            user = user?.result[0];
-            if (user?.only_connect_ip) {
-                if (requestIp != user?.only_connect_ip) {
+            let user = await redisCtrl.get(`user_only_connect_ip_${decode_user?.id}`);
+            if (user) {
+                user = JSON.parse(user ?? "{}");
+            } else {
+                user = await pool.query(`SELECT only_connect_ip FROM users WHERE id=${decode_user?.id} `);
+                user = user?.result[0];
+                await redisCtrl.set(`user_only_connect_ip_${decode_user?.id}`, JSON.stringify(user), 60);
+            }
+
+            let only_connect_ip = user?.only_connect_ip ?? "";
+            if (only_connect_ip) {
+                if (requestIp != only_connect_ip) {
                     res.clearCookie('token');
                     return response(req, res, -150, "권한이 없습니다.", {})
                 }
             }
-            let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${decode_user?.id} AND is_delete=0`);
-            ip_list = ip_list?.result;
+            let ip_list = await redisCtrl.get(`user_ip_list_${decode_user?.id}`);
+            if (ip_list) {
+                ip_list = JSON.parse(ip_list ?? "[]")
+            } else {
+                ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${decode_user?.id} AND is_delete=0`);
+                ip_list = ip_list?.result;
+                await redisCtrl.set(`user_ip_list_${decode_user?.id}`, JSON.stringify(ip_list), 60);
+            }
             if (decode_user?.level < 45 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp))) {
                 res.clearCookie('token');
                 return response(req, res, -150, "권한이 없습니다.", {})
