@@ -1,5 +1,6 @@
 'use strict';
 import db, { pool } from "../../config/db.js";
+import redisCtrl from "../../redis/index.js";
 import corpApi from "../../utils.js/corp-util/index.js";
 import { checkIsManagerUrl, getUserWithDrawFee, returnMoment } from "../../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuery } from "../../utils.js/query-util.js";
@@ -111,8 +112,16 @@ const withdrawV1Ctrl = {
             if (!api_key) {
                 return response(req, res, -100, "api key를 입력해주세요.", false);
             }
-            let dns_data = await pool.query(`SELECT * FROM brands WHERE api_key=?`, [api_key]);
-            dns_data = dns_data?.result[0];
+            let dns_data = await redisCtrl.get(`dns_data_${api_key}`);
+            if (dns_data) {
+                dns_data = JSON.parse(dns_data ?? "{}");
+            } else {
+                dns_data = await pool.query(`SELECT * FROM brands WHERE api_key=?`, [api_key]);
+                dns_data = dns_data?.result[0];
+                await redisCtrl.set(`dns_data_${api_key}`, JSON.stringify(dns_data), 60);
+            }
+
+
             let operator_list = getOperatorList(dns_data);
             if (!dns_data) {
                 return response(req, res, -100, "api key가 잘못되었습니다.", false);

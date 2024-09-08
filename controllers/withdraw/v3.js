@@ -8,6 +8,7 @@ import { checkDns, checkLevel, commarNumber, findBlackList, getDailyWithdrawAmou
 import 'dotenv/config';
 import crypto from 'crypto';
 import speakeasy from 'speakeasy';
+import redisCtrl from "../../redis/index.js";
 //코리아결제출금
 
 export const makeSignValueSha256 = (text) => {
@@ -40,14 +41,21 @@ const withdrawV3Ctrl = {
             if (!mid) {
                 return response(req, res, -100, "mid를 입력해주세요.", {});
             }
-            let dns_data = await pool.query(`SELECT * FROM brands WHERE api_key=?`, [api_key]);
-            dns_data = dns_data?.result[0];
-            dns_data['setting_obj'] = JSON.parse(dns_data?.setting_obj ?? '{}');
-            req.body.brand_id = dns_data?.id;
+            let dns_data = await redisCtrl.get(`dns_data_${api_key}`);
+            if (dns_data) {
+                dns_data = JSON.parse(dns_data ?? "{}");
+            } else {
+                dns_data = await pool.query(`SELECT * FROM brands WHERE api_key=?`, [api_key]);
+                dns_data = dns_data?.result[0];
+                await redisCtrl.set(`dns_data_${api_key}`, JSON.stringify(dns_data), 60);
+            }
+
+
             if (!dns_data) {
                 return response(req, res, -100, "api key가 잘못되었습니다.", {});
             }
-
+            dns_data['setting_obj'] = JSON.parse(dns_data?.setting_obj ?? '{}');
+            req.body.brand_id = dns_data?.id;
             let pay_type_name = '';
             if (pay_type == 'withdraw') {
                 pay_type_name = '출금';
