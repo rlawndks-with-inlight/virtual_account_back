@@ -168,7 +168,6 @@ export const banknersApi = {
                         data: {},
                     };
                 }
-                console.log(result)
                 return {
                     code: 100,
                     message: '',
