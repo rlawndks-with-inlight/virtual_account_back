@@ -74,6 +74,7 @@ const withdrawV1Ctrl = {
                 acct_num: withdraw_acct_num,
                 amount: 1000,
             })
+            console.log(account_info)
             if (account_info.code == 100) {
                 return response(req, res, 100, "success", account_info.data)
             } else {
