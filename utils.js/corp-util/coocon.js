@@ -158,27 +158,36 @@ export const cooconApi = {
             try {
                 let {
                     dns_data, pay_type, decode_user,
-                    bank_code, acct_num
+                    bank_code, acct_num, amount
                 } = data;
-                let query = {
+
+                let query = new URLSearchParams()
+                query.append('JSONData', JSON.stringify({
+                    ...getDefaultBody(dns_data, pay_type),
                     KEY: '6110',
                     RCV_BNK_CD: bank_code,
                     RCV_ACCT_NO: acct_num,
+                    TRSC_AMT: amount,
+                }))
+                let { data: response } = await axios.post(`${API_URL}/sol/gateway/vapg_wapi.jsp`, query, {
+                    headers: getDefaultHeader(),
+                });
+                console.log(response)
+                if (response?.RESP_CD == '0000') {
+                    return {
+                        code: 100,
+                        message: '',
+                        data: {
+                            withdraw_acct_name: response?.RCV_ACCT_NM
+                        },
+                    };
+                } else {
+                    return {
+                        code: -100,
+                        message: response?.RESP_MSG,
+                        data: {},
+                    };
                 }
-                let { data: response } = await axios.post(`${API_URL}/sol/gateway/vapg_wapi.jsp`, {
-                    ...getDefaultBody(dns_data, pay_type),
-                    ...query,
-                })
-                response.data = {
-                    RESP_CD: '0000',
-                }
-                return {
-                    code: 100,
-                    message: '',
-                    data: {
-                        result: response.data?.RESP_CD
-                    },
-                };
             } catch (err) {
                 console.log(err)
                 console.log(err?.response?.data)
