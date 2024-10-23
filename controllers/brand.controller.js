@@ -22,8 +22,8 @@ const brandCtrl = {
             let columns = [
                 `${table_name}.*`,
                 `(SELECT MAX(date) FROM brand_pays WHERE brand_id=${table_name}.id AND is_delete=0) AS last_pay_date`,
-                `(SELECT MAX(created_at) FROM deposits WHERE brand_id=${table_name}.id AND deposits.pay_type IN (0) AND deposits.is_delete=0) AS last_deposit_date`,
-                `(SELECT MAX(created_at) FROM deposits WHERE brand_id=${table_name}.id AND deposits.pay_type IN (5, 10, 20) AND deposits.is_delete=0) AS last_withdraw_date`
+                // `(SELECT MAX(created_at) FROM deposits WHERE brand_id=${table_name}.id AND deposits.pay_type IN (0) AND deposits.is_delete=0) AS last_deposit_date`,
+                // `(SELECT MAX(created_at) FROM deposits WHERE brand_id=${table_name}.id AND deposits.pay_type IN (5, 10, 20) AND deposits.is_delete=0) AS last_withdraw_date`
             ]
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
             sql += ` WHERE is_delete=0 `

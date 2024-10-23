@@ -656,8 +656,8 @@ const asdsdaasd = async () => {
         mchts = mchts?.result;
         let brand_list = [
             {//엠에스
-                id: 108,
-                oper_id: 2438,
+                id: 114,
+                oper_id: 2508,
                 mcht_nuser_names: mchts
             },
         ]
