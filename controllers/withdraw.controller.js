@@ -808,6 +808,79 @@ const withdrawCtrl = {
 
         }
     },
+    check: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = await checkLevel(req.cookies.token, 10, req);
+            const decode_dns = checkDns(req.cookies.dns);
+            let {
+                mid
+            } = req.body;
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
+            let user = await pool.query(`SELECT mid FROM users WHERE id=${decode_user?.id}`);
+            user = user?.result[0]
+            if (user?.mid != mid) {
+                return response(req, res, -100, "잘못된 가맹점 접근입니다.", false)
+            }
+            let result = undefined;
+            if (decode_dns?.setting_obj?.api_withdraw_version == 1) {
+                result = await withdrawV1Ctrl.check(req, res);
+            } else if (decode_dns?.setting_obj?.api_withdraw_version == 2) {
+
+            } else if (decode_dns?.setting_obj?.api_withdraw_version == 3) {
+
+            } else if (decode_dns?.setting_obj?.api_withdraw_version == 4) {
+
+            } else if (decode_dns?.setting_obj?.api_withdraw_version == 5) {
+
+            } else {
+                return response(req, res, -100, "존재하지 않습니다.", false)
+            }
+            return response(req, res, result?.result, result?.message, result?.data)
+
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
+    check_withdraw: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = await checkLevel(req.cookies.token, 10, req);
+            const decode_dns = checkDns(req.cookies.dns);
+            let {
+                mid
+            } = req.body;
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
+            let result = undefined;
+            if (decode_dns?.setting_obj?.api_withdraw_version == 1) {
+                result = await withdrawV1Ctrl.check_withdraw(req, res);
+            } else if (decode_dns?.setting_obj?.api_withdraw_version == 2) {
+
+            } else if (decode_dns?.setting_obj?.api_withdraw_version == 3) {
+
+            } else if (decode_dns?.setting_obj?.api_withdraw_version == 4) {
+                result = await withdrawV4Ctrl.check_withdraw(req, res);
+            } else if (decode_dns?.setting_obj?.api_withdraw_version == 5) {
+                result = await withdrawV5Ctrl.check_withdraw(req, res);
+            } else {
+                return response(req, res, -100, "존재하지 않습니다.", false)
+            }
+            return response(req, res, result?.result, result?.message, result?.data)
+
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
 };
 
 

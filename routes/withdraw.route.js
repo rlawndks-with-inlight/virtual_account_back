@@ -25,7 +25,12 @@ router
 router
     .route('/request')
     .post(withdrawCtrl.request)
-
+router
+    .route('/check')
+    .post(withdrawCtrl.check)
+router
+    .route('/check-withdraw')
+    .post(withdrawCtrl.check_withdraw)
 router
     .route('/trx-id/:id')
     .put(withdrawCtrl.updateTrxId);
