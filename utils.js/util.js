@@ -811,7 +811,7 @@ export const userAgentMiddleware = (req, res, next) => {
             user_agent: userAgent,
             uri: req.originalUrl,
         })
-        return response(req, res, -300, "잘못된 접근 입니다.", false)
+        return response(req, res, -300, "잘못된 접근 입니다. 아이피가 수집 되었으며, 보안팀에서 검토 예정입니다.", false)
     }
     next(); // 다음 미들웨어 또는 라우트 핸들러로 이동
 };
