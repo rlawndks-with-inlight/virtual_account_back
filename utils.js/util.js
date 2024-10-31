@@ -805,13 +805,28 @@ export const userAgentMiddleware = (req, res, next) => {
     const isMobile = /mobile|android|iphone|ipad|windows phone/i.test(userAgent);
     const isPC = /windows|macintosh|linux/i.test(userAgent);
     let requestIp = getReqIp(req);
+    const language = req.headers['accept-language'];
     if (!isMobile && !isPC) {
         let result = insertQuery(`hacks`, {
             ip: requestIp,
             user_agent: userAgent,
             uri: req.originalUrl,
+            language,
         })
         return response(req, res, -300, "잘못된 접근 입니다. 아이피가 수집 되었으며, 보안팀에서 검토 예정입니다.", false)
     }
     next(); // 다음 미들웨어 또는 라우트 핸들러로 이동
 };
+/*
+const asdasdasd = async () => {
+    try {
+        let { data: response } = await axios.get(`http://localhost:3000/api/domain/?dns=localhost`, {
+            'accept-language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7'
+        });
+        console.log(response)
+    } catch (err) {
+        // console.log(err);
+    }
+}
+asdasdasd();
+*/
