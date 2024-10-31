@@ -820,13 +820,15 @@ export const userAgentMiddleware = (req, res, next) => {
 /*
 const asdasdasd = async () => {
     try {
-        let { data: response } = await axios.get(`http://localhost:3000/api/domain/?dns=localhost`, {
-            'accept-language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7'
+        let { data: response } = await axios.get(`https://hynet777888.com/api/domain/?dns=hynet777888.com`, {
+            'accept-language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
+            'User-Agent': 'windows'
         });
         console.log(response)
     } catch (err) {
-        // console.log(err);
+        console.log(err);
     }
 }
 asdasdasd();
 */
+
