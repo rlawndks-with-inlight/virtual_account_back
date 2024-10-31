@@ -800,3 +800,12 @@ export const findBlackList = async (word, type, decode_dns = {}) => {
         console.log(err);
     }
 }
+export const userAgentMiddleware = (req, res, next) => {
+    const userAgent = req.get('User-Agent');
+    const isMobile = /mobile|android|iphone|ipad|windows phone/i.test(userAgent);
+    const isPC = /windows|macintosh|linux/i.test(userAgent);
+    if (!isMobile && !isPC) {
+        return response(req, res, -200, "잘못된 접근 입니다.", false)
+    }
+    next(); // 다음 미들웨어 또는 라우트 핸들러로 이동
+};

@@ -11,7 +11,7 @@ import http from 'http';
 import https from 'https';
 import scheduleIndex from "./utils.js/schedules/index.js";
 import upload from "./config/multerConfig.js";
-import { generateRandomString, getReqIp, imageFieldList } from "./utils.js/util.js";
+import { generateRandomString, getReqIp, imageFieldList, userAgentMiddleware } from "./utils.js/util.js";
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import { uploadMultipleFiles } from "./utils.js/api-util.js";
@@ -44,6 +44,7 @@ app.use((req, res, next) => {
     limiter(req, res, next);
   }
 });
+app.use('/api', userAgentMiddleware);
 app.use('/api', routes);
 
 app.get('/', (req, res) => {
