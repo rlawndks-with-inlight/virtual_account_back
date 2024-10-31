@@ -7,7 +7,7 @@ import { readSync } from 'fs';
 import when from 'when';
 import _ from 'lodash';
 import { getUserWithDrawFee, returnMoment } from './function.js';
-import { getMultipleQueryByWhen, updateQuery } from './query-util.js';
+import { getMultipleQueryByWhen, insertQuery, updateQuery } from './query-util.js';
 import axios from 'axios';
 import corpApi from './corp-util/index.js';
 import logger from './winston/index.js';
@@ -804,7 +804,12 @@ export const userAgentMiddleware = (req, res, next) => {
     const userAgent = req.get('User-Agent');
     const isMobile = /mobile|android|iphone|ipad|windows phone/i.test(userAgent);
     const isPC = /windows|macintosh|linux/i.test(userAgent);
+    let requestIp = getReqIp(req);
     if (!isMobile && !isPC) {
+        let result = insertQuery(`hacks`, {
+            ip: requestIp,
+            user_agent: userAgent,
+        })
         return response(req, res, -300, "잘못된 접근 입니다.", false)
     }
     next(); // 다음 미들웨어 또는 라우트 핸들러로 이동
