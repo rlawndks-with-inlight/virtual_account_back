@@ -809,6 +809,7 @@ export const userAgentMiddleware = (req, res, next) => {
         let result = insertQuery(`hacks`, {
             ip: requestIp,
             user_agent: userAgent,
+            uri: req.originalUrl,
         })
         return response(req, res, -300, "잘못된 접근 입니다.", false)
     }
