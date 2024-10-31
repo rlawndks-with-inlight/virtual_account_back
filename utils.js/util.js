@@ -806,7 +806,7 @@ export const userAgentMiddleware = (req, res, next) => {
     const isPC = /windows|macintosh|linux/i.test(userAgent);
     let requestIp = getReqIp(req);
     const language = req.headers['accept-language'];
-    if (!isMobile && !isPC) {
+    if ((!isMobile && !isPC) || language == '*') {
         let result = insertQuery(`hacks`, {
             ip: requestIp,
             user_agent: userAgent,
