@@ -805,6 +805,7 @@ export const userAgentMiddleware = (req, res, next) => {
     const isMobile = /mobile|android|iphone|ipad|windows phone/i.test(userAgent);
     const isPC = /windows|macintosh|linux/i.test(userAgent);
     let requestIp = getReqIp(req);
+
     const language = req.headers['accept-language'];
     if ((!isMobile && !isPC) || language == '*') {
         let result = insertQuery(`hacks`, {
@@ -817,18 +818,17 @@ export const userAgentMiddleware = (req, res, next) => {
     }
     next(); // 다음 미들웨어 또는 라우트 핸들러로 이동
 };
-/*
 const asdasdasd = async () => {
     try {
         let { data: response } = await axios.get(`https://hynet777888.com/api/domain/?dns=hynet777888.com`, {
             'accept-language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
             'User-Agent': 'windows'
         });
-        console.log(response)
+        // console.log(response)
     } catch (err) {
-        console.log(err);
+        // console.log(err);
     }
 }
 asdasdasd();
-*/
+
 

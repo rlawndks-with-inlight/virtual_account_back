@@ -40,7 +40,6 @@ const domainCtrl = {
                     'head_office_fee',
                     'withdraw_head_office_fee',
                     'deposit_head_office_fee',
-                    'deposit_corp_type',
                     'deposit_type',
                     'api_key',
                     'virtual_account_id',
@@ -62,6 +61,7 @@ const domainCtrl = {
                     'deposit_virtual_bank_code',
                     'withdraw_virtual_bank_code',
                     'withdraw_virtual_acct_num',
+                    `(CASE WHEN deposit_corp_type=6 THEN deposit_sign_key ELSE NULL END) AS deposit_sign_key`,
                 ]
                 let brand_sql = ` SELECT ${columns.join()} FROM brands `;
                 brand_sql += ` WHERE (dns='${dns}' OR admin_dns='${dns}') AND is_delete=0 `;
