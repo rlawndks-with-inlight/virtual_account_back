@@ -572,6 +572,35 @@ const virtualAccountCtrl = {
 
         }
     },
+    exist_check: async (req, res, next) => {
+        try {
+            const decode_dns = checkDns(req.cookies.dns);
+            console.log(decode_dns)
+            const {
+                name,
+                phone_num,
+                birth,
+            } = req.body;
+            let virtual_account = await pool.query(`SELECT id FROM ${table_name} WHERE brand_id=${decode_dns?.id} AND phone_num=? AND name=?`, [phone_num, name]);
+            virtual_account = virtual_account?.result[0];
+            if (virtual_account) {
+
+            } else {
+
+            }
+            let remain_virtual_account = await corpApi.vaccount_get({
+                pay_type: 'deposit',
+                dns_data: decode_dns,
+            })
+            console.log(remain_virtual_account)
+            return response(req, res, 100, "success", {})
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
 };
 
 export default virtualAccountCtrl;

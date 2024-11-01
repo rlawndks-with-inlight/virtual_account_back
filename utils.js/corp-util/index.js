@@ -169,6 +169,9 @@ const corpApi = {
                 if (corp_type == 1) {
                     result = await banknersApi.user.account(data);
                 }
+                if (corp_type == 6) {
+                    result = await koreaPaySystemApi.user.account(data);
+                }
                 return result;
             },
             info: async (data_) => {//이체
@@ -220,6 +223,56 @@ const corpApi = {
             }
             return result;
         },
+    },
+    vaccount: {
+        info: async (data_) => {//이체
+            let data = data_;
+            let { dns_data, pay_type } = data;
+            dns_data = await getDnsData(dns_data);
+            data['dns_data'] = dns_data;
+            let result = default_result;
+            let corp_type = dns_data?.deposit_corp_type || dns_data?.withdraw_corp_type;
+            if (dns_data?.setting_obj?.is_use_deposit == 1) {
+                corp_type = dns_data?.deposit_corp_type;
+            } else if (dns_data?.setting_obj?.is_use_withdraw == 1) {
+                corp_type = dns_data?.withdraw_corp_type;
+            }
+            if (pay_type) {
+                corp_type = dns_data[`${pay_type}_corp_type`];
+            }
+            if (corp_type == 2) {
+                result = await cooconApi.account.info(data);
+            }
+            if (corp_type == 6) {
+                result = await koreaPaySystemApi.account.info(data);
+            }
+            if (corp_type == 7) {
+                result = await icbApi.account.info(data);
+            }
+            return result;
+        },
+
+    },
+    vaccount_get: async (data_) => {//이체
+        let data = data_;
+        let { dns_data, pay_type } = data;
+        dns_data = await getDnsData(dns_data);
+        data['dns_data'] = dns_data;
+        let result = default_result;
+        let corp_type = dns_data?.deposit_corp_type || dns_data?.withdraw_corp_type;
+        if (dns_data?.setting_obj?.is_use_deposit == 1) {
+            corp_type = dns_data?.deposit_corp_type;
+        } else if (dns_data?.setting_obj?.is_use_withdraw == 1) {
+            corp_type = dns_data?.withdraw_corp_type;
+        }
+        if (pay_type) {
+            corp_type = dns_data[`${pay_type}_corp_type`];
+        }
+        if (corp_type == 6) {
+            result = await koreaPaySystemApi.vaccount_get(data);
+        }
+
+        return result;
     },
     transfer: {
         pass: async (data_) => {//이체

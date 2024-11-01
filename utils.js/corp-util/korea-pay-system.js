@@ -21,7 +21,35 @@ const processBodyObj = (obj_ = {}, dns_data, pay_type, object_type = 'vact') => 
     }
     return obj;
 }
+const checkVirtualAccountGet = async (dns_data, pay_type) => {
+    let first_query = {
+        banks: [dns_data[`${pay_type}_virtual_bank_code`]],
+    };
+    first_query = processBodyObj(first_query, dns_data, pay_type);
+    let virtual_issue_time = returnMoment();
 
+    let { data: virtual_account_result } = await axios.post(`${API_URL}/api/vact/withdrawGet`, first_query, {
+        headers: makeHeaderData(dns_data, pay_type)
+    });
+    if (virtual_account_result?.result?.resultCd != '0000') {
+        return {
+            code: -100,
+            message: virtual_account_result?.result?.advanceMsg,
+            data: {},
+        };
+    }
+    let virtual_bank_code = virtual_account_result?.vact?.vacts[0]?.bankCd;
+    let virtual_acct_num = virtual_account_result?.vact?.vacts[0]?.account;
+    return {
+        code: 100,
+        message: '',
+        data: {
+            virtual_bank_code,
+            virtual_acct_num,
+            virtual_issue_time,
+        },
+    }
+}
 export const koreaPaySystemApi = {
     balance: {
         info: async (data) => {
@@ -210,6 +238,45 @@ export const koreaPaySystemApi = {
 
             }
         },
+    },
+    vaccount_get: async (data) => {
+        let { dns_data, pay_type, decode_user,
+            email, name, phone_num, birth, guid,
+            virtual_bank_code, virtual_acct_num, virtual_issue_time,
+        } = data;
+        let ci = `${new Date().getTime()}` + phone_num + birth;
+        try {
+            //발급 가능한 가상계좌 확인
+            let new_virtual_account = await checkVirtualAccountGet(dns_data, pay_type);
+            if (new_virtual_account?.code < 0) {
+                return {
+                    code: -100,
+                    message: new_virtual_account.message,
+                    data: {
+
+                    },
+                };
+            }
+            virtual_bank_code = new_virtual_account.data?.virtual_bank_code;
+            virtual_acct_num = new_virtual_account.data?.virtual_acct_num;
+            virtual_issue_time = new_virtual_account.data?.virtual_issue_time;
+            return {
+                code: 100,
+                message: '',
+                data: {
+                    virtual_bank_code,
+                    virtual_acct_num,
+                    virtual_issue_time,
+                },
+            };
+        } catch (err) {
+            console.log(err);
+            return {
+                code: -100,
+                message: '',
+                data: {},
+            };
+        }
     },
     withdraw: {
         request: async (data) => {//출금신청

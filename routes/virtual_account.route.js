@@ -37,5 +37,8 @@ router
 router
     .route('/cancel-deposit')
     .post(virtualAccountCtrl.cancelDeposit)
+router
+    .route('/exist-check')
+    .post(virtualAccountCtrl.exist_check)
 
 export default router;

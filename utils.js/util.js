@@ -100,6 +100,7 @@ const logRequestResponse = async (req, res, decode_user, decode_dns) => {//ë¡œê·
         delete body['user_pw'];
         delete body['password'];
         delete body['new_password'];
+        delete body['new_password_check'];
         delete body['otp_token'];
         let request = {
             url: req.originalUrl,
@@ -807,7 +808,7 @@ export const userAgentMiddleware = (req, res, next) => {
     let requestIp = getReqIp(req);
 
     const language = req.headers['accept-language'];
-    if ((!isMobile && !isPC) || language == '*') {
+    if ((!isMobile && !isPC) || language == '*' || !language) {
         let result = insertQuery(`hacks`, {
             ip: requestIp,
             user_agent: userAgent,
