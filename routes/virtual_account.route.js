@@ -6,7 +6,9 @@ router
     .route('/')
     .get(virtualAccountCtrl.list)
     .post(virtualAccountCtrl.create);
-
+router
+    .route('/exist-check')
+    .post(virtualAccountCtrl.exist_check)
 router
     .route('/:id')
     .get(virtualAccountCtrl.get)
@@ -37,8 +39,6 @@ router
 router
     .route('/cancel-deposit')
     .post(virtualAccountCtrl.cancelDeposit)
-router
-    .route('/exist-check')
-    .post(virtualAccountCtrl.exist_check)
+
 
 export default router;

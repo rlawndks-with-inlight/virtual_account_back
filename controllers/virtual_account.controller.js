@@ -581,7 +581,7 @@ const virtualAccountCtrl = {
                 phone_num,
                 birth,
             } = req.body;
-            let virtual_account = await pool.query(`SELECT id FROM ${table_name} WHERE brand_id=${decode_dns?.id} AND phone_num=? AND name=?`, [phone_num, name]);
+            let virtual_account = await pool.query(`SELECT id FROM ${table_name} WHERE brand_id=${decode_dns?.id} AND phone_num=? AND deposit_acct_name=?`, [phone_num, name]);
             virtual_account = virtual_account?.result[0];
             if (virtual_account) {
 
@@ -592,8 +592,11 @@ const virtualAccountCtrl = {
                 pay_type: 'deposit',
                 dns_data: decode_dns,
             })
-            console.log(remain_virtual_account)
-            return response(req, res, 100, "success", {})
+            if (remain_virtual_account?.code > 0) {
+                return response(req, res, 100, "success", remain_virtual_account?.data);
+            } else {
+                return response(req, res, -100, remain_virtual_account?.message, false)
+            }
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)
