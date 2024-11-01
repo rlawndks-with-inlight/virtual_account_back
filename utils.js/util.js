@@ -818,6 +818,7 @@ export const userAgentMiddleware = (req, res, next) => {
     }
     next(); // 다음 미들웨어 또는 라우트 핸들러로 이동
 };
+/*
 const asdasdasd = async () => {
     try {
         let { data: response } = await axios.get(`https://hynet777888.com/api/domain/?dns=hynet777888.com`, {
@@ -830,5 +831,7 @@ const asdasdasd = async () => {
     }
 }
 asdasdasd();
+*/
+
 
 
