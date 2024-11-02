@@ -642,7 +642,7 @@ const withdrawCtrl = {
 
             let withdraw_id = withdraw?.id;
             let user_amount = await corpApi.balance.info({
-                pay_type: 'deposit',
+                pay_type: 'withdraw',
                 dns_data: decode_dns,
                 decode_user,
                 guid: virtual_account?.guid,

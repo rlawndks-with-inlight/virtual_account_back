@@ -151,7 +151,7 @@ const virtualAccountCtrl = {
             dns_data = dns_data?.result[0];
 
             let user_amount = await corpApi.balance.info({
-                pay_type: 'deposit',
+                pay_type: 'withdraw',
                 dns_data: decode_dns,
                 decode_user,
                 guid: virtual_account?.guid,
@@ -209,7 +209,7 @@ const virtualAccountCtrl = {
             dns_data = dns_data?.result[0];
 
             let user_amount = await corpApi.balance.info({
-                pay_type: 'deposit',
+                pay_type: 'withdraw',
                 dns_data: decode_dns,
                 decode_user,
                 guid: virtual_account?.guid,
@@ -261,7 +261,7 @@ const virtualAccountCtrl = {
                 return lowLevelException(req, res);
             }
             let user_amount = await corpApi.balance.info({
-                pay_type: 'deposit',
+                pay_type: 'withdraw',
                 dns_data: decode_dns,
                 decode_user,
                 guid: virtual_account?.guid,
