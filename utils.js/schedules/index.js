@@ -6,6 +6,7 @@ import { popbillScraping } from './scrap-popbill.js';
 import { destructAutoVirtualAcct } from './destruct-auto-virtual-acct.js';
 import { onParentBrandSettle } from './parent-brand-settle.js';
 import { blockHackIp } from './block-hack-ip.js';
+import { payConfirmProcess } from './pay-confirm-process.js';
 
 const scheduleIndex = () => {
     schedule.scheduleJob('0 0/1 * * * *', async function () {
@@ -22,7 +23,7 @@ const scheduleIndex = () => {
             pushAsapMall(return_moment);
         }
         if (parseInt(process.env.INSTANCE_ID) == parseInt(process.env.instances) - 3) {
-
+            payConfirmProcess();
         }
     })
 }
