@@ -13,7 +13,7 @@ export const payConfirmProcess = async () => {
             return el?.id
         })
         if (brand_ids.length > 0) {
-            let deposits = await pool.query(`SELECT * FROM deposits WHERE brand_id IN (${brand_ids.join()}) AND deposit_status=0 AND is_pay_confirm=0 AND pay_type=0 ORDER BY id ASC`);
+            let deposits = await pool.query(`SELECT id, brand_id, virtual_account_id, amount FROM deposits WHERE brand_id IN (${brand_ids.join()}) AND deposit_status=0 AND is_pay_confirm=0 AND pay_type=0 ORDER BY id ASC`);
             deposits = deposits?.result;
             console.log(deposits);
             let virtual_account_ids = deposits.map(el => {
