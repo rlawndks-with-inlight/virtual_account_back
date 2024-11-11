@@ -34,7 +34,11 @@ export const icbApi = {
                     timestamp,
                     memKey: ci,
                 }
-                let { data: response } = await axios.post(`${API_URL}/v1/merchant/settle/balance/getInfo`, query, {
+                let uri = `/v1/merchant/settle/balance/getInfo`;
+                if (dns_data?.deposit_process_type == 1) {
+                    uri = `/v2/merchant/settle/balance/getInfo`;
+                }
+                let { data: response } = await axios.post(`${API_URL}${uri}`, query, {
                     headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
                 if (response?.code != 200) {
@@ -699,7 +703,11 @@ export const icbApi = {
                     trxAmt: amount,
                     partnerTrxNo: trx_id,
                 }
-                let { data: response } = await axios.post(`${API_URL}/v1/merchant/settle/request${is_deposit == 1 ? '/deposit' : ''}/amt`, query, {
+                let uri = `/v1/merchant/settle/request${is_deposit == 1 ? '/deposit' : ''}/amt`;
+                if (dns_data?.deposit_process_type == 1) {
+                    uri = `/v2/merchant/settle/request`;
+                }
+                let { data: response } = await axios.post(`${API_URL}${uri}`, query, {
                     headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
                 if (response?.code != 200) {
