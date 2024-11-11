@@ -455,9 +455,63 @@ export const icbApi = {
                     trxAmt: amount,
                     partnerTrxNo: trx_id,
                 }
-                let { data: response } = await axios.post(`${API_URL}/v1/pg/paymentRequest`, query, {
+                let uri = `/v1/pg/paymentRequest`;
+                if (dns_data?.deposit_process_type == 1) {
+                    uri = `/v2/merchant/member/payment`;
+                }
+                let { data: response } = await axios.post(`${API_URL}${uri}`, query, {
                     headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
+                console.log(response)
+                if (response?.code != 200) {
+                    return {
+                        code: -100,
+                        message: response?.message,
+                        data: {},
+                    };
+                }
+                return {
+                    code: 100,
+                    message: response?.message,
+                    data: {},
+                };
+
+            } catch (err) {
+                console.log(err)
+                return {
+                    code: -200,
+                    message: '',
+                    data: {},
+                };
+
+            }
+        },
+        charge: async (data) => {
+            try {
+                let {
+                    dns_data,
+                    pay_type,
+                    ci,
+                    amount,
+                    trx_id,
+                    name,
+                } = data;
+                let timestamp = await returnMoment().replaceAll(' ', '').replaceAll('-', '').replaceAll(':', '')
+                let query = {
+                    timestamp,
+                    memKey: ci,
+                    trxAmt: amount,
+                    partnerTrxNo: trx_id,
+                    depositNm: name,
+                }
+                let uri = ``;
+                if (dns_data?.deposit_process_type == 1) {
+                    uri = `/v2/merchant/member/charge`;
+                }
+                let { data: response } = await axios.post(`${API_URL}${uri}`, query, {
+                    headers: getDefaultHeader(dns_data, pay_type, timestamp)
+                });
+                console.log(response)
                 if (response?.code != 200) {
                     return {
                         code: -100,

@@ -500,13 +500,27 @@ const virtualAccountCtrl = {
                 deposit_status: 20,
                 pay_type: 0,
             })
-            let api_result = await corpApi.deposit.request({
-                pay_type: 'deposit',
-                dns_data: decode_dns,
-                ci: virtual_account?.ci,
-                amount,
-                trx_id,
-            });
+            let api_result = undefined;
+            if (decode_dns?.deposit_process_type == 0) {
+                api_result = await corpApi.deposit.request({
+                    pay_type: 'deposit',
+                    dns_data: decode_dns,
+                    ci: virtual_account?.ci,
+                    amount,
+                    trx_id,
+                    name: virtual_account?.deposit_acct_name,
+                });
+            } else if (decode_dns?.deposit_process_type == 1) {
+                api_result = await corpApi.deposit.charge({
+                    pay_type: 'deposit',
+                    dns_data: decode_dns,
+                    ci: virtual_account?.ci,
+                    amount,
+                    trx_id,
+                    name: virtual_account?.deposit_acct_name,
+                });
+            }
+
             if (api_result?.code != 100) {
                 return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
             }
