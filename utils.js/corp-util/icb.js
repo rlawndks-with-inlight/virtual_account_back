@@ -647,7 +647,11 @@ export const icbApi = {
                     memKey: ci,
                     partnerTrxNos: tid,
                 }
-                let { data: response } = await axios.post(`${API_URL}/v1/merchant/settle/member/inquiry`, query, {
+                let uri = `/v1/merchant/settle/member/inquiry`;
+                if (dns_data?.deposit_process_type == 1) {
+                    uri = `/v2/merchant/settle/inquiry`;
+                }
+                let { data: response } = await axios.post(`${API_URL}${uri}`, query, {
                     headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
                 let status = 10;
