@@ -39,19 +39,22 @@ export const payConfirmProcess = async () => {
     }
 }
 const processConfirm = async (deposit, virtual_account, decode_dns) => {
-    let trx_id = `pay${decode_dns?.id}${virtual_account?.id ?? generateRandomString(6)}${new Date().getTime()}`;
-    let api_result = await corpApi.deposit.request({
-        pay_type: 'deposit',
-        dns_data: decode_dns,
-        ci: virtual_account?.ci,
-        amount: deposit?.amount,
-        trx_id,
-        //name: virtual_account?.deposit_acct_name,
-    });
-    if (api_result?.code > 0) {
-        let update_deposit = await updateQuery(`deposits`, {
-            is_pay_confirm: 1,
-        }, deposit?.id)
+    try {
+        let trx_id = `pay${decode_dns?.id}${virtual_account?.id ?? generateRandomString(6)}${new Date().getTime()}`;
+        let api_result = await corpApi.deposit.request({
+            pay_type: 'deposit',
+            dns_data: decode_dns,
+            ci: virtual_account?.ci,
+            amount: deposit?.amount,
+            trx_id,
+            //name: virtual_account?.deposit_acct_name,
+        });
+        if (api_result?.code > 0) {
+            let update_deposit = await updateQuery(`deposits`, {
+                is_pay_confirm: 1,
+            }, deposit?.id)
+        }
+    } catch (err) {
+        console.log(err);
     }
-
 }
