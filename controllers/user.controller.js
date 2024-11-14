@@ -435,7 +435,7 @@ const userCtrl = {
                 }
                 obj[`${table}_id`] = virtual_account?.id;
             } else {
-                obj[`${table}_id`]
+                obj[`${table}_id`] = null;
             }
             if (children_brand_dns) {
                 let children_brand = await pool.query(`SELECT * FROM brands WHERE dns=?`, [children_brand_dns]);
