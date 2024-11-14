@@ -38,6 +38,9 @@ const withdrawV3Ctrl = {
                 withdraw_acct_name,
                 identity = "",
             } = req.body;
+            if (!(withdraw_amount > 0)) {
+                return response(req, res, -100, "출금금액은 0보다 커야합니다.", {});
+            }
             withdraw_amount = parseInt(withdraw_amount);
             if (!api_key) {
                 return response(req, res, -100, "api key를 입력해주세요.", {});
@@ -121,14 +124,6 @@ const withdrawV3Ctrl = {
                 if (user_api_sign_val != api_sign_val) {
                     return response(req, res, -100, "서명값이 잘못 되었습니다.", false)
                 }
-            }
-
-            let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE guid=? AND is_delete=0 AND status=0`, [
-                guid
-            ]);
-            virtual_account = virtual_account?.result[0];
-            if (!virtual_account) {
-                return response(req, res, -100, "가상계좌를 먼저 등록해 주세요.", false)
             }
 
             let amount = parseInt(withdraw_amount) + (dns_data?.withdraw_fee_type == 0 ? user?.withdraw_fee : 0);
