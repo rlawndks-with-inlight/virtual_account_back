@@ -33,6 +33,10 @@ const withdrawV3Ctrl = {
                 note = "",
                 api_sign_val,
                 otp_num,
+                withdraw_bank_code,
+                withdraw_acct_num,
+                withdraw_acct_name,
+                identity = "",
             } = req.body;
             withdraw_amount = parseInt(withdraw_amount);
             if (!api_key) {
@@ -103,6 +107,15 @@ const withdrawV3Ctrl = {
                     return response(req, res, -100, "OTP번호가 잘못되었습니다.", false);
                 }
             }
+            if (!withdraw_bank_code) {
+                return response(req, res, -100, "은행을 선택해 주세요.", false)
+            }
+            if (!withdraw_acct_num) {
+                return response(req, res, -100, "계좌번호를 입력해 주세요.", false)
+            }
+            if (!withdraw_acct_name) {
+                return response(req, res, -100, "예금주명을 입력해 주세요.", false)
+            }
             if (dns_data?.is_use_sign_key == 1) {
                 let user_api_sign_val = makeSignValueSha256(`${api_key}${mid}${user?.sign_key}`);
                 if (user_api_sign_val != api_sign_val) {
@@ -159,10 +172,11 @@ const withdrawV3Ctrl = {
                     return response(req, res, -100, `출금 불가 시간입니다. ${dns_data?.setting_obj?.not_withdraw_s_time} ~ ${dns_data?.setting_obj?.not_withdraw_e_time}`, false);
                 }
             }
-            let black_item = await findBlackList(virtual_account?.deposit_acct_num, 0, dns_data);
+            let black_item = await findBlackList(withdraw_acct_num, 0, dns_data);
             if (black_item) {
                 return response(req, res, -100, "블랙리스트 유저입니다.", false);
             }
+            /*
             if (pay_type == 20 && user?.can_return_ago_pay == 1) {
                 let deposit_count = await pool.query(`SELECT COUNT(*) AS count FROM deposits WHERE pay_type=0 AND virtual_account_id=${virtual_account?.id}`);
                 deposit_count = deposit_count?.result[0];
@@ -170,15 +184,16 @@ const withdrawV3Ctrl = {
                     return response(req, res, -100, "결제한 이력이 없는 유저이므로 반환 불가합니다.", false)
                 }
             }
+            */
+
             let deposit_obj = {
                 brand_id: dns_data?.id,
                 pay_type,
                 expect_amount: (-1) * amount,
-                settle_bank_code: virtual_account?.deposit_bank_code,
-                settle_acct_num: virtual_account?.deposit_acct_num,
-                settle_acct_name: virtual_account?.deposit_acct_name,
+                settle_bank_code: withdraw_bank_code,
+                settle_acct_num: withdraw_acct_num,
+                settle_acct_name: withdraw_acct_name,
                 withdraw_fee: user?.withdraw_fee,
-                virtual_account_id: virtual_account?.id,
                 user_id: user?.id,
                 withdraw_status: 5,
                 note: note,
@@ -228,16 +243,16 @@ const withdrawV3Ctrl = {
                 pay_type: 'withdraw',
                 dns_data: dns_data,
                 decode_user: user,
-                bank_code: virtual_account?.deposit_bank_code,
-                acct_num: virtual_account?.deposit_acct_num,
-                birth: virtual_account?.birth,
-                business_num: virtual_account?.business_num,
-                user_type: virtual_account?.user_type,
+                bank_code: withdraw_bank_code,
+                acct_num: withdraw_acct_num,
+                birth: identity.length > 6 ? '' : identity,
+                business_num: identity.length > 6 ? identity : '',
+                user_type: identity.length > 6 ? 1 : 0,
             })
             if (check_account.code != 100) {
                 return response(req, res, -110, (check_account?.message || "서버 에러 발생"), false)
             }
-            if (virtual_account?.deposit_acct_name.replaceAll(" ", "") != check_account.data?.withdraw_acct_name) {
+            if (withdraw_acct_name != check_account.data?.withdraw_acct_name) {
                 return response(req, res, -100, "예금주명이 일치하지 않습니다.", false)
             }
             let withdraw_id = 0;
@@ -259,16 +274,14 @@ const withdrawV3Ctrl = {
                 pay_type: 'withdraw',
                 dns_data: dns_data,
                 decode_user: user,
-                guid: virtual_account?.guid,
                 amount: withdraw_amount - (dns_data?.withdraw_fee_type == 0 ? 0 : user?.withdraw_fee),
-                bank_code: virtual_account?.deposit_bank_code,
-                acct_num: virtual_account?.deposit_acct_num,
-                acct_name: virtual_account?.deposit_acct_name,
+                bank_code: withdraw_bank_code,
+                acct_num: withdraw_acct_num,
+                acct_name: withdraw_acct_name,
             })
             if (api_withdraw_request_result.code != 100) {
                 return response(req, res, -120, (api_withdraw_request_result?.message || "서버 에러 발생"), false)
             }
-            console.log(api_withdraw_request_result)
             let result3 = await updateQuery(`deposits`, {
                 trx_id: api_withdraw_request_result.data?.tid,
                 top_office_amount: api_withdraw_request_result.data?.top_amount,
