@@ -267,7 +267,7 @@ const virtualAccountCtrl = {
                 guid: virtual_account?.guid,
             })
             let amount = user_amount.data?.amount ?? 0
-            if (amount > 0 && dns_data?.withdraw_corp_type != 7) {
+            if (amount > 0 && dns_data?.withdraw_corp_type != 7 && dns_data?.withdraw_corp_type != 7) {
                 let mother_to_result = await corpApi.transfer.pass({
                     pay_type: 'deposit',
                     dns_data,
@@ -289,7 +289,7 @@ const virtualAccountCtrl = {
                 };
                 let result = await insertQuery(`deposits`, obj);
             }
-            if (virtual_account?.virtual_acct_num && virtual_account?.delete_step < 1) {
+            if (virtual_account?.virtual_acct_num && virtual_account?.delete_step < 1 && virtual_account?.status == 0) {
                 let api_result_vaccount_delete = await corpApi.vaccount_delete({
                     pay_type: 'deposit',
                     dns_data: decode_dns,
