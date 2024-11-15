@@ -172,7 +172,7 @@ const withdrawV4Ctrl = {
                     return response(req, res, -100, "출금 실패 C", false)
                 }
             }
-            if (user?.level == 10 && dns_data?.setting_obj?.is_use_daily_withdraw == 1) {
+            if (user?.level == 10 && dns_data?.setting_obj?.is_use_daily_withdraw == 1 && user?.daily_withdraw_amount > 0) {
                 let daliy_withdraw_amount = await getDailyWithdrawAmount(user);
                 daliy_withdraw_amount = (daliy_withdraw_amount?.withdraw_amount ?? 0) * (-1);
                 if (daliy_withdraw_amount + amount > user?.daily_withdraw_amount) {

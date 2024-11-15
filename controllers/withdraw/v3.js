@@ -125,7 +125,16 @@ const withdrawV3Ctrl = {
                     return response(req, res, -100, "서명값이 잘못 되었습니다.", false)
                 }
             }
-
+            let return_time = returnMoment().substring(11, 16);
+            if (dns_data?.setting_obj?.not_withdraw_s_time >= dns_data?.setting_obj?.not_withdraw_e_time) {
+                if (return_time >= dns_data?.setting_obj?.not_withdraw_s_time || return_time <= dns_data?.setting_obj?.not_withdraw_e_time) {
+                    return response(req, res, -100, `출금 불가 시간입니다. ${dns_data?.setting_obj?.not_withdraw_s_time} ~ ${dns_data?.setting_obj?.not_withdraw_e_time}`, false);
+                }
+            } else {
+                if (return_time >= dns_data?.setting_obj?.not_withdraw_s_time && return_time <= dns_data?.setting_obj?.not_withdraw_e_time) {
+                    return response(req, res, -100, `출금 불가 시간입니다. ${dns_data?.setting_obj?.not_withdraw_s_time} ~ ${dns_data?.setting_obj?.not_withdraw_e_time}`, false);
+                }
+            }
             let amount = parseInt(withdraw_amount) + (dns_data?.withdraw_fee_type == 0 ? user?.withdraw_fee : 0);
             if (dns_data?.withdraw_max_price > 0) {
                 let date = returnMoment().substring(0, 10);
@@ -157,16 +166,7 @@ const withdrawV3Ctrl = {
                     return response(req, res, -100, "출금 실패 C", false)
                 }
             }
-            let return_time = returnMoment().substring(11, 16);
-            if (dns_data?.setting_obj?.not_withdraw_s_time >= dns_data?.setting_obj?.not_withdraw_e_time) {
-                if (return_time >= dns_data?.setting_obj?.not_withdraw_s_time || return_time <= dns_data?.setting_obj?.not_withdraw_e_time) {
-                    return response(req, res, -100, `출금 불가 시간입니다. ${dns_data?.setting_obj?.not_withdraw_s_time} ~ ${dns_data?.setting_obj?.not_withdraw_e_time}`, false);
-                }
-            } else {
-                if (return_time >= dns_data?.setting_obj?.not_withdraw_s_time && return_time <= dns_data?.setting_obj?.not_withdraw_e_time) {
-                    return response(req, res, -100, `출금 불가 시간입니다. ${dns_data?.setting_obj?.not_withdraw_s_time} ~ ${dns_data?.setting_obj?.not_withdraw_e_time}`, false);
-                }
-            }
+
             let black_item = await findBlackList(withdraw_acct_num, 0, dns_data);
             if (black_item) {
                 return response(req, res, -100, "블랙리스트 유저입니다.", false);
