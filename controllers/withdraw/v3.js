@@ -233,7 +233,6 @@ const withdrawV3Ctrl = {
             if (withdraw_amount > mother_account?.real_amount - mother_account?.hold_amount) {
                 return response(req, res, -100, "출금 실패 A", false)
             }
-
             let check_account = await corpApi.account.info({
                 pay_type: 'withdraw',
                 dns_data: dns_data,

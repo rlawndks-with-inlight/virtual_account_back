@@ -370,6 +370,7 @@ const authCtrl = {
                 `users.withdraw_bank_code`,
                 `users.withdraw_acct_num`,
                 `users.withdraw_acct_name`,
+                `users.identity`,
                 `users.can_return`,
                 `users.withdraw_fee`,
                 `users.min_withdraw_hold_price`,
