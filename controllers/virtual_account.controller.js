@@ -267,7 +267,7 @@ const virtualAccountCtrl = {
                 guid: virtual_account?.guid,
             })
             let amount = user_amount.data?.amount ?? 0
-            if (amount > 0 && dns_data?.withdraw_corp_type != 7 && dns_data?.withdraw_corp_type != 7) {
+            if (amount > 0 && dns_data?.withdraw_corp_type != 7 && dns_data?.withdraw_corp_type != 6) {
                 let mother_to_result = await corpApi.transfer.pass({
                     pay_type: 'deposit',
                     dns_data,
