@@ -166,7 +166,13 @@ const withdrawV3Ctrl = {
                     return response(req, res, -100, "출금 실패 C", false)
                 }
             }
-
+            if (user?.level == 10 && dns_data?.setting_obj?.is_use_daily_withdraw == 1 && user?.daily_withdraw_amount > 0) {
+                let daliy_withdraw_amount = await getDailyWithdrawAmount(user);
+                daliy_withdraw_amount = (daliy_withdraw_amount?.withdraw_amount ?? 0) * (-1);
+                if (daliy_withdraw_amount + amount > user?.daily_withdraw_amount) {
+                    return response(req, res, -100, `일일 출금금액을 넘었습니다.\n일일 출금금액:${commarNumber(user?.daily_withdraw_amount)}`, false);
+                }
+            }
             let black_item = await findBlackList(withdraw_acct_num, 0, dns_data);
             if (black_item) {
                 return response(req, res, -100, "블랙리스트 유저입니다.", false);
