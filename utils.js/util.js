@@ -12,6 +12,7 @@ import axios from 'axios';
 import corpApi from './corp-util/index.js';
 import logger from './winston/index.js';
 import xlsx from 'xlsx';
+import redisCtrl from '../redis/index.js';
 
 const randomBytesPromise = util.promisify(crypto.randomBytes);
 const pbkdf2Promise = util.promisify(crypto.pbkdf2);
@@ -39,8 +40,9 @@ export const makeUserToken = (obj, type = 'user') => {
         });
     return token
 }
-export const checkLevel = async (token, level, req) => { //유저 정보 뿌려주기
+export const checkLevel = async (token, level, req, is_log = false) => { //유저 정보 뿌려주기
     try {
+        const decode_dns = checkDns(req.cookies.dns);
         if (token == undefined)
             return false
         //const decoded = jwt.decode(token)
@@ -52,17 +54,53 @@ export const checkLevel = async (token, level, req) => { //유저 정보 뿌려�
             }
             else return decoded;
         })
-        // let requestIp = getReqIp(req);
-        // let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${decoded?.id} AND is_delete=0`);
-        // ip_list = ip_list?.result;
-        // if (decoded?.level < 50 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp)) && ip_list.length > 0) {
-        //     return false;
-        // }
-        const user_level = decoded?.level ?? -1
-        if (level > user_level)
+        if (level > decoded?.level) {
             return false
-        else
-            return decoded
+        }
+        if (is_log) {
+            return decoded;
+        }
+        if (decoded?.level >= 45) {
+
+        } else {
+            if (decoded?.brand_id != decode_dns?.id) {
+                return false;
+            }
+        }
+        if (req) {
+            let requestIp = getReqIp(req);
+            let user = await redisCtrl.get(`user_only_connect_ip_${decoded?.id}`);
+            if (user) {
+                user = JSON.parse(user ?? "{}");
+            } else {
+                user = await pool.query(`SELECT only_connect_ip FROM users WHERE id=${decoded?.id} `);
+                user = user?.result[0];
+                await redisCtrl.set(`user_only_connect_ip_${decoded?.id}`, JSON.stringify(user), 60);
+            }
+
+            let only_connect_ip = user?.only_connect_ip ?? "";
+            if (only_connect_ip) {
+                if (requestIp != only_connect_ip) {
+                    return false;
+                }
+            }
+            let ip_list = await redisCtrl.get(`user_ip_list_${decoded?.id}`);
+            if (ip_list) {
+                ip_list = JSON.parse(ip_list ?? "[]")
+            } else {
+                ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${decoded?.id} AND is_delete=0`);
+                ip_list = ip_list?.result;
+                await redisCtrl.set(`user_ip_list_${decoded?.id}`, JSON.stringify(ip_list), 60);
+            }
+            if (decoded?.level < 45 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp))) {
+                return false;
+            }
+            return decoded;
+        } else {
+            return decoded;
+        }
+
+
     }
     catch (err) {
         console.log(err)
@@ -152,7 +190,7 @@ export const response = async (req, res, code, message, data) => { //응답 포�
         'message': message,
         'data': data,
     }
-    const decode_user = await checkLevel(req.cookies.token, 0, req)
+    const decode_user = await checkLevel(req.cookies.token, 0, req, true)
     const decode_dns = checkDns(req.cookies.dns, 0)
     if (req.originalUrl?.includes('/auth') || req.method == 'DELETE' || req.method == 'POST' || req.method == 'PUT' || req.query?.page_size >= 500) {
         let save_log = await logRequestResponse(req, resDict, decode_user, decode_dns);

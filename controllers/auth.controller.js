@@ -268,7 +268,6 @@ const authCtrl = {
     },
     signOut: async (req, res, next) => {
         try {
-            let is_manager = await checkIsManagerUrl(req);
             const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
             res.clearCookie('token');
@@ -282,40 +281,11 @@ const authCtrl = {
     },
     checkSign: async (req, res, next) => {
         try {
-            let is_manager = await checkIsManagerUrl(req);
-            const decode_user = await checkLevel(req.cookies.token, is_manager ? 1 : 0);
+            const decode_user = await checkLevel(req.cookies.token, 0, req);
             if (!decode_user) {
                 return response(req, res, -150, "권한이 없습니다.", {})
             }
-            let requestIp = getReqIp(req);
-            let user = await redisCtrl.get(`user_only_connect_ip_${decode_user?.id}`);
-            if (user) {
-                user = JSON.parse(user ?? "{}");
-            } else {
-                user = await pool.query(`SELECT only_connect_ip FROM users WHERE id=${decode_user?.id} `);
-                user = user?.result[0];
-                await redisCtrl.set(`user_only_connect_ip_${decode_user?.id}`, JSON.stringify(user), 60);
-            }
 
-            let only_connect_ip = user?.only_connect_ip ?? "";
-            if (only_connect_ip) {
-                if (requestIp != only_connect_ip) {
-                    res.clearCookie('token');
-                    return response(req, res, -150, "권한이 없습니다.", {})
-                }
-            }
-            let ip_list = await redisCtrl.get(`user_ip_list_${decode_user?.id}`);
-            if (ip_list) {
-                ip_list = JSON.parse(ip_list ?? "[]")
-            } else {
-                ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${decode_user?.id} AND is_delete=0`);
-                ip_list = ip_list?.result;
-                await redisCtrl.set(`user_ip_list_${decode_user?.id}`, JSON.stringify(ip_list), 60);
-            }
-            if (decode_user?.level < 45 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp))) {
-                res.clearCookie('token');
-                return response(req, res, -150, "권한이 없습니다.", {})
-            }
             return response(req, res, 100, "success", decode_user)
         } catch (err) {
             console.log(err)
@@ -327,7 +297,7 @@ const authCtrl = {
     changePassword: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = await checkLevel(req.cookies.token, is_manager ? 1 : 0);
+            const decode_user = await checkLevel(req.cookies.token, 0, req);
             if (!decode_user) {
                 return response(req, res, -150, "권한이 없습니다.", {})
             }
@@ -367,7 +337,7 @@ const authCtrl = {
     deposit: async (req, res, next) => {//보유정산금
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = await checkLevel(req.cookies.token, is_manager ? 1 : 0);
+            const decode_user = await checkLevel(req.cookies.token, 10, req);
             const decode_dns = checkDns(req.cookies.dns);
             let table = decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account' : 'member'
             let deposit_column = [

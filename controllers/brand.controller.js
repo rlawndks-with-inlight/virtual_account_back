@@ -89,7 +89,7 @@ const brandCtrl = {
     create: async (req, res, next) => { // 50레벨이상 관리자 url만
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = await checkLevel(req.cookies.token, 50);
+            const decode_user = await checkLevel(req.cookies.token, 50, req);
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
@@ -277,7 +277,7 @@ const brandCtrl = {
     remove: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = await checkLevel(req.cookies.token, 50);
+            const decode_user = await checkLevel(req.cookies.token, 50, req);
             const decode_dns = checkDns(req.cookies.dns);
             const { id } = req.params;
             if (!decode_user) {
