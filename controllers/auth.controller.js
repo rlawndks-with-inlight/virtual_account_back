@@ -174,7 +174,7 @@ const authCtrl = {
             dns_data = dns_data?.result[0];
 
 
-            let user = await pool.query(`SELECT * FROM users WHERE id=${user_id}`);
+            let user = await pool.query(`SELECT * FROM users WHERE id=${user_id} AND level < ${decode_user?.level}`);
             user = user?.result[0];
 
             const token = makeUserToken({
