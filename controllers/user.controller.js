@@ -12,10 +12,14 @@ const table_name = 'users';
 const userCtrl = {
     list: async (req, res, next) => {
         try {
-            const decode_user = await checkLevel(req.cookies.token, 0, req);
+            const decode_user = await checkLevel(req.cookies.token, 10, req);
             const decode_dns = checkDns(req.cookies.dns);
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
             const { level, level_list = [], search } = req.query;
             let table = decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account' : 'member'
+
             let columns = [
                 `${table_name}.profile_img`,
                 `${table_name}.user_name`,
@@ -225,27 +229,13 @@ const userCtrl = {
             const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
             const { mid } = req.params;
+
             let columns = [
-                `${table_name}.*`,
-                `merchandise_columns.mcht_fee`,
-                `virtual_accounts.guid`,
-                `virtual_accounts.virtual_bank_code`,
-                `virtual_accounts.virtual_acct_num`,
-                `virtual_accounts.virtual_acct_name`,
-                `virtual_accounts.deposit_bank_code AS settle_bank_code`,
-                `virtual_accounts.deposit_acct_num AS settle_acct_num`,
-                `virtual_accounts.deposit_acct_name AS settle_acct_name`,
+                `${table_name}.id`,
+                `${table_name}.virtual_acct_link_status`,
             ]
-            let operator_list = decode_dns?.operator_list;
-            for (var i = 0; i < operator_list.length; i++) {
-                columns.push(`merchandise_columns.sales${operator_list[i]?.num}_id`);
-                columns.push(`merchandise_columns.sales${operator_list[i]?.num}_fee`);
-                columns.push(`merchandise_columns.sales${operator_list[i]?.num}_withdraw_fee`);
-                columns.push(`merchandise_columns.sales${operator_list[i]?.num}_deposit_fee`);
-            }
+
             let sql = `SELECT ${columns.join()} FROM ${table_name} `;
-            sql += ` LEFT JOIN merchandise_columns ON merchandise_columns.mcht_id=${table_name}.id `;
-            sql += ` LEFT JOIN virtual_accounts ON ${table_name}.virtual_account_id=virtual_accounts.id `;
             sql += ` WHERE ${table_name}.mid=${mid} `;
             sql += ` AND ${table_name}.brand_id=${decode_dns?.id} `;
 
@@ -264,15 +254,20 @@ const userCtrl = {
     ipLogs: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = await checkLevel(req.cookies.token, 0, req);
+            const decode_user = await checkLevel(req.cookies.token, 11, req);
             const decode_dns = checkDns(req.cookies.dns);
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
             const { id } = req.query;
             let columns = [
                 `connected_ips.*`,
             ]
+            let user = pool.query(`SELECT level FROM users WHERE id=${id}`);
+            user = user?.result[0];
 
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM connected_ips `;
-            sql += `  WHERE user_id=${id}  `;
+            sql += `  WHERE user_id=${id} AND ${decode_user?.level} > ${user?.level} `;
 
             let data = await getSelectQuery(sql, columns, req.query, [], decode_user, decode_dns);
 
