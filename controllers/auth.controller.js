@@ -220,52 +220,6 @@ const authCtrl = {
 
         }
     },
-    signUp: async (req, res, next) => {
-        try {
-            let is_manager = await checkIsManagerUrl(req);
-            const decode_user = await checkLevel(req.cookies.token, 0, req);
-            const decode_dns = checkDns(req.cookies.dns);
-            let {
-                user_name,
-                user_pw,
-                name,
-                nickname,
-                level = 0,
-                phone_num,
-                profile_img,
-                brand_id
-            } = req.body;
-            if (!user_pw) {
-                return response(req, res, -100, "비밀번호를 입력해 주세요.", {});
-            }
-            let pw_data = await createHashedPassword(user_pw);
-            if (!is_manager) {
-                if (level > 0) {
-                    return lowLevelException(req, res);
-                }
-            }
-            user_pw = pw_data.hashedPassword;
-            let user_salt = pw_data.salt;
-            let obj = {
-                user_name,
-                user_pw,
-                name,
-                nickname,
-                level,
-                phone_num,
-                profile_img,
-                brand_id,
-                user_salt
-            }
-            let result = await insertQuery('users', obj);
-            return response(req, res, 100, "success", {})
-        } catch (err) {
-            console.log(JSON.stringify(err))
-            return response(req, res, -200, err?.message || "서버 에러 발생", false)
-        } finally {
-
-        }
-    },
     signOut: async (req, res, next) => {
         try {
             const decode_user = await checkLevel(req.cookies.token, 0, req);

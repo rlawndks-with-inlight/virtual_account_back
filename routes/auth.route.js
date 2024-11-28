@@ -17,9 +17,7 @@ router
 router
     .route('/sign-in-another-user')
     .post(authCtrl.signInAnotherUser);
-router
-    .route('/sign-up')
-    .post(authCtrl.signUp);
+
 router
     .route('/change-pw')
     .put(authCtrl.changePassword);
