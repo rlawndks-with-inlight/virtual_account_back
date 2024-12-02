@@ -211,7 +211,11 @@ const withdrawCtrl = {
                 trx_id,
             }
             let withdraw_obj = await setWithdrawAmountSetting(withdraw_amount, user, dns_data)
-
+            let obj = {
+                ...first_obj,
+                ...withdraw_obj,
+            }
+            console.log(obj)
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
