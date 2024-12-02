@@ -207,6 +207,9 @@ const withdrawCtrl = {
                 withdraw_status: 5,
                 note: '',
                 trx_id,
+                settle_bank_code: user?.withdraw_bank_code,
+                settle_acct_num: user?.withdraw_acct_num,
+                settle_acct_name: user?.withdraw_acct_name,
             }
             let withdraw_obj = await setWithdrawAmountSetting(withdraw_amount, user, dns_data)
             let obj = {
