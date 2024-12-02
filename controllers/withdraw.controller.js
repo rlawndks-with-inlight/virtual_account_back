@@ -4,7 +4,7 @@ import db, { pool } from "../config/db.js";
 import corpApi from "../utils.js/corp-util/index.js";
 import { checkIsManagerUrl, returnMoment } from "../utils.js/function.js";
 import { deleteQuery, getMultipleQueryByWhen, getSelectQuery, insertQuery, makeSearchQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
-import { checkDns, checkLevel, commarNumber, getMotherDeposit, getOperatorList, getReqIp, isItemBrandIdSameDnsId, lowLevelException, operatorLevelList, response, setWithdrawAmountSetting, settingFiles } from "../utils.js/util.js";
+import { checkDns, checkLevel, commarNumber, generateRandomString, getMotherDeposit, getOperatorList, getReqIp, isItemBrandIdSameDnsId, lowLevelException, operatorLevelList, response, setWithdrawAmountSetting, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 import userCtrl from "./user.controller.js";
 import axios from "axios";
@@ -13,6 +13,7 @@ import withdrawV2Ctrl from "./withdraw/v2.js";
 import withdrawV3Ctrl from "./withdraw/v3.js";
 import withdrawV4Ctrl from "./withdraw/v4.js";
 import withdrawV5Ctrl from "./withdraw/v5.js";
+import redisCtrl from "../redis/index.js";
 
 const table_name = 'deposits';
 
@@ -159,9 +160,56 @@ const withdrawCtrl = {
                 return lowLevelException(req, res);
             }
             let {
-                withdraw_amount, user_id, pay_type = 5, note = "",
-                virtual_account_id,
+                withdraw_amount,
+                pay_type,
             } = req.body;
+
+            let dns_data = await redisCtrl.get(`dns_data_${decode_dns?.api_key}`);
+            if (dns_data) {
+                dns_data = JSON.parse(dns_data ?? "{}");
+            } else {
+                dns_data = await pool.query(`SELECT * FROM brands WHERE api_key=?`, [decode_dns?.api_key]);
+                dns_data = dns_data?.result[0];
+                await redisCtrl.set(`dns_data_${decode_dns?.api_key}`, JSON.stringify(dns_data), 60);
+            }
+
+            let trx_id = `withdraw${new Date().getTime()}${generateRandomString(5)}`;
+            let operator_list = getOperatorList(dns_data);
+
+            let mcht_sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM users `;
+            mcht_sql += ` LEFT JOIN merchandise_columns ON merchandise_columns.mcht_id=users.id `;
+            mcht_sql += ` LEFT JOIN virtual_accounts ON users.virtual_account_id=virtual_accounts.id `;
+            let mcht_columns = [
+                `users.*`,
+                `merchandise_columns.mcht_fee`,
+            ]
+            for (var i = 0; i < operator_list.length; i++) {
+                mcht_columns.push(`merchandise_columns.sales${operator_list[i]?.num}_id`);
+                mcht_columns.push(`merchandise_columns.sales${operator_list[i]?.num}_fee`);
+                mcht_columns.push(`merchandise_columns.sales${operator_list[i]?.num}_withdraw_fee`);
+                mcht_columns.push(`sales${operator_list[i]?.num}.user_name AS sales${operator_list[i]?.num}_user_name`);
+                mcht_columns.push(`sales${operator_list[i]?.num}.nickname AS sales${operator_list[i]?.num}_nickname`);
+                mcht_sql += ` LEFT JOIN users AS sales${operator_list[i]?.num} ON sales${operator_list[i]?.num}.id=merchandise_columns.sales${operator_list[i]?.num}_id `;
+            }
+            mcht_sql += ` WHERE users.id=? `;
+            mcht_sql = mcht_sql.replace(process.env.SELECT_COLUMN_SECRET, mcht_columns.join())
+            let user = await pool.query(mcht_sql, [decode_user?.id]);
+            user = user?.result[0];
+
+            withdraw_amount = parseInt(withdraw_amount);
+            let amount = parseInt(withdraw_amount) + (dns_data?.withdraw_fee_type == 0 ? user?.withdraw_fee : 0);
+
+            let first_obj = {
+                brand_id: decode_dns?.id,
+                pay_type: pay_type,
+                expect_amount: (-1) * amount,
+                withdraw_fee: user?.withdraw_fee,
+                user_id: user?.id,
+                withdraw_status: 5,
+                note: '',
+                trx_id,
+            }
+            let withdraw_obj = await setWithdrawAmountSetting(withdraw_amount, user, dns_data)
 
             return response(req, res, 100, "success", {})
         } catch (err) {
