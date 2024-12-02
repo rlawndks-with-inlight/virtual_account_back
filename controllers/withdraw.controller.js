@@ -214,7 +214,7 @@ const withdrawCtrl = {
                 ...first_obj,
                 ...withdraw_obj,
             }
-            console.log(obj)
+            let first_result = await insertQuery(`deposits`, obj);
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
