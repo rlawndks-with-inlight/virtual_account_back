@@ -173,7 +173,6 @@ const withdrawCtrl = {
                 await redisCtrl.set(`dns_data_${decode_dns?.api_key}`, JSON.stringify(dns_data), 60);
             }
 
-            let trx_id = `withdraw${new Date().getTime()}${generateRandomString(5)}`;
             let operator_list = getOperatorList(dns_data);
 
             let mcht_sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM users `;
@@ -198,7 +197,7 @@ const withdrawCtrl = {
 
             withdraw_amount = parseInt(withdraw_amount);
             let amount = parseInt(withdraw_amount) + (dns_data?.withdraw_fee_type == 0 ? user?.withdraw_fee : 0);
-
+            let trx_id = `withdraw${new Date().getTime()}${generateRandomString(5)}${user?.id}`;
             let first_obj = {
                 brand_id: decode_dns?.id,
                 pay_type: pay_type,
