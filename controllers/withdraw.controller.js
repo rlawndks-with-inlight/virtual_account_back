@@ -159,7 +159,6 @@ const withdrawCtrl = {
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
-            console.log(123123)
             let {
                 withdraw_amount,
                 pay_type,
