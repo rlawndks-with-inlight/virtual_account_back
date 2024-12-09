@@ -553,7 +553,11 @@ export const icbApi = {
                     partnerCnclNo: cancel_trx_id,
                     partnerTrxNo: trx_id,
                 }
-                let { data: response } = await axios.post(`${API_URL}/v1/merchant/payment/cancel`, query, {
+                let uri = `/v1/merchant/payment/cancel`;
+                if (dns_data?.deposit_process_type == 1) {
+                    uri = `/v2/merchant/member/charge/cancel`;
+                }
+                let { data: response } = await axios.post(`${API_URL}${uri}`, query, {
                     headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
                 console.log(response)
