@@ -21,6 +21,74 @@ const response = (req, res, result, message, data) => {
     }
 }
 const withdrawV3Ctrl = {
+    check: async (req_, res, next) => {//발급요청
+        let req = req_;
+        try {
+            let {
+                api_key,
+                mid,
+                withdraw_bank_code,
+                withdraw_acct_num,
+            } = req.body;
+
+            let dns_data = await pool.query(`SELECT * FROM brands WHERE api_key=?`, [api_key]);
+            dns_data = dns_data?.result[0];
+            if (!dns_data) {
+                return response(req, res, -100, "api key가 잘못되었습니다.", false);
+            }
+            req.body.brand_id = dns_data?.id;
+
+            let operator_list = getOperatorList(dns_data);
+            let mcht_sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM users `;
+            mcht_sql += ` LEFT JOIN merchandise_columns ON merchandise_columns.mcht_id=users.id `;
+            mcht_sql += ` LEFT JOIN virtual_accounts ON users.virtual_account_id=virtual_accounts.id `;
+            let mcht_columns = [
+                `users.*`,
+                `merchandise_columns.mcht_fee`,
+            ]
+            for (var i = 0; i < operator_list.length; i++) {
+                mcht_columns.push(`merchandise_columns.sales${operator_list[i]?.num}_id`);
+                mcht_columns.push(`merchandise_columns.sales${operator_list[i]?.num}_fee`);
+                mcht_columns.push(`merchandise_columns.sales${operator_list[i]?.num}_withdraw_fee`);
+                mcht_columns.push(`sales${operator_list[i]?.num}.user_name AS sales${operator_list[i]?.num}_user_name`);
+                mcht_columns.push(`sales${operator_list[i]?.num}.nickname AS sales${operator_list[i]?.num}_nickname`);
+                mcht_sql += ` LEFT JOIN users AS sales${operator_list[i]?.num} ON sales${operator_list[i]?.num}.id=merchandise_columns.sales${operator_list[i]?.num}_id `;
+            }
+            mcht_sql += ` WHERE users.mid=? AND users.brand_id=? `;
+            mcht_sql = mcht_sql.replace(process.env.SELECT_COLUMN_SECRET, mcht_columns.join())
+            let user = await pool.query(mcht_sql, [mid, dns_data?.id]);
+            user = user?.result[0];
+
+            let requestIp = getReqIp(req);
+            let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${user?.id} AND is_delete=0`);
+            ip_list = ip_list?.result;
+            if (user?.level < 40 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp)) && ip_list.length > 0) {
+                return response(req, res, -150, "ip 권한이 없습니다.", {})
+            }
+
+
+            let account_info = await corpApi.account.info({
+                pay_type: 'withdraw',
+                dns_data: dns_data,
+                decode_user: user,
+                bank_code: withdraw_bank_code,
+                acct_num: withdraw_acct_num,
+                amount: 1000,
+            })
+            console.log(account_info)
+            if (account_info.code == 100) {
+                return response(req, res, 100, "success", account_info.data)
+            } else {
+                return response(req, res, -100, (account_info?.message || "서버 에러 발생"), false)
+            }
+
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
     request: async (req_, res, next) => {
         let req = req_;
         try {

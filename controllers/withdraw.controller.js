@@ -884,7 +884,7 @@ const withdrawCtrl = {
             } else if (decode_dns?.setting_obj?.api_withdraw_version == 2) {
 
             } else if (decode_dns?.setting_obj?.api_withdraw_version == 3) {
-
+                result = await withdrawV3Ctrl.check(req, res);
             } else if (decode_dns?.setting_obj?.api_withdraw_version == 4) {
 
             } else if (decode_dns?.setting_obj?.api_withdraw_version == 5) {
