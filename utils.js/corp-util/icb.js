@@ -752,7 +752,11 @@ export const icbApi = {
                 timestamp,
                 memKey: ci,
             }
-            let { data: response } = await axios.post(`${API_URL}/v1/merchant/member/quit`, query, {
+            let uri = `/v1/merchant/member/quit`;
+            if (dns_data?.deposit_process_type == 1) {
+                uri = `/v2/merchant/member/quit`;
+            }
+            let { data: response } = await axios.post(`${API_URL}${uri}`, query, {
                 headers: getDefaultHeader(dns_data, pay_type, timestamp)
             });
             if (response?.code != 200) {
