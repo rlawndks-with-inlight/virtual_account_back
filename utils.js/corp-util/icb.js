@@ -557,10 +557,12 @@ export const icbApi = {
                 if (dns_data?.deposit_process_type == 1) {
                     uri = `/v2/merchant/member/charge/cancel`;
                 }
+                console.log(query)
                 let { data: response } = await axios.post(`${API_URL}${uri}`, query, {
                     headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
                 console.log(response)
+
                 let obj = {};
                 if (response?.code != 200) {
                     if (response?.code == 2002) {
