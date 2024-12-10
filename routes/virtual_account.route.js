@@ -43,4 +43,5 @@ router
 router
     .route('/change-status/:id')
     .put(virtualAccountCtrl.changeStatus)
+
 export default router;
