@@ -33,6 +33,12 @@ const virtualAccountCtrl = {
                 `mchts.user_name`,
                 `mchts.nickname`,
             ]
+            if (decode_dns?.deposit_process_type == 1) {
+                columns = [
+                    ...columns,
+                    `(SELECT SUM(expect_amount) FROM deposits WHERE created_at >= '${returnMoment().substring(0, 10)} 00:00:00' AND created_at <= '${returnMoment().substring(0, 10)} 23:59:59' AND virtual_account_id=${table_name}.id AND deposit_status IN (0, 5)) AS daily_deposit_amount`
+                ]
+            }
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
             sql += ` LEFT JOIN users AS mchts ON ${table_name}.mcht_id=mchts.id `;
             sql += ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
