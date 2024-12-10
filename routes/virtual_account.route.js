@@ -40,5 +40,7 @@ router
     .route('/cancel-deposit')
     .post(virtualAccountCtrl.cancelDeposit)
 
-
+router
+    .route('/change-status/:id')
+    .put(virtualAccountCtrl.changeStatus)
 export default router;

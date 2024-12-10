@@ -481,7 +481,7 @@ const virtualAccountCtrl = {
                 return response(req, res, -100, "입금예정액은 0원보다 커야합니다.", false)
             }
 
-            let virtual_account = await pool.query(`SELECT * FROM ${table_name} WHERE id=${virtual_account_id} AND is_delete=0`);
+            let virtual_account = await pool.query(`SELECT * FROM ${table_name} WHERE id=${virtual_account_id} AND is_delete=0 AND status=0`);
             virtual_account = virtual_account?.result[0];
             if (!virtual_account) {
                 return response(req, res, -100, '입금불가 가상계좌 입니다.', false)
@@ -617,6 +617,30 @@ const virtualAccountCtrl = {
             } else {
                 return response(req, res, -100, remain_virtual_account?.message, false)
             }
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
+    changeStatus: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = await checkLevel(req.cookies.token, 40, req);
+            const decode_dns = checkDns(req.cookies.dns);
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
+            const { id } = req.params
+            let { status } = req.body;
+            let virtual_account = await selectQuerySimple(table_name, id);
+            virtual_account = virtual_account?.result[0];
+            let obj = {
+                status
+            }
+            let result = await updateQuery(`${table_name}`, obj, id);
+            return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)
