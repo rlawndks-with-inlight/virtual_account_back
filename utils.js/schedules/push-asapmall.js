@@ -33,7 +33,7 @@ export const pushAsapMall = async (return_moment = "") => {
             }
         }
         if (!is_process_func) {
-            //return;
+            return;
         }
         let use_brand_columns = [
             `brands.id`,
