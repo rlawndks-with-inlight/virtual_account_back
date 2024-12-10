@@ -14,7 +14,7 @@ const scheduleIndex = () => {
         let return_moment = returnMoment();
 
         if (parseInt(process.env.INSTANCE_ID) == parseInt(process.env.instances) - 1) {
-            destructAutoVirtualAcct();
+            //destructAutoVirtualAcct();
             pushDepositNoti();
             onParentBrandSettle(return_moment);
         }
