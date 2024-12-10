@@ -16,7 +16,7 @@ const depositCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = await checkLevel(req.cookies.token, 10, req);
             const decode_dns = checkDns(req.cookies.dns);
-            const { is_mother, pay_type, s_dt, e_dt, search, is_delete, corp_account_id, is_cancel, deposit_status, is_pay_confirm } = req.query;
+            const { is_mother, pay_type, s_dt, e_dt, search, is_delete, corp_account_id, virtual_account_id, is_cancel, deposit_status, is_pay_confirm } = req.query;
 
             if (!decode_user) {
                 return lowLevelException(req, res);
@@ -147,6 +147,9 @@ const depositCtrl = {
                 } else if (corp_account_id > 0) {
                     where_sql += ` AND ${table_name}.corp_account_id=${corp_account_id} `
                 }
+            }
+            if (virtual_account_id) {
+                where_sql += ` AND ${table_name}.virtual_account_id=${virtual_account_id} `
             }
             if (decode_user?.level < 40) {
                 if (decode_user?.level == 10) {

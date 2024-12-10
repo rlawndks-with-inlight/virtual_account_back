@@ -151,6 +151,9 @@ const authCtrl = {
                 login_fail_count: 0,
                 connected_ip: requestIp,
             }, user.id)
+            await redisCtrl.set(`user_only_connect_ip_${user.id}`, JSON.stringify({
+                only_connect_ip: user?.only_connect_ip
+            }), 60);
             return response(req, res, 100, "success", user_obj)
         } catch (err) {
             console.log(err)
