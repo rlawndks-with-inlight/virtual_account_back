@@ -502,6 +502,11 @@ export const sendNotiPush = async (user = {}, pay_type, data = {}, id) => {
                 }
                 await new Promise((r) => setTimeout(r, 10000));
             }
+            if (i == 5) {
+                await updateQuery(`deposits`, {
+                    [`${pay_type}_noti_status`]: 10,
+                }, id)
+            }
         }
     } catch (err) {
         console.log(err);
