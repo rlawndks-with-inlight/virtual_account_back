@@ -33,12 +33,37 @@ export const pushAsapMall = async (return_moment = "") => {
             }
         }
         if (!is_process_func) {
-            return;
+            //return;
         }
-        let sql = ` SELECT deposits.*, brands.asapmall_dns, brands.asapmall_back_dns, virtual_accounts.phone_num, brands.deposit_type FROM deposits `;
-        sql += ` LEFT JOIN brands ON deposits.brand_id=brands.id `;
-        sql += ` LEFT JOIN virtual_accounts ON deposits.virtual_account_id=virtual_accounts.id `;
-        sql += ` WHERE brands.is_use_asapmall_noti=1 AND pay_type IN (0, 5, 20) `;
+        let use_brand_columns = [
+            `brands.id`,
+            `brands.asapmall_dns`,
+            `brands.asapmall_back_dns`,
+            `brands.deposit_type`,
+            `brands.is_use_asapmall_noti`,
+        ]
+        let use_brands = await pool.query(`SELECT ${use_brand_columns.join()} FROM brands WHERE is_use_asapmall_noti=1`);
+        use_brands = use_brands?.result;
+        let use_brand_ids = use_brands.map(el => { return el?.id });
+
+        let deposit_columns = [
+            'id',
+            'pay_type',
+            'amount',
+            'withdraw_fee',
+            'trx_id',
+            'deposit_acct_name',
+            'settle_bank_code',
+            'settle_acct_name',
+            'settle_acct_num',
+            'created_at',
+            'virtual_account_id',
+            'brand_id',
+        ]
+        let sql = ` SELECT ${deposit_columns.join()} FROM deposits `;
+        //sql += ` LEFT JOIN virtual_accounts ON deposits.virtual_account_id=virtual_accounts.id `;
+        sql += ` WHERE deposits.brand_id IN (${use_brand_ids.join()}) `;
+        sql += ` AND deposits.pay_type IN (0, 5, 20) `;
         sql += ` AND deposits.send_asapmall_noti=5 `;
         sql += ` AND deposits.amount!=0 `;
         sql += ` ORDER BY deposits.id ASC `;
@@ -56,13 +81,32 @@ export const pushAsapMall = async (return_moment = "") => {
 
         let data = await pool.query(sql);
         data = data?.result;
+
+        let virtual_account_ids = data.filter(el => el?.virtual_account_id > 0).map(el => { return el?.virtual_account_id });
+        virtual_account_ids = new Set(virtual_account_ids);
+        virtual_account_ids = [...virtual_account_ids];
+        let use_virtual_accounts = await pool.query(`SELECT id, phone_num FROM virtual_accounts WHERE id IN (${virtual_account_ids.join()})`);
+        use_virtual_accounts = use_virtual_accounts?.result;
+
+        for (var i = 0; i < data.length; i++) {
+            let brand = _.find(use_brands, { id: data[i]?.brand_id });
+            let virtual_account = _.find(use_virtual_accounts, { id: data[i]?.virtual_account_id });
+            data[i] = {
+                ...data[i],
+                asapmall_dns: brand?.asapmall_dns,
+                asapmall_back_dns: brand?.asapmall_back_dns,
+                deposit_type: brand?.deposit_type,
+                is_use_asapmall_noti: brand?.is_use_asapmall_noti,
+                phone_num: virtual_account?.phone_num,
+            }
+        }
+
         let is_stop_func = false;
 
         let shop_brands = await shopPool.query(`SELECT id, dns FROM brands`);
         shop_brands = shop_brands?.result;
 
         let brand_product_obj = {};
-        console.log(data.length);
         for (var i = 0; i < data.length; i++) {
             let cur_minute = returnMoment().split(' ')[1].split(':')[1];
             for (var j = 0; j < moment_list.length; j++) {
