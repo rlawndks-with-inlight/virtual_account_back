@@ -870,21 +870,31 @@ const withdrawCtrl = {
             let {
                 mid
             } = req.body;
+            let body = { ...req.body };
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
-            let user = await pool.query(`SELECT mid FROM users WHERE id=${decode_user?.id}`);
-            user = user?.result[0]
-            if (user?.mid != mid) {
-                return response(req, res, -100, "잘못된 가맹점 접근입니다.", false)
+            if (decode_user?.level >= 40) {
+                body = {
+                    ...body,
+                    is_manager: true,
+                    user_id: decode_user?.id,
+                }
+            } else {
+                let user = await pool.query(`SELECT mid FROM users WHERE id=${decode_user?.id}`);
+                user = user?.result[0]
+                if (user?.mid != mid) {
+                    return response(req, res, -100, "잘못된 가맹점 접근입니다.", false)
+                }
             }
+
             let result = undefined;
             if (decode_dns?.setting_obj?.api_withdraw_version == 1) {
                 result = await withdrawV1Ctrl.check(req, res);
             } else if (decode_dns?.setting_obj?.api_withdraw_version == 2) {
 
             } else if (decode_dns?.setting_obj?.api_withdraw_version == 3) {
-                result = await withdrawV3Ctrl.check(req, res);
+                result = await withdrawV3Ctrl.check({ ...req, body: body, }, res);
             } else if (decode_dns?.setting_obj?.api_withdraw_version == 4) {
 
             } else if (decode_dns?.setting_obj?.api_withdraw_version == 5) {
