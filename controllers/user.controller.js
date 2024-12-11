@@ -6,6 +6,7 @@ import { deleteQuery, getSelectQuery, insertQuery, makeSearchQuery, selectQueryS
 import { checkDns, checkLevel, createHashedPassword, getOperatorList, getUserDepositFee, isItemBrandIdSameDnsId, lowLevelException, makeObjByList, makeUserChildrenList, makeUserTree, operatorLevelList, response, settingFiles, settingMchtFee } from "../utils.js/util.js";
 import 'dotenv/config';
 import { emitSocket } from "../utils.js/socket/index.js";
+import redisCtrl from "../redis/index.js";
 
 const table_name = 'users';
 
@@ -491,6 +492,10 @@ const userCtrl = {
                 }
             }
             await db.commit();
+
+            await redisCtrl.delete(`user_only_connect_ip_${id}`);
+            await redisCtrl.delete(`user_ip_list_${id}`);
+
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
