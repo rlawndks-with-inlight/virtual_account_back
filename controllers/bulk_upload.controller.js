@@ -76,7 +76,7 @@ const bulkUploadCtrl = {
                         level: 10,
                         mid: `${decode_dns?.id}${user_id}${new Date().getTime()}`,
                     })
-                    let user_id = result?.result?.insertId;
+                    let user_id = result?.insertId;
                     let result2 = await updateQuery(table_name, {
                         mid: `${decode_dns?.id}${user_id}${new Date().getTime()}`,
                     }, user_id);

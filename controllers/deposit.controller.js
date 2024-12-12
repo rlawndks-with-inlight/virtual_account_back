@@ -403,7 +403,7 @@ const depositCtrl = {
             let sum_deposit_cancel = await readPool.query(`SELECT SUM(amount) AS cancel_amount FROM deposits WHERE deposit_id=${id} AND is_cancel=1`);
             sum_deposit_cancel = sum_deposit_cancel[0][0]?.cancel_amount ?? 0;
             let deposit = await selectQuerySimple(table_name, id);
-            deposit = deposit?.result[0];
+            deposit = deposit[0];
             let virtual_account = await readPool.query(`SELECT * FROM virtual_accounts WHERE id=${deposit?.virtual_account_id}`);
             virtual_account = virtual_account[0][0];
             if (sum_deposit_cancel + deposit?.amount <= 0) {

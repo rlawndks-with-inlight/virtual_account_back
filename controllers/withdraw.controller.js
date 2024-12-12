@@ -358,7 +358,7 @@ const withdrawCtrl = {
                 note: note
             }
             let result = await insertQuery(`${table_name}`, deposit_obj);
-            let withdraw_id = result?.result?.insertId;
+            let withdraw_id = result?.insertId;
             let api_withdraw_request_result = {};
             if (data?.brand?.settle_acct_num) {
                 let api_move_to_user_amount_result = await corpApi.transfer.pass({

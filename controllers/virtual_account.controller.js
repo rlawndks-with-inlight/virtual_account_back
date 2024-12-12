@@ -533,7 +533,7 @@ const virtualAccountCtrl = {
             }
             let result2 = await updateQuery(`deposits`, {
                 deposit_status: 5
-            }, result?.result?.insertId)
+            }, result?.insertId)
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
@@ -636,7 +636,7 @@ const virtualAccountCtrl = {
             const { id } = req.params
             let { status } = req.body;
             let virtual_account = await selectQuerySimple(table_name, id);
-            virtual_account = virtual_account?.result[0];
+            virtual_account = virtual_account[0];
             let obj = {
                 status
             }

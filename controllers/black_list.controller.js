@@ -148,7 +148,7 @@ const blackListCtrl = {
             const { id } = req.params;
 
             let black_item = await selectQuerySimple(table_name, id);
-            black_item = black_item?.result[0];
+            black_item = black_item[0];
             if (!black_item || black_item?.brand_id != decode_dns?.id) {
                 return response(req, res, -100, "잘못된 접근 입니다.", false)
             }

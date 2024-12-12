@@ -139,7 +139,7 @@ const brandCtrl = {
                 name: name,
                 nickname: name,
                 level: 40,
-                brand_id: result?.result?.insertId
+                brand_id: result?.insertId
             }
             let pw_data = await createHashedPassword(user_obj.user_pw);
             user_obj.user_pw = pw_data.hashedPassword;

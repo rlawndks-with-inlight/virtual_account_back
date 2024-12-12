@@ -359,7 +359,7 @@ const userCtrl = {
             await db.beginTransaction();
 
             let result = await insertQuery(`${table_name}`, obj);
-            let user_id = result?.result?.insertId;
+            let user_id = result?.insertId;
             let result2 = await updateQuery(table_name, {
                 mid: `${decode_dns?.id}${user_id}${new Date().getTime()}`,
             }, user_id);
@@ -378,7 +378,7 @@ const userCtrl = {
             }
 
             if (level == 10) {//가맹점
-                let mcht_obj = await settingMchtFee(decode_dns, result?.result?.insertId, req.body);
+                let mcht_obj = await settingMchtFee(decode_dns, result?.insertId, req.body);
                 if (mcht_obj?.code > 0) {
                     mcht_obj = mcht_obj.data
                     let mcht_result = await insertQuery(`merchandise_columns`, mcht_obj);
@@ -518,7 +518,7 @@ const userCtrl = {
             let { user_pw } = req.body;
 
             let user = await selectQuerySimple(table_name, id);
-            user = user?.result[0];
+            user = user[0];
             if (!user || decode_user?.level < user?.level) {
                 return response(req, res, -100, "잘못된 접근입니다.", false)
             }
@@ -548,7 +548,8 @@ const userCtrl = {
             const { id } = req.params
             let { status } = req.body;
             let user = await selectQuerySimple(table_name, id);
-            user = user?.result[0];
+            console.log(user)
+            user = user[0];
             if (!user || decode_user?.level < user?.level) {
                 return response(req, res, -100, "잘못된 접근입니다.", false)
             }
@@ -577,7 +578,7 @@ const userCtrl = {
                 return lowLevelException(req, res);
             }
             let user = await selectQuerySimple(table_name, user_id);
-            user = user?.result[0];
+            user = user[0];
             amount = parseFloat(amount);
             if (amount < 0 || isNaN(amount)) {
                 return response(req, res, -100, "금액은 0 이상만 가능합니다.", false)
@@ -675,7 +676,7 @@ const asdsdaasd = async () => {
                     let mcht_columns = await readPool.query(`SELECT * FROM merchandise_columns WHERE mcht_id=${mcht?.id}`);
                     mcht_columns = mcht_columns[0][0];
 
-                    let mcht_id = result?.result?.insertId;
+                    let mcht_id = result?.insertId;
                     let mid_update = await updateQuery(`users`, {
                         mid: `${brand_list[i].id}${mcht_id}${new Date().getTime()}`,
                     }, mcht_id);
