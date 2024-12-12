@@ -7,6 +7,7 @@ import { deleteQuery, getSelectQuery, insertQuery, makeSearchQuery, selectQueryS
 import { checkDns, checkLevel, generateRandomString, isItemBrandIdSameDnsId, lowLevelException, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 import when from "when";
+import { readPool } from "../config/db-pool.js";
 const table_name = 'virtual_accounts';
 
 const virtualAccountCtrl = {
@@ -80,8 +81,8 @@ const virtualAccountCtrl = {
                 values.push(ci)
             }
             sql += ` AND ${table_name}.is_delete=0 `;
-            let data = await pool.query(sql, values)
-            data = data?.result[0];
+            let data = await readPool.query(sql, values)
+            data = data[0][0];
             return response(req, res, 100, "success", data)
         } catch (err) {
             console.log(err)
@@ -151,10 +152,10 @@ const virtualAccountCtrl = {
             const { id } = req.params;
             const { want_move } = req.query;
             console.log(req.query)
-            let virtual_account = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id}`);
-            virtual_account = virtual_account?.result[0];
-            let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
-            dns_data = dns_data?.result[0];
+            let virtual_account = await readPool.query(`SELECT * FROM ${table_name} WHERE id=${id}`);
+            virtual_account = virtual_account[0][0];
+            let dns_data = await readPool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
+            dns_data = dns_data[0][0];
 
             let user_amount = await corpApi.balance.info({
                 pay_type: 'withdraw',
@@ -180,10 +181,10 @@ const virtualAccountCtrl = {
             const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
             const { id } = req.params;
-            let virtual_account = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id}`);
-            virtual_account = virtual_account?.result[0];
-            let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
-            dns_data = dns_data?.result[0];
+            let virtual_account = await readPool.query(`SELECT * FROM ${table_name} WHERE id=${id}`);
+            virtual_account = virtual_account[0][0];
+            let dns_data = await readPool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
+            dns_data = dns_data[0][0];
 
             let api_result = await corpApi.vaccount_info({
                 pay_type: 'deposit',
@@ -209,10 +210,10 @@ const virtualAccountCtrl = {
             const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
             const { id } = req.body;
-            let virtual_account = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id}`);
-            virtual_account = virtual_account?.result[0];
-            let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
-            dns_data = dns_data?.result[0];
+            let virtual_account = await readPool.query(`SELECT * FROM ${table_name} WHERE id=${id}`);
+            virtual_account = virtual_account[0][0];
+            let dns_data = await readPool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
+            dns_data = dns_data[0][0];
 
             let user_amount = await corpApi.balance.info({
                 pay_type: 'withdraw',
@@ -259,10 +260,10 @@ const virtualAccountCtrl = {
                 decode_dns = req.dns_data;
             }
             const { id } = req.params;
-            let virtual_account = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id}`);
-            virtual_account = virtual_account?.result[0];
-            let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
-            dns_data = dns_data?.result[0];
+            let virtual_account = await readPool.query(`SELECT * FROM ${table_name} WHERE id=${id}`);
+            virtual_account = virtual_account[0][0];
+            let dns_data = await readPool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
+            dns_data = dns_data[0][0];
             if (virtual_account?.mcht_id != decode_user?.id && decode_user?.level < 40) {
                 return lowLevelException(req, res);
             }
@@ -390,8 +391,8 @@ const virtualAccountCtrl = {
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
-            let virtual_accounts = await pool.query(`SELECT id FROM virtual_accounts WHERE mcht_id=${id} AND brand_id=${decode_dns?.id} AND is_delete=0`);
-            virtual_accounts = virtual_accounts?.result;
+            let virtual_accounts = await readPool.query(`SELECT id FROM virtual_accounts WHERE mcht_id=${id} AND brand_id=${decode_dns?.id} AND is_delete=0`);
+            virtual_accounts = virtual_accounts[0];
             let result_list = [];
             for (var i = 0; i < virtual_accounts.length; i++) {
                 result_list.push(virtualAccountCtrl.remove({ ...req, params: { id: virtual_accounts[i]?.id, IS_RETURN: true } }, res));
@@ -444,15 +445,15 @@ const virtualAccountCtrl = {
                 virtual_account_id,
                 mcht_id,
             } = req.body;
-            let virtual_account = await pool.query(`SELECT * FROM ${table}s WHERE brand_id=${decode_dns?.id} AND id=${virtual_account_id}`);
-            virtual_account = virtual_account?.result[0];
+            let virtual_account = await readPool.query(`SELECT * FROM ${table}s WHERE brand_id=${decode_dns?.id} AND id=${virtual_account_id}`);
+            virtual_account = virtual_account[0][0];
             if (!virtual_account) {
                 return response(req, res, -100, "정보가 존재하지 않습니다.", false)
             }
-            let mcht = await pool.query(`SELECT * FROM users WHERE level=10 AND brand_id=${decode_dns?.id} AND id=?`, [
+            let mcht = await readPool.query(`SELECT * FROM users WHERE level=10 AND brand_id=${decode_dns?.id} AND id=?`, [
                 mcht_id,
             ]);
-            mcht = mcht?.result[0];
+            mcht = mcht[0][0];
             if (!mcht) {
                 return response(req, res, -100, "존재하지 않는 가맹점 입니다.", false)
             }
@@ -481,18 +482,18 @@ const virtualAccountCtrl = {
                 return response(req, res, -100, "입금예정액은 0원보다 커야합니다.", false)
             }
 
-            let virtual_account = await pool.query(`SELECT * FROM ${table_name} WHERE id=${virtual_account_id} AND is_delete=0 AND status=0`);
-            virtual_account = virtual_account?.result[0];
+            let virtual_account = await readPool.query(`SELECT * FROM ${table_name} WHERE id=${virtual_account_id} AND is_delete=0 AND status=0`);
+            virtual_account = virtual_account[0][0];
             if (!virtual_account) {
                 return response(req, res, -100, '입금불가 가상계좌 입니다.', false)
             }
-            let mcht = await pool.query(`SELECT virtual_acct_link_status, is_delete FROM users WHERE id=${virtual_account?.mcht_id}`);
-            mcht = mcht?.result[0];
+            let mcht = await readPool.query(`SELECT virtual_acct_link_status, is_delete FROM users WHERE id=${virtual_account?.mcht_id}`);
+            mcht = mcht[0][0];
             if ((mcht?.virtual_acct_link_status ?? 0) != 0 || mcht?.is_delete == 1) {
                 return response(req, res, -100, "입금 불가한 가맹점 입니다.", false)
             }
-            let is_exist_not_confirm_deposit = await pool.query(`SELECT id FROM deposits WHERE virtual_account_id=${virtual_account_id} AND deposit_status=5 AND is_delete=0`);
-            is_exist_not_confirm_deposit = is_exist_not_confirm_deposit?.result[0];
+            let is_exist_not_confirm_deposit = await readPool.query(`SELECT id FROM deposits WHERE virtual_account_id=${virtual_account_id} AND deposit_status=5 AND is_delete=0`);
+            is_exist_not_confirm_deposit = is_exist_not_confirm_deposit[0][0];
             if (is_exist_not_confirm_deposit) {
                 return response(req, res, -100, "아직 처리되지 않은 건이 있습니다.", false)
             }
@@ -552,8 +553,8 @@ const virtualAccountCtrl = {
             const {
                 id,
             } = req.body;
-            let trx = await pool.query(`SELECT * FROM deposits WHERE id=${id} AND brand_id=${decode_dns?.id}`);
-            trx = trx?.result[0];
+            let trx = await readPool.query(`SELECT * FROM deposits WHERE id=${id} AND brand_id=${decode_dns?.id}`);
+            trx = trx[0][0];
             if (!trx) {
                 return response(req, res, -100, "존재하지 않는 거래건 입니다.", false)
             }
@@ -601,8 +602,8 @@ const virtualAccountCtrl = {
                 phone_num,
                 birth,
             } = req.body;
-            let virtual_account = await pool.query(`SELECT id FROM ${table_name} WHERE brand_id=${decode_dns?.id} AND phone_num=? AND deposit_acct_name=?`, [phone_num, name]);
-            virtual_account = virtual_account?.result[0];
+            let virtual_account = await readPool.query(`SELECT id FROM ${table_name} WHERE brand_id=${decode_dns?.id} AND phone_num=? AND deposit_acct_name=?`, [phone_num, name]);
+            virtual_account = virtual_account[0][0];
             if (virtual_account) {
 
             } else {

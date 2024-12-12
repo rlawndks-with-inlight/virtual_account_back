@@ -1,4 +1,5 @@
 'use strict';
+import { readPool } from "../config/db-pool.js";
 import { pool } from "../config/db.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
@@ -51,8 +52,8 @@ const dashboardCtrl = {
             sql += ` HAVING amount > 0 `;
             sql += ` ORDER BY amount DESC `;
 
-            let result = await pool.query(sql);
-            result = result?.result;
+            let result = await readPool.query(sql);
+            result = result[0];
             return response(req, res, 100, "success", result);
         } catch (err) {
             console.log(err)
@@ -103,8 +104,8 @@ const dashboardCtrl = {
                 sql += ` AND created_at <= '${e_dt} 23:59:59' `;
             }
             sql += ` ORDER BY created_at DESC `;
-            let data = await pool.query(sql);
-            data = data?.result;
+            let data = await readPool.query(sql);
+            data = data[0];
             let chart_obj = {
 
             };

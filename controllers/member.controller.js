@@ -1,4 +1,5 @@
 'use strict';
+import { readPool } from "../config/db-pool.js";
 import { pool } from "../config/db.js";
 import corpApi from "../utils.js/corp-util/index.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
@@ -62,8 +63,8 @@ const memberCtrl = {
                 values.push(phone_num)
             }
             sql += ` AND ${table_name}.brand_id=${decode_dns?.id} `;
-            let data = await pool.query(sql, values)
-            data = data?.result[0];
+            let data = await readPool.query(sql, values)
+            data = data[0][0];
 
             return response(req, res, 100, "success", data)
         } catch (err) {
@@ -124,10 +125,10 @@ const memberCtrl = {
             const { id } = req.params;
             const { want_move } = req.query;
             console.log(req.query)
-            let member = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id}`);
-            member = member?.result[0];
-            let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
-            dns_data = dns_data?.result[0];
+            let member = await readPool.query(`SELECT * FROM ${table_name} WHERE id=${id}`);
+            member = member[0][0];
+            let dns_data = await readPool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
+            dns_data = dns_data[0][0];
 
             let user_amount = await corpApi.balance.info({
                 pay_type: 'withdraw',
@@ -153,10 +154,10 @@ const memberCtrl = {
             const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
             const { id } = req.params;
-            let member = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id}`);
-            member = member?.result[0];
-            let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
-            dns_data = dns_data?.result[0];
+            let member = await readPool.query(`SELECT * FROM ${table_name} WHERE id=${id}`);
+            member = member[0][0];
+            let dns_data = await readPool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
+            dns_data = dns_data[0][0];
 
             let api_result = await corpApi.vaccount_info({
                 pay_type: 'deposit',
@@ -164,7 +165,7 @@ const memberCtrl = {
                 decode_user,
                 guid: member?.guid,
             })
-            console.log(api_result)
+
             let status = (api_result.data?.virtual_acct_num == member?.virtual_acct_num && api_result.data?.status == 0) ? 0 : 1;
             return response(req, res, 100, "success", {
                 status
@@ -182,10 +183,10 @@ const memberCtrl = {
             const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
             const { id } = req.body;
-            let member = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id}`);
-            member = member?.result[0];
-            let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
-            dns_data = dns_data?.result[0];
+            let member = await readPool.query(`SELECT * FROM ${table_name} WHERE id=${id}`);
+            member = member[0][0];
+            let dns_data = await readPool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
+            dns_data = dns_data[0][0];
 
             let user_amount = await corpApi.balance.info({
                 pay_type: 'withdraw',
@@ -234,15 +235,15 @@ const memberCtrl = {
                 virtual_account_id,
                 mcht_id,
             } = req.body;
-            let virtual_account = await pool.query(`SELECT * FROM ${table}s WHERE brand_id=${decode_dns?.id} AND id=${virtual_account_id}`);
-            virtual_account = virtual_account?.result[0];
+            let virtual_account = await readPool.query(`SELECT * FROM ${table}s WHERE brand_id=${decode_dns?.id} AND id=${virtual_account_id}`);
+            virtual_account = virtual_account[0][0];
             if (!virtual_account) {
                 return response(req, res, -100, "정보가 존재하지 않습니다.", false)
             }
-            let mcht = await pool.query(`SELECT * FROM users WHERE level=10 AND brand_id=${decode_dns?.id} AND id=?`, [
+            let mcht = await readPool.query(`SELECT * FROM users WHERE level=10 AND brand_id=${decode_dns?.id} AND id=?`, [
                 mcht_id,
             ]);
-            mcht = mcht?.result[0];
+            mcht = mcht[0][0];
             if (!mcht) {
                 return response(req, res, -100, "존재하지 않는 가맹점 입니다.", false)
             }
@@ -266,10 +267,10 @@ const memberCtrl = {
                 decode_dns = req.dns_data;
             }
             const { id } = req.params;
-            let member = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id}`);
-            member = member?.result[0];
-            let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
-            dns_data = dns_data?.result[0];
+            let member = await readPool.query(`SELECT * FROM ${table_name} WHERE id=${id}`);
+            member = member[0][0];
+            let dns_data = await readPool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
+            dns_data = dns_data[0][0];
             if (member?.mcht_id != decode_user?.id && decode_user?.level < 40) {
                 return lowLevelException(req, res);
             }

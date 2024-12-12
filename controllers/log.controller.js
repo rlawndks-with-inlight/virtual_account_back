@@ -6,6 +6,7 @@ import { deleteQuery, getSelectQuery, insertQuery, makeSearchQuery, updateQuery 
 import { checkDns, checkLevel, createHashedPassword, getReqIp, isItemBrandIdSameDnsId, lowLevelException, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 import fs from 'fs';
+import { readPool } from "../config/db-pool.js";
 
 const table_name = 'logs'
 
@@ -21,15 +22,15 @@ const logCtrl = {
             }
             let requestIp = getReqIp(req);
 
-            let user = await pool.query(`SELECT only_connect_ip FROM users WHERE id=${decode_user?.id}`);
-            user = user?.result[0];
+            let user = await readPool.query(`SELECT only_connect_ip FROM users WHERE id=${decode_user?.id}`);
+            user = user[0][0];
             if (user?.only_connect_ip) {
                 if (requestIp != user?.only_connect_ip) {
                     return response(req, res, -150, "권한이 없습니다.", {})
                 }
             }
-            let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${decode_user?.id} AND is_delete=0`);
-            ip_list = ip_list?.result;
+            let ip_list = await readPool.query(`SELECT * FROM permit_ips WHERE user_id=${decode_user?.id} AND is_delete=0`);
+            ip_list = ip_list[0];
             if (decode_user?.level < 50 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp)) && ip_list.length > 0) {
                 res.clearCookie('token');
                 return response(req, res, -150, "권한이 없습니다.", {})

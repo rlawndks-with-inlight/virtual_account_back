@@ -5,6 +5,7 @@ import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, createHashedPassword, getOperatorList, isItemBrandIdSameDnsId, response, settingFiles, settingMchtFee } from "../utils.js/util.js";
 import 'dotenv/config';
+import { readPool } from "../config/db-pool.js";
 
 const bulkUploadCtrl = {
     merchandise: async (req, res, next) => {
@@ -24,8 +25,8 @@ const bulkUploadCtrl = {
             };
             let operator_list = getOperatorList(decode_dns);
             let error_list = [];
-            let operators = await pool.query(`SELECT user_name, id, level FROM users WHERE brand_id=${decode_dns?.id} AND level > 10 AND level < 40`);
-            operators = operators?.result;
+            let operators = await readPool.query(`SELECT user_name, id, level FROM users WHERE brand_id=${decode_dns?.id} AND level > 10 AND level < 40`);
+            operators = operators[0];
 
             await db.beginTransaction();
             for (var i = 0; i < data.length; i++) {
@@ -45,8 +46,8 @@ const bulkUploadCtrl = {
                     mcht_fee,
                 } = data[i];
                 let data_obj = { ...data[i] };
-                let is_exist_user = await pool.query(`SELECT * FROM users WHERE user_name=? AND brand_id=${brand_id}`, [user_name]);
-                if (is_exist_user?.result.length > 0) {
+                let is_exist_user = await readPool.query(`SELECT * FROM users WHERE user_name=? AND brand_id=${brand_id}`, [user_name]);
+                if (is_exist_user[0].length > 0) {
                     error_list.push({
                         idx: `${i}-user_name`,
                         message: '유저아이디가 이미 존재합니다.',

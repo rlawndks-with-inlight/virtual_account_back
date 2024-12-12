@@ -6,6 +6,7 @@ import { returnMoment } from '../function.js';
 import { shopProcess } from './shop-process.js';
 import { shopPool } from '../../config/shopping-mall-db.js';
 import _ from 'lodash';
+import { readPool } from '../../config/db-pool.js';
 
 export const pushAsapMall = async (return_moment = "") => {
     try {
@@ -42,8 +43,8 @@ export const pushAsapMall = async (return_moment = "") => {
             `brands.deposit_type`,
             `brands.is_use_asapmall_noti`,
         ]
-        let use_brands = await pool.query(`SELECT ${use_brand_columns.join()} FROM brands WHERE is_use_asapmall_noti=1`);
-        use_brands = use_brands?.result;
+        let use_brands = await readPool.query(`SELECT ${use_brand_columns.join()} FROM brands WHERE is_use_asapmall_noti=1`);
+        use_brands = use_brands[0];
         let use_brand_ids = use_brands.map(el => { return el?.id });
 
         let deposit_columns = [
@@ -79,14 +80,14 @@ export const pushAsapMall = async (return_moment = "") => {
             user_id: -1,
         })
 
-        let data = await pool.query(sql);
-        data = data?.result;
+        let data = await readPool.query(sql);
+        data = data[0];
 
         let virtual_account_ids = data.filter(el => el?.virtual_account_id > 0).map(el => { return el?.virtual_account_id });
         virtual_account_ids = new Set(virtual_account_ids);
         virtual_account_ids = [...virtual_account_ids];
-        let use_virtual_accounts = await pool.query(`SELECT id, phone_num FROM virtual_accounts WHERE id IN (${virtual_account_ids.join()})`);
-        use_virtual_accounts = use_virtual_accounts?.result;
+        let use_virtual_accounts = await readPool.query(`SELECT id, phone_num FROM virtual_accounts WHERE id IN (${virtual_account_ids.join()})`);
+        use_virtual_accounts = use_virtual_accounts[0];
 
         for (var i = 0; i < data.length; i++) {
             let brand = _.find(use_brands, { id: data[i]?.brand_id });

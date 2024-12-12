@@ -7,6 +7,7 @@ import { checkDns, checkLevel, createHashedPassword, generateRandomString, getMo
 import 'dotenv/config';
 import corpApi from "../utils.js/corp-util/index.js";
 import speakeasy from 'speakeasy';
+import { readPool } from "../config/db-pool.js";
 const table_name = 'brands';
 
 const brandCtrl = {
@@ -72,8 +73,8 @@ const brandCtrl = {
             if (decode_dns?.is_main_dns != 1) {
                 sql += ` AND ${table_name}.id=${decode_dns?.id} `;
             }
-            let data = await pool.query(sql)
-            data = data?.result[0];
+            let data = await readPool.query(sql)
+            data = data[0][0];
             data['theme_css'] = JSON.parse(data?.theme_css ?? '{}');
             data['setting_obj'] = JSON.parse(data?.setting_obj ?? '{}');
             data['level_obj'] = JSON.parse(data?.level_obj ?? '{}');
@@ -120,8 +121,8 @@ const brandCtrl = {
             obj['level_obj'] = JSON.stringify(obj.level_obj);
             obj['bizppurio_obj'] = JSON.stringify(obj.bizppurio_obj);
             if (parent_dns) {
-                let parent_dns_data = await pool.query(`SELECT * FROM brands WHERE dns=?`, [parent_dns]);
-                parent_dns_data = (parent_dns_data?.result[0] ?? {});
+                let parent_dns_data = await readPool.query(`SELECT * FROM brands WHERE dns=?`, [parent_dns]);
+                parent_dns_data = (parent_dns_data[0][0] ?? {});
                 obj['parent_id'] = parent_dns_data?.id ?? 0;
             }
             let api_key = await createHashedPassword('dns');
@@ -194,20 +195,20 @@ const brandCtrl = {
             obj['level_obj'] = JSON.stringify(obj.level_obj);
             obj['bizppurio_obj'] = JSON.stringify(obj.bizppurio_obj);
             if (parent_dns) {
-                let parent_dns_data = await pool.query(`SELECT * FROM brands WHERE dns=?`, [parent_dns]);
-                parent_dns_data = (parent_dns_data?.result[0] ?? {});
+                let parent_dns_data = await readPool.query(`SELECT * FROM brands WHERE dns=?`, [parent_dns]);
+                parent_dns_data = (parent_dns_data[0][0] ?? {});
                 obj['parent_id'] = parent_dns_data?.id ?? 0;
             }
             await db.beginTransaction();
 
 
 
-            let ago_brand = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id}`);
-            ago_brand = ago_brand?.result[0];
+            let ago_brand = await readPool.query(`SELECT * FROM ${table_name} WHERE id=${id}`);
+            ago_brand = ago_brand[0][0];
             let table = decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account' : 'member'
             if (guid) {
-                let virtual_account = await pool.query(`SELECT * FROM ${table}s WHERE guid=? AND brand_id=${id}`, [guid]);
-                virtual_account = virtual_account?.result[0];
+                let virtual_account = await readPool.query(`SELECT * FROM ${table}s WHERE guid=? AND brand_id=${id}`, [guid]);
+                virtual_account = virtual_account[0][0];
                 if (!virtual_account) {
                     await db.rollback();
                     return response(req, res, -100, "가상계좌가 존재하지 않습니다.", false)
@@ -300,8 +301,8 @@ const brandCtrl = {
             const decode_dns = checkDns(req.cookies.dns);
 
             const { brand_id } = req.body;
-            let dns_data = await pool.query(`SELECT ${table_name}.* FROM ${table_name} WHERE id=${brand_id}`);
-            dns_data = dns_data?.result[0];
+            let dns_data = await readPool.query(`SELECT ${table_name}.* FROM ${table_name} WHERE id=${brand_id}`);
+            dns_data = dns_data[0][0];
             const secret = speakeasy.generateSecret({
                 length: 20, // 비밀키의 길이를 설정 (20자리)
                 name: dns_data?.dns, // 사용자 아이디를 비밀키의 이름으로 설정
@@ -320,8 +321,8 @@ const brandCtrl = {
             const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
             const { brand_id } = req.body;
-            let dns_data = await pool.query(`SELECT ${table_name}.* FROM ${table_name} WHERE id=${brand_id}`);
-            dns_data = dns_data?.result[0];
+            let dns_data = await readPool.query(`SELECT ${table_name}.* FROM ${table_name} WHERE id=${brand_id}`);
+            dns_data = dns_data[0][0];
             let rand_text = generateRandomString(30);
             return response(req, res, 100, "success", {
                 rand_text

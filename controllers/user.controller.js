@@ -7,6 +7,7 @@ import { checkDns, checkLevel, createHashedPassword, getOperatorList, getUserDep
 import 'dotenv/config';
 import { emitSocket } from "../utils.js/socket/index.js";
 import redisCtrl from "../redis/index.js";
+import { readPool, writePool } from "../config/db-pool.js";
 
 const table_name = 'users';
 
@@ -80,8 +81,8 @@ const userCtrl = {
                     let merchandise_columns = [];
                     for (var i = 0; i < operator_list.length; i++) {
                         if (operator_list[i]?.value == decode_user?.level) {
-                            merchandise_columns = await pool.query(`SELECT * FROM merchandise_columns WHERE sales${operator_list[i]?.num}_id=${decode_user?.id}`);
-                            merchandise_columns = merchandise_columns?.result;
+                            merchandise_columns = await readPool.query(`SELECT * FROM merchandise_columns WHERE sales${operator_list[i]?.num}_id=${decode_user?.id}`);
+                            merchandise_columns = merchandise_columns[0];
                             break;
                         }
                     }
@@ -188,16 +189,16 @@ const userCtrl = {
             sql += ` LEFT JOIN virtual_accounts ON ${table_name}.virtual_account_id=virtual_accounts.id `;
             sql += ` LEFT JOIN members ON ${table_name}.member_id=members.id `;
             sql += ` WHERE ${table_name}.id=${id} AND (level < ${decode_user?.level} OR ${table_name}.id=${decode_user?.id})  `;
-            let data = await pool.query(sql)
-            data = data?.result[0];
-            let ip_logs = await pool.query(`SELECT * FROM connected_ips WHERE user_id=${data?.id} ORDER BY id DESC`);
-            ip_logs = ip_logs?.result;
+            let data = await readPool.query(sql)
+            data = data[0][0];
+            let ip_logs = await readPool.query(`SELECT * FROM connected_ips WHERE user_id=${data?.id} ORDER BY id DESC`);
+            ip_logs = ip_logs[0];
             data['telegram_chat_ids'] = JSON.parse(data?.telegram_chat_ids ?? '[]').join();
 
-            let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${id} AND is_delete=0`);
+            let ip_list = await readPool.query(`SELECT * FROM permit_ips WHERE user_id=${id} AND is_delete=0`);
             data = {
                 ...data,
-                ip_list: ip_list?.result,
+                ip_list: ip_list[0],
                 ip_logs,
             }
             let settle_amount_sql = ``;
@@ -209,8 +210,8 @@ const userCtrl = {
                 settle_amount_sql = `SELECT SUM(sales${find_oper_level.num}_amount) AS settle_amount FROM deposits WHERE sales${find_oper_level.num}_id=${id}`;
             }
             if (data?.level == 10 || find_oper_level) {
-                let settle_amount = await pool.query(settle_amount_sql);
-                settle_amount = settle_amount?.result[0]?.settle_amount ?? 0;
+                let settle_amount = await readPool.query(settle_amount_sql);
+                settle_amount = settle_amount[0][0]?.settle_amount ?? 0;
                 data = {
                     ...data,
                     settle_amount,
@@ -240,8 +241,8 @@ const userCtrl = {
             sql += ` WHERE ${table_name}.mid=${mid} `;
             sql += ` AND ${table_name}.brand_id=${decode_dns?.id} `;
 
-            let data = await pool.query(sql)
-            data = data?.result[0];
+            let data = await readPool.query(sql)
+            data = data[0][0];
 
 
             return response(req, res, 100, "success", data)
@@ -264,8 +265,8 @@ const userCtrl = {
             let columns = [
                 `connected_ips.*`,
             ]
-            let user = pool.query(`SELECT level FROM users WHERE id=${id}`);
-            user = user?.result[0];
+            let user = readPool.query(`SELECT level FROM users WHERE id=${id}`);
+            user = user[0][0];
 
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM connected_ips `;
             sql += `  WHERE user_id=${id} AND ${decode_user?.level} > ${user?.level} `;
@@ -318,8 +319,8 @@ const userCtrl = {
                 can_return = 0,
                 ip_list = [],
             } = req.body;
-            let is_exist_user = await pool.query(`SELECT * FROM ${table_name} WHERE user_name=? AND brand_id=${brand_id}`, [user_name]);
-            if (is_exist_user?.result.length > 0) {
+            let is_exist_user = await readPool.query(`SELECT * FROM ${table_name} WHERE user_name=? AND brand_id=${brand_id}`, [user_name]);
+            if (is_exist_user[0].length > 0) {
                 return response(req, res, -100, "유저아이디가 이미 존재합니다.", false)
             }
             let pw_data = await createHashedPassword(user_pw);
@@ -334,8 +335,8 @@ const userCtrl = {
             };
             let table = decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account' : 'member'
             if (guid) {
-                let virtual_account = await pool.query(`SELECT * FROM ${table}s WHERE guid=? AND brand_id=${decode_dns?.id}`, [guid]);
-                virtual_account = virtual_account?.result[0];
+                let virtual_account = await readPool.query(`SELECT * FROM ${table}s WHERE guid=? AND brand_id=${decode_dns?.id}`, [guid]);
+                virtual_account = virtual_account[0][0];
                 if (!virtual_account) {
                     return response(req, res, -100, "guid가 존재하지 않습니다.", false)
                 }
@@ -344,8 +345,8 @@ const userCtrl = {
                 obj[`${table}_id`]
             }
             if (children_brand_dns) {
-                let children_brand = await pool.query(`SELECT * FROM brands WHERE dns=?`, [children_brand_dns]);
-                children_brand = (children_brand?.result[0] ?? {});
+                let children_brand = await readPool.query(`SELECT * FROM brands WHERE dns=?`, [children_brand_dns]);
+                children_brand = (children_brand[0][0] ?? {});
                 obj['children_brand_id'] = children_brand?.id;
                 if (children_brand?.id > 0) {
                     let update_children_brand_fee = await updateQuery(`brands`, {
@@ -373,7 +374,7 @@ const userCtrl = {
                 }
             }
             if (result_ip_list.length > 0) {
-                let result_ip = await pool.query(`INSERT INTO permit_ips (user_id, ip) VALUES ?`, [result_ip_list]);
+                let result_ip = await writePool.query(`INSERT INTO permit_ips (user_id, ip) VALUES ?`, [result_ip_list]);
             }
 
             if (level == 10) {//가맹점
@@ -424,8 +425,8 @@ const userCtrl = {
             };
             let table = decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account' : 'member'
             if (guid) {
-                let virtual_account = await pool.query(`SELECT * FROM ${table}s WHERE guid=? AND brand_id=${decode_dns?.id}`, [guid]);
-                virtual_account = virtual_account?.result[0];
+                let virtual_account = await readPool.query(`SELECT * FROM ${table}s WHERE guid=? AND brand_id=${decode_dns?.id}`, [guid]);
+                virtual_account = virtual_account[0][0];
                 if (!virtual_account) {
                     return response(req, res, -100, "guid가 존재하지 않습니다.", false)
                 }
@@ -434,8 +435,8 @@ const userCtrl = {
                 obj[`${table}_id`] = null;
             }
             if (children_brand_dns) {
-                let children_brand = await pool.query(`SELECT * FROM brands WHERE dns=?`, [children_brand_dns]);
-                children_brand = (children_brand?.result[0] ?? {});
+                let children_brand = await readPool.query(`SELECT * FROM brands WHERE dns=?`, [children_brand_dns]);
+                children_brand = (children_brand[0][0] ?? {});
                 obj['children_brand_id'] = children_brand?.id;
                 if (children_brand?.id > 0) {
                     let update_children_brand_fee = await updateQuery(`brands`, {
@@ -468,7 +469,7 @@ const userCtrl = {
                 }
             }
             if (result_insert_ip_list.length > 0) {//신규
-                let insert_ip_result = await pool.query(`INSERT INTO permit_ips (user_id, ip) VALUES ?`, [result_insert_ip_list])
+                let insert_ip_result = await writePool.query(`INSERT INTO permit_ips (user_id, ip) VALUES ?`, [result_insert_ip_list])
             }
             if (result_update_ip_list.length > 0) {//기존
                 for (var i = 0; i < result_update_ip_list.length; i++) {
@@ -478,7 +479,7 @@ const userCtrl = {
                 }
             }
             if (result_delete_ip_list.length > 0) {//기존거 삭제
-                let delete_ip_result = await pool.query(`UPDATE permit_ips SET is_delete=1 WHERE id IN (${result_delete_ip_list.join()})`)
+                let delete_ip_result = await writePool.query(`UPDATE permit_ips SET is_delete=1 WHERE id IN (${result_delete_ip_list.join()})`)
             }
 
             if (level == 10) {//가맹점
@@ -604,8 +605,8 @@ const userCtrl = {
                 if (is_use_deposit_fee == 1 && decode_dns?.is_use_deposit_operator == 1) {
                     obj['deposit_fee'] = user?.deposit_fee;
                     obj['mcht_amount'] = amount - user?.deposit_fee;
-                    let mcht_column = await pool.query(`SELECT * FROM merchandise_columns WHERE mcht_id=${user_id}`);
-                    mcht_column = mcht_column?.result[0];
+                    let mcht_column = await readPool.query(`SELECT * FROM merchandise_columns WHERE mcht_id=${user_id}`);
+                    mcht_column = mcht_column[0][0];
                     delete mcht_column['id'];
                     user = {
                         ...user,
@@ -652,8 +653,8 @@ export default userCtrl;
 
 const asdsdaasd = async () => {
     try {
-        let mchts = await pool.query(`SELECT * FROM users WHERE level=10 AND brand_id=109 AND is_delete=0`);
-        mchts = mchts?.result;
+        let mchts = await readPool.query(`SELECT * FROM users WHERE level=10 AND brand_id=109 AND is_delete=0`);
+        mchts = mchts[0];
         let brand_list = [
             {//엠에스
                 id: 114,
@@ -670,9 +671,9 @@ const asdsdaasd = async () => {
                     delete mcht_obj['id'];
                     mcht_obj.brand_id = brand_list[i].id;
                     let result = await insertQuery(`users`, mcht_obj);
-                    console.log(result)
-                    let mcht_columns = await pool.query(`SELECT * FROM merchandise_columns WHERE mcht_id=${mcht?.id}`);
-                    mcht_columns = mcht_columns?.result[0];
+
+                    let mcht_columns = await readPool.query(`SELECT * FROM merchandise_columns WHERE mcht_id=${mcht?.id}`);
+                    mcht_columns = mcht_columns[0][0];
 
                     let mcht_id = result?.result?.insertId;
                     let mid_update = await updateQuery(`users`, {

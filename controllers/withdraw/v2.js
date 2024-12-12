@@ -10,6 +10,7 @@ import crypto from 'crypto';
 import { emitSocket } from "../../utils.js/socket/index.js";
 import speakeasy from 'speakeasy';
 import redisCtrl from "../../redis/index.js";
+import { readPool } from "../../config/db-pool.js";
 
 //뱅크너스출금
 
@@ -47,8 +48,8 @@ const withdrawV2Ctrl = {
             if (dns_data) {
                 dns_data = JSON.parse(dns_data ?? "{}");
             } else {
-                dns_data = await pool.query(`SELECT * FROM brands WHERE api_key=?`, [api_key]);
-                dns_data = dns_data?.result[0];
+                dns_data = await readPool.query(`SELECT * FROM brands WHERE api_key=?`, [api_key]);
+                dns_data = dns_data[0][0];
                 await redisCtrl.set(`dns_data_${api_key}`, JSON.stringify(dns_data), 60);
             }
 
@@ -71,10 +72,10 @@ const withdrawV2Ctrl = {
             let user_column = [
                 `users.*`,
             ]
-            let user = await pool.query(`SELECT ${user_column.join()} FROM users WHERE mid=? AND brand_id=${dns_data?.id} AND is_delete=0`, [
+            let user = await readPool.query(`SELECT ${user_column.join()} FROM users WHERE mid=? AND brand_id=${dns_data?.id} AND is_delete=0`, [
                 mid
             ]);
-            user = user?.result[0];
+            user = user[0][0];
             if (user?.can_return != 1 && pay_type == 20) {
                 return response(req, res, -100, "반환 권한이 없습니다.", false)
             }
@@ -87,8 +88,8 @@ const withdrawV2Ctrl = {
             if (ip_list) {
                 ip_list = JSON.parse(ip_list ?? "[]")
             } else {
-                ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${user?.id} AND is_delete=0`);
-                ip_list = ip_list?.result;
+                ip_list = await readPool.query(`SELECT * FROM permit_ips WHERE user_id=${user?.id} AND is_delete=0`);
+                ip_list = ip_list[0];
                 await redisCtrl.set(`user_ip_list_${user?.id}`, JSON.stringify(ip_list), 60);
             }
             if ((!ip_list.map(itm => { return itm?.ip }).includes(requestIp))) {
@@ -111,10 +112,10 @@ const withdrawV2Ctrl = {
                 }
             }
             let table = dns_data?.deposit_type == 'virtual_account' ? 'virtual_accounts' : 'members'
-            let virtual_account = await pool.query(`SELECT * FROM ${table} WHERE guid=? AND is_delete=0`, [
+            let virtual_account = await readPool.query(`SELECT * FROM ${table} WHERE guid=? AND is_delete=0`, [
                 guid,
             ]);
-            virtual_account = virtual_account?.result[0];
+            virtual_account = virtual_account[0][0];
             if (!virtual_account) {
                 return response(req, res, -100, "가상계좌를 먼저 등록해 주세요.", false)
             }
@@ -126,8 +127,8 @@ const withdrawV2Ctrl = {
                 today_withdraw_sum_sql += ` AND pay_type IN (5, 10, 20) `;
                 today_withdraw_sum_sql += ` AND withdraw_status IN (0) `;
                 today_withdraw_sum_sql += ` AND (created_at BETWEEN '${date} 00:00:00' AND '${date} 23:59:59')  `;
-                let today_withdraw_sum = await pool.query(today_withdraw_sum_sql);
-                today_withdraw_sum = (today_withdraw_sum?.result[0]?.amount ?? 0) * (-1) - (today_withdraw_sum?.result[0]?.withdraw_fee ?? 0);
+                let today_withdraw_sum = await readPool.query(today_withdraw_sum_sql);
+                today_withdraw_sum = (today_withdraw_sum[0][0]?.amount ?? 0) * (-1) - (today_withdraw_sum[0][0]?.withdraw_fee ?? 0);
                 if (dns_data?.withdraw_max_price < today_withdraw_sum + amount) {
                     return response(req, res, -100, "출금 실패 B", false)
                 }
@@ -144,8 +145,8 @@ const withdrawV2Ctrl = {
                 month_withdraw_sum_sql += ` AND pay_type IN (5, 10, 20) `;
                 month_withdraw_sum_sql += ` AND withdraw_status IN (0) `;
                 month_withdraw_sum_sql += ` AND (created_at BETWEEN '${first_date} 00:00:00' AND '${next_year}-${next_month >= 10 ? '' : '0'}${next_month}-01 00:00:00')  `;
-                let month_withdraw_sum = await pool.query(month_withdraw_sum_sql);
-                month_withdraw_sum = (month_withdraw_sum?.result[0]?.amount ?? 0) * (-1) - (month_withdraw_sum?.result[0]?.withdraw_fee ?? 0);
+                let month_withdraw_sum = await readPool.query(month_withdraw_sum_sql);
+                month_withdraw_sum = (month_withdraw_sum[0][0]?.amount ?? 0) * (-1) - (month_withdraw_sum[0][0]?.withdraw_fee ?? 0);
                 if (dns_data?.month_withdraw_max_price < month_withdraw_sum + amount) {
                     return response(req, res, -100, "출금 실패 C", false)
                 }
@@ -165,8 +166,8 @@ const withdrawV2Ctrl = {
                 return response(req, res, -100, "블랙리스트 유저입니다.", false);
             }
             if (pay_type == 20 && user?.can_return_ago_pay == 1) {
-                let deposit_count = await pool.query(`SELECT COUNT(*) AS count FROM deposits WHERE pay_type=0 AND (virtual_account_id=${virtual_account?.id} OR member_id=${virtual_account?.id})`);
-                deposit_count = deposit_count?.result[0];
+                let deposit_count = await readPool.query(`SELECT COUNT(*) AS count FROM deposits WHERE pay_type=0 AND (virtual_account_id=${virtual_account?.id} OR member_id=${virtual_account?.id})`);
+                deposit_count = deposit_count[0][0];
                 if (deposit_count?.count < 1) {
                     return response(req, res, -100, "결제한 이력이 없는 유저이므로 반환 불가합니다.", false)
                 }
@@ -198,8 +199,8 @@ const withdrawV2Ctrl = {
                 deposit_obj[`sales${find_oper_level.num}_id`] = user?.id
                 deposit_obj[`sales${find_oper_level.num}_amount`] = (-1) * amount;
             }
-            let settle_amount = await pool.query(settle_amount_sql);
-            settle_amount = settle_amount?.result[0]?.settle_amount ?? 0;
+            let settle_amount = await readPool.query(settle_amount_sql);
+            settle_amount = settle_amount[0][0]?.settle_amount ?? 0;
             if (dns_data?.default_withdraw_max_price < withdraw_amount) {
                 return response(req, res, -100, `최대 ${pay_type_name}액은 ${commarNumber(dns_data?.default_withdraw_max_price)}원 입니다.`, false)
             }
@@ -230,8 +231,8 @@ const withdrawV2Ctrl = {
             let result = await insertQuery(`deposits`, deposit_obj);
             withdraw_id = result?.result?.insertId;
             //인설트후 체크
-            let settle_amount_2 = await pool.query(settle_amount_sql);
-            settle_amount_2 = settle_amount_2?.result[0]?.settle_amount ?? 0;
+            let settle_amount_2 = await readPool.query(settle_amount_sql);
+            settle_amount_2 = settle_amount_2[0][0]?.settle_amount ?? 0;
             if (settle_amount_2 < 0) {
                 let delete_result = await deleteQuery(`deposits`, { id: withdraw_id }, true);
                 return response(req, res, -100, `${pay_type_name} 요청금이 보유정산금보다 많습니다.`, false)

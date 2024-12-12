@@ -10,7 +10,7 @@ import { payConfirmProcess } from './pay-confirm-process.js';
 
 const scheduleIndex = () => {
     schedule.scheduleJob('0 0/1 * * * *', async function () {
-        //let pm2_back_id = await pool.query(`SELECT * FROM `)
+
         let return_moment = returnMoment();
 
         if (parseInt(process.env.INSTANCE_ID) == parseInt(process.env.instances) - 1) {

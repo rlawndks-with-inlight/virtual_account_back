@@ -9,6 +9,7 @@ import { icbApi } from "./icb.js";
 import { koreaPaySystemApi } from "./korea-pay-system.js";
 import { paytusApi } from "./paytus.js";
 import redisCtrl from "../../redis/index.js";
+import { readPool } from "../../config/db-pool.js";
 
 export const getDnsData = async (dns_data_) => {
     let dns_data = await redisCtrl.get(`dns_data_${dns_data_?.id}`);
@@ -22,8 +23,8 @@ export const getDnsData = async (dns_data_) => {
         dns_data['level_obj'] = JSON.parse(dns_data?.level_obj ?? '{}');
         dns_data['bizppurio_obj'] = JSON.parse(dns_data?.bizppurio_obj ?? '{}');
 
-        let brands = await pool.query(`SELECT id, parent_id FROM brands `);
-        brands = brands?.result;
+        let brands = await readPool.query(`SELECT id, parent_id FROM brands `);
+        brands = brands[0];
         let childrens = findChildIds(brands, dns_data?.id);
         childrens.push(dns_data?.id)
         let parents = findParents(brands, dns_data)

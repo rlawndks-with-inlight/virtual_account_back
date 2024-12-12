@@ -4,6 +4,7 @@ import 'dotenv/config';
 import { pool } from '../../config/db.js';
 import { updateQuery } from '../query-util.js';
 import axios from 'axios';
+import { readPool } from '../../config/db-pool.js';
 
 popbill.config({
     // 링크아이디
@@ -120,10 +121,10 @@ const processCorpAccount = async (corp_account_item = {}) => {
         let acct_num = accountNumber;
         let s_dt = returnMoment().substring(0, 10).replaceAll('-', '');
         let e_dt = returnMoment().substring(0, 10).replaceAll('-', '');
-        let corp_account = await pool.query(`SELECT * FROM corp_accounts WHERE acct_num=? AND status=0 and is_process=0 `, [
+        let corp_account = await readPool.query(`SELECT * FROM corp_accounts WHERE acct_num=? AND status=0 and is_process=0 `, [
             acct_num
         ])
-        corp_account = corp_account?.result[0];
+        corp_account = corp_account[0][0];
         console.log(corp_account)
         if (!corp_account) {
             return;

@@ -13,6 +13,7 @@ import corpApi from './corp-util/index.js';
 import logger from './winston/index.js';
 import xlsx from 'xlsx';
 import redisCtrl from '../redis/index.js';
+import { readPool, writePool } from '../config/db-pool.js';
 
 const randomBytesPromise = util.promisify(crypto.randomBytes);
 const pbkdf2Promise = util.promisify(crypto.pbkdf2);
@@ -73,8 +74,8 @@ export const checkLevel = async (token, level, req, is_log = false) => { //유�
             if (user) {
                 user = JSON.parse(user ?? "{}");
             } else {
-                user = await pool.query(`SELECT only_connect_ip FROM users WHERE id=${decoded?.id} `);
-                user = user?.result[0];
+                user = await readPool.query(`SELECT only_connect_ip FROM users WHERE id=${decoded?.id} `);
+                user = user[0][0];
                 await redisCtrl.set(`user_only_connect_ip_${decoded?.id}`, JSON.stringify(user), 60);
             }
 
@@ -88,8 +89,8 @@ export const checkLevel = async (token, level, req, is_log = false) => { //유�
             if (ip_list) {
                 ip_list = JSON.parse(ip_list ?? "[]")
             } else {
-                ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${decoded?.id} AND is_delete=0`);
-                ip_list = ip_list?.result;
+                ip_list = await readPool.query(`SELECT * FROM permit_ips WHERE user_id=${decoded?.id} AND is_delete=0`);
+                ip_list = ip_list[0];
                 await redisCtrl.set(`user_ip_list_${decoded?.id}`, JSON.stringify(ip_list), 60);
             }
             if (decoded?.level < 45 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp))) {
@@ -166,7 +167,7 @@ const logRequestResponse = async (req, res, decode_user, decode_dns) => {//로�
         let data = res?.data ?? {};
         delete data['otp_token'];
 
-        let result = await pool.query(
+        let result = await writePool.query(
             "INSERT INTO logs (request, response_data, response_result, response_message, request_ip, user_id, brand_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
             [
                 request,
@@ -444,11 +445,10 @@ export const getOperatorList = (brand_) => {
     return operator_list;
 }
 export const getChildrenBrands = async (brand = {}) => {
-    let brands = await pool.query(`SELECT id, parent_id, name, dns FROM brands`);
-    brands = brands?.result;
+    let brands = await readPool.query(`SELECT id, parent_id, name, dns FROM brands`);
+    brands = brands[0];
 
     let childrens = findChildIds(brands, brand?.id);
-    console.log(childrens)
     return childrens;
 }
 export const getUserDepositFee = (item, user_level, operator_list = [], deposit_head_office_fee) => {
@@ -483,8 +483,8 @@ export const getDailyWithdrawAmount = async (user) => {
     sql += ` AND pay_type IN (5, 20) `;
     sql += ` AND withdraw_status IN (0, 5, 20) `;
     sql += ` AND created_at >='${s_dt}' AND created_at <='${e_dt}' `;
-    let result = await pool.query(sql);
-    result = result?.result[0];
+    let result = await readPool.query(sql);
+    result = result[0][0];
     return result;
 }
 export const sendNotiPush = async (user = {}, pay_type, data = {}, id) => {
@@ -580,8 +580,8 @@ export const getMotherDeposit = async (decode_dns, is_detail) => {
     data['real_amount'] = real_amount.data?.amount ?? 0;
     data['hold_deposit_amount'] = real_amount.data?.hold_deposit_amount ?? 0;
     data['childrens'] = [];
-    let children_brands = await pool.query(`SELECT * FROM brands WHERE parent_id=${decode_dns?.id}`);
-    children_brands = children_brands?.result;
+    let children_brands = await readPool.query(`SELECT * FROM brands WHERE parent_id=${decode_dns?.id}`);
+    children_brands = children_brands[0];
     for (var i = 0; i < children_brands.length; i++) {
         let children_mother_deposit = await getMotherDeposit(children_brands[i]);
         data['childrens'].push(children_mother_deposit);
@@ -738,8 +738,8 @@ export const setWithdrawAmountSetting = async (amount_ = 0, user_ = {}, dns_data
         }
         let mcht_sql = `SELECT ${mcht_columns.join()} FROM merchandise_columns `
         mcht_sql += ` WHERE mcht_id=${user?.id} `;
-        let mcht = await pool.query(mcht_sql);
-        mcht = mcht?.result[0];
+        let mcht = await readPool.query(mcht_sql);
+        mcht = mcht[0][0];
         user = {
             ...user,
             ...mcht,
@@ -786,8 +786,8 @@ const sadsafsafsa = async () => {//거래내역비교
         sql += ` LEFT JOIN users ON users.id=deposits.mcht_id `;
         sql += ` WHERE deposits.pay_type IN (5, 10, 20) `;
         sql += ` AND deposits.brand_id IN (71, 72) AND deposits.created_at >= '2024-03-31 00:00:00' AND withdraw_status=0  ORDER BY deposits.id DESC `;
-        let deposits = await pool.query(sql);
-        deposits = deposits?.result;
+        let deposits = await readPool.query(sql);
+        deposits = deposits[0];
         console.log(deposits.length)
         let first_list = getExcel('./asd4.xlsx');
         console.log(first_list.length)
@@ -837,8 +837,8 @@ const getExcel = (name) => {
 }
 export const findBlackList = async (word, type, decode_dns = {}) => {
     try {
-        let black_item = await pool.query(`SELECT * FROM black_lists WHERE is_delete=0 AND acct_num=? AND brand_id=${decode_dns?.id}`, [word]);
-        return black_item?.result[0];
+        let black_item = await readPool.query(`SELECT * FROM black_lists WHERE is_delete=0 AND acct_num=? AND brand_id=${decode_dns?.id}`, [word]);
+        return black_item[0][0];
 
     } catch (err) {
         console.log(err);

@@ -1,3 +1,4 @@
+import { readPool, writePool } from "../../config/db-pool.js";
 import { pool } from "../../config/db.js";
 import { returnMoment } from "../function.js";
 import { insertQuery, updateQuery } from "../query-util.js";
@@ -8,8 +9,8 @@ export const onParentBrandSettle = async (return_moment = "") => {
         return;
     }
     try {
-        let children_brands = await pool.query(`SELECT * FROM brands WHERE parent_id > 0`);
-        children_brands = children_brands?.result;
+        let children_brands = await readPool.query(`SELECT * FROM brands WHERE parent_id > 0`);
+        children_brands = children_brands[0];
         for (var i = 0; i < children_brands.length; i++) {
             let children_brand = children_brands[i];
             children_brand['setting_obj'] = JSON.parse(children_brand?.setting_obj ?? '{}');
@@ -31,8 +32,8 @@ const parentBrandSettle = async (brand = {}, return_moment = "") => {
         deposit_sql += ` AND deposit_status=0 `;
         deposit_sql += ` AND pay_type=0 `;
         deposit_sql += ` AND (created_at BETWEEN '${return_moment.substring(0, 10)} 00:00:00' AND '${return_moment.substring(0, 10)} 23:59:59' )`;
-        let deposit_sum = await pool.query(deposit_sql);
-        deposit_sum = deposit_sum?.result[0];
+        let deposit_sum = await readPool.query(deposit_sql);
+        deposit_sum = deposit_sum[0][0];
         if (brand?.is_use_fee_operator == 1) {
             insert_list.push([//요율
                 brand?.id,
@@ -54,8 +55,8 @@ const parentBrandSettle = async (brand = {}, return_moment = "") => {
 
 
 
-        let withdraw_sum = await pool.query(withdraw_sql);
-        withdraw_sum = withdraw_sum?.result[0];
+        let withdraw_sum = await readPool.query(withdraw_sql);
+        withdraw_sum = withdraw_sum[0][0];
         insert_list.push([//수수료
             brand?.id,
             12,
@@ -66,8 +67,8 @@ const parentBrandSettle = async (brand = {}, return_moment = "") => {
 
         let withdraw_id_sql = `SELECT id FROM deposits`;
         withdraw_id_sql += withdrawWheresql(brand, yesterday, return_moment)
-        let withdraw_id_list = await pool.query(withdraw_id_sql);
-        withdraw_id_list = withdraw_id_list?.result;
+        let withdraw_id_list = await readPool.query(withdraw_id_sql);
+        withdraw_id_list = withdraw_id_list[0];
 
         let result_insert_list = [];
         for (var i = 0; i < insert_list.length; i++) {
@@ -77,19 +78,19 @@ const parentBrandSettle = async (brand = {}, return_moment = "") => {
             }
         }
 
-        let result = await pool.query(`INSERT INTO deposits (brand_id, pay_type, amount, note, is_parent_brand_settle) VALUES ?`, [result_insert_list]);
+        let result = await writePool.query(`INSERT INTO deposits (brand_id, pay_type, amount, note, is_parent_brand_settle) VALUES ?`, [result_insert_list]);
         let sucess_result = await insertQuery(`parent_brand_settles`, {
             brand_id: brand?.id,
             parent_id: brand?.parent_id,
             date: return_moment.substring(0, 10),
             status: 0,
         })
-        let success_id = sucess_result?.result?.insertId;
+        let success_id = sucess_result[0]?.insertId;
         if (result.code > 0) {
             if (withdraw_id_list.length > 0) {
                 for (var i = 0; i < withdraw_id_list.length / 1000; i++) {
                     let update_withdraw_list = withdraw_id_list.slice(i * 1000, (i + 1) * 1000);
-                    let update_result = await pool.query(`UPDATE deposits SET  is_confirm_parent_brand_settle=1 WHERE id IN (${update_withdraw_list.map(itm => itm?.id).join()})`);
+                    let update_result = await writePool.query(`UPDATE deposits SET  is_confirm_parent_brand_settle=1 WHERE id IN (${update_withdraw_list.map(itm => itm?.id).join()})`);
                 }
             }
         }

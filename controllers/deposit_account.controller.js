@@ -1,4 +1,5 @@
 'use strict';
+import { readPool } from "../config/db-pool.js";
 import { pool } from "../config/db.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
@@ -56,8 +57,8 @@ const depositAccountCtrl = {
                 return lowLevelException(req, res);
             }
             const { id } = req.params;
-            let data = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id}`)
-            data = data?.result[0];
+            let data = await readPool.query(`SELECT * FROM ${table_name} WHERE id=${id}`)
+            data = data[0][0];
             if (!isItemBrandIdSameDnsId(decode_dns, data)) {
                 return lowLevelException(req, res);
             }
@@ -91,11 +92,11 @@ const depositAccountCtrl = {
             } else {
                 return lowLevelException(req, res);
             }
-            let is_exist_another_mcht = await pool.query(`SELECT * FROM ${table_name} WHERE is_delete=0 AND mcht_id!=${result_mcht_id} AND acct_name=? AND detail=? AND brand_id=${decode_dns?.id}`, [
+            let is_exist_another_mcht = await readPool.query(`SELECT * FROM ${table_name} WHERE is_delete=0 AND mcht_id!=${result_mcht_id} AND acct_name=? AND detail=? AND brand_id=${decode_dns?.id}`, [
                 acct_name,
                 detail,
             ]);
-            if (is_exist_another_mcht?.result.length > 0) {
+            if (is_exist_another_mcht[0].length > 0) {
                 return response(req, res, -100, "본사에 문의해 주세요.", false)
             }
             obj['mcht_id'] = result_mcht_id;
@@ -132,11 +133,11 @@ const depositAccountCtrl = {
             } else {
                 return lowLevelException(req, res);
             }
-            let is_exist_another_mcht = await pool.query(`SELECT * FROM ${table_name} WHERE is_delete=0 AND mcht_id!=${result_mcht_id} AND acct_name=? AND detail=? AND brand_id=${decode_dns?.id}`, [
+            let is_exist_another_mcht = await readPool.query(`SELECT * FROM ${table_name} WHERE is_delete=0 AND mcht_id!=${result_mcht_id} AND acct_name=? AND detail=? AND brand_id=${decode_dns?.id}`, [
                 acct_name,
                 detail,
             ]);
-            if (is_exist_another_mcht?.result.length > 0) {
+            if (is_exist_another_mcht[0].length > 0) {
                 return response(req, res, -100, "본사에 문의해 주세요.", false)
             }
             obj['mcht_id'] = result_mcht_id;

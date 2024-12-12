@@ -1,3 +1,4 @@
+import { readPool } from "../../config/db-pool.js";
 import { pool } from "../../config/db.js";
 import virtualAccountCtrl from "../../controllers/virtual_account.controller.js";
 import _ from "lodash";
@@ -17,14 +18,14 @@ export const destructAutoVirtualAcct = async () => {
         sql += ` ) `;
         sql += ` ORDER BY virtual_accounts.id ASC `;
         console.log(sql)
-        let auto_delete_virtual_accts = await pool.query(sql);
-        auto_delete_virtual_accts = auto_delete_virtual_accts?.result;
+        let auto_delete_virtual_accts = await readPool.query(sql);
+        auto_delete_virtual_accts = auto_delete_virtual_accts[0];
         if (auto_delete_virtual_accts.length > 0) {
             let brand_id_list = auto_delete_virtual_accts.map(itm => itm?.brand_id);
             brand_id_list = new Set(brand_id_list);
             brand_id_list = [...brand_id_list];
-            let brands = await pool.query(`SELECT * FROM brands WHERE id IN (${brand_id_list.join()})`);
-            brands = brands?.result;
+            let brands = await readPool.query(`SELECT * FROM brands WHERE id IN (${brand_id_list.join()})`);
+            brands = brands[0];
 
             for (var i = 0; i < auto_delete_virtual_accts.length; i++) {
                 let brand = _.find(brands, { id: parseInt(auto_delete_virtual_accts[i]?.brand_id) })

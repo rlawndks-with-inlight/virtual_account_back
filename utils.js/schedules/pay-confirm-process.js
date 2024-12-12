@@ -3,18 +3,19 @@ import { pool } from "../../config/db.js";
 import corpApi from "../corp-util/index.js";
 import { generateRandomString } from "../util.js";
 import { updateQuery } from "../query-util.js";
+import { readPool } from "../../config/db-pool.js";
 
 //무기명관련 결제완료처리하기
 export const payConfirmProcess = async () => {
     try {
-        let brands = await pool.query(`SELECT id FROM brands WHERE deposit_process_type=1`);
-        brands = brands?.result;
+        let brands = await readPool.query(`SELECT id FROM brands WHERE deposit_process_type=1`);
+        brands = brands[0];
         let brand_ids = brands.map(el => {
             return el?.id
         })
         if (brand_ids.length > 0) {
-            let deposits = await pool.query(`SELECT id, brand_id, virtual_account_id, amount FROM deposits WHERE brand_id IN (${brand_ids.join()}) AND deposit_status=0 AND is_pay_confirm=0 AND pay_type=0 ORDER BY id ASC`);
-            deposits = deposits?.result;
+            let deposits = await readPool.query(`SELECT id, brand_id, virtual_account_id, amount FROM deposits WHERE brand_id IN (${brand_ids.join()}) AND deposit_status=0 AND is_pay_confirm=0 AND pay_type=0 ORDER BY id ASC`);
+            deposits = deposits[0];
             console.log(deposits);
             let virtual_account_ids = deposits.map(el => {
                 return el?.virtual_account_id
@@ -23,8 +24,8 @@ export const payConfirmProcess = async () => {
             virtual_account_ids = [...virtual_account_ids];
             let virtual_accounts = [];
             if (virtual_account_ids.length > 0) {
-                virtual_accounts = await pool.query(`SELECT id, ci FROM virtual_accounts WHERE id IN (${virtual_account_ids.join()})`);
-                virtual_accounts = virtual_accounts?.result;
+                virtual_accounts = await readPool.query(`SELECT id, ci FROM virtual_accounts WHERE id IN (${virtual_account_ids.join()})`);
+                virtual_accounts = virtual_accounts[0];
             }
             for (var i = 0; i < deposits.length; i++) {
                 processConfirm(

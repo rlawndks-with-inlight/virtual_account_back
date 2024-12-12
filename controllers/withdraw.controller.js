@@ -14,6 +14,7 @@ import withdrawV3Ctrl from "./withdraw/v3.js";
 import withdrawV4Ctrl from "./withdraw/v4.js";
 import withdrawV5Ctrl from "./withdraw/v5.js";
 import redisCtrl from "../redis/index.js";
+import { readPool } from "../config/db-pool.js";
 
 const table_name = 'deposits';
 
@@ -138,8 +139,8 @@ const withdrawCtrl = {
             const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
             const { id } = req.params;
-            let data = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id}`)
-            data = data?.result[0];
+            let data = await readPool.query(`SELECT * FROM ${table_name} WHERE id=${id}`)
+            data = data[0][0];
             if (!isItemBrandIdSameDnsId(decode_dns, data)) {
                 return lowLevelException(req, res);
             }
@@ -168,8 +169,8 @@ const withdrawCtrl = {
             if (dns_data) {
                 dns_data = JSON.parse(dns_data ?? "{}");
             } else {
-                dns_data = await pool.query(`SELECT * FROM brands WHERE api_key=?`, [decode_dns?.api_key]);
-                dns_data = dns_data?.result[0];
+                dns_data = await readPool.query(`SELECT * FROM brands WHERE api_key=?`, [decode_dns?.api_key]);
+                dns_data = dns_data[0][0];
                 await redisCtrl.set(`dns_data_${decode_dns?.api_key}`, JSON.stringify(dns_data), 60);
             }
 
@@ -192,8 +193,8 @@ const withdrawCtrl = {
             }
             mcht_sql += ` WHERE users.id=? `;
             mcht_sql = mcht_sql.replace(process.env.SELECT_COLUMN_SECRET, mcht_columns.join())
-            let user = await pool.query(mcht_sql, [decode_user?.id]);
-            user = user?.result[0];
+            let user = await readPool.query(mcht_sql, [decode_user?.id]);
+            user = user[0][0];
 
             withdraw_amount = parseInt(withdraw_amount);
             let amount = parseInt(withdraw_amount) + (dns_data?.withdraw_fee_type == 0 ? user?.withdraw_fee : 0);
@@ -324,8 +325,8 @@ const withdrawCtrl = {
             if (decode_dns?.parent_id > 0) {
                 return response(req, res, -100, "출금 실패 A", false)
             }
-            let user = await pool.query(`SELECT only_connect_ip FROM users WHERE id=${decode_dns?.id}`);
-            user = user?.result[0];
+            let user = await readPool.query(`SELECT only_connect_ip FROM users WHERE id=${decode_dns?.id}`);
+            user = user[0][0];
 
             let requestIp = getReqIp(req);
             if (user?.only_connect_ip) {
@@ -333,15 +334,15 @@ const withdrawCtrl = {
                     return response(req, res, -150, "권한이 없습니다.", false)
                 }
             }
-            let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${decode_user?.id} AND is_delete=0`);
-            ip_list = ip_list?.result;
+            let ip_list = await readPool.query(`SELECT * FROM permit_ips WHERE user_id=${decode_user?.id} AND is_delete=0`);
+            ip_list = ip_list[0];
             if (user?.level < 45 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp))) {
                 return response(req, res, -150, "권한이 없습니다.", false)
             }
 
             let trx_id = `${decode_dns?.id}${new Date().getTime()}`;
-            let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
-            dns_data = dns_data?.result[0];
+            let dns_data = await readPool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
+            dns_data = dns_data[0][0];
             dns_data['setting_obj'] = JSON.parse(dns_data?.setting_obj ?? '{}');
             if (dns_data?.withdraw_corp_type != 7) {
                 return response(req, res, -100, "출금 실패 C", false)
@@ -460,8 +461,8 @@ const withdrawCtrl = {
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
-            let withdraw = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id} AND brand_id=${decode_dns?.id}`);
-            withdraw = withdraw?.result[0];
+            let withdraw = await readPool.query(`SELECT * FROM ${table_name} WHERE id=${id} AND brand_id=${decode_dns?.id}`);
+            withdraw = withdraw[0][0];
             if (!withdraw) {
                 return response(req, res, -100, "잘못된 출금 입니다.", false)
             }
@@ -469,8 +470,8 @@ const withdrawCtrl = {
                 return response(req, res, -100, "이미 허용된 출금입니다.", false)
             }
             let trx_id = withdraw?.trx_id;
-            let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
-            dns_data = dns_data?.result[0];
+            let dns_data = await readPool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
+            dns_data = dns_data[0][0];
             dns_data['setting_obj'] = JSON.parse(dns_data?.setting_obj ?? '{}');
 
             let withdraw_amount = (withdraw?.expect_amount + withdraw?.withdraw_fee) * (-1);
@@ -479,20 +480,20 @@ const withdrawCtrl = {
                 let today_withdraw_sum_sql = ` SELECT SUM(amount) AS amount FROM deposits WHERE brand_id=${decode_dns?.id} `;
                 today_withdraw_sum_sql += ` AND pay_type IN (5, 10, 20) `;
                 today_withdraw_sum_sql += ` AND (created_at BETWEEN '${date} 00:00:00' AND '${date} 23:59:59')  `;
-                let today_withdraw_sum = await pool.query(today_withdraw_sum_sql);
-                today_withdraw_sum = today_withdraw_sum?.result[0]?.amount ?? 0;
+                let today_withdraw_sum = await readPool.query(today_withdraw_sum_sql);
+                today_withdraw_sum = today_withdraw_sum[0][0]?.amount ?? 0;
                 if (dns_data?.withdraw_max_price < today_withdraw_sum + withdraw_amount) {
                     return response(req, res, -100, "출금 실패 B", false)
                 }
             }
-            let user = await pool.query(`SELECT * FROM users WHERE id=${withdraw?.user_id} AND brand_id=${decode_dns?.id}`);
-            user = user?.result[0];
+            let user = await readPool.query(`SELECT * FROM users WHERE id=${withdraw?.user_id} AND brand_id=${decode_dns?.id}`);
+            user = user[0][0];
 
             if (!user) {
                 return response(req, res, -100, "잘못된 유저 입니다.", false)
             }
-            let virtual_account = await pool.query(`SELECT * FROM ${decode_dns?.deposit_type == 'virtual_account' ? 'virtual_accounts' : 'members'} WHERE id=${withdraw[`${decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account_id' : 'member_id'}`]}`);
-            virtual_account = virtual_account?.result[0];
+            let virtual_account = await readPool.query(`SELECT * FROM ${decode_dns?.deposit_type == 'virtual_account' ? 'virtual_accounts' : 'members'} WHERE id=${withdraw[`${decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account_id' : 'member_id'}`]}`);
+            virtual_account = virtual_account[0][0];
 
             let return_time = returnMoment().substring(11, 16);
             if (dns_data?.setting_obj?.not_withdraw_s_time >= dns_data?.setting_obj?.not_withdraw_e_time) {
@@ -605,8 +606,8 @@ const withdrawCtrl = {
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
-            let withdraw = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id} AND brand_id=${decode_dns?.id}`);
-            withdraw = withdraw?.result[0];
+            let withdraw = await readPool.query(`SELECT * FROM ${table_name} WHERE id=${id} AND brand_id=${decode_dns?.id}`);
+            withdraw = withdraw[0][0];
             if (!withdraw) {
                 return response(req, res, -100, "잘못된 출금 입니다.", false)
             }
@@ -614,16 +615,16 @@ const withdrawCtrl = {
                 return response(req, res, -100, "이미 반려된 건입니다.", false)
             }
             let withdraw_amount = (withdraw?.expect_amount + withdraw?.withdraw_fee) * (-1);
-            let user = await pool.query(`SELECT * FROM users WHERE id=${withdraw?.user_id} AND brand_id=${decode_dns?.id}`);
-            user = user?.result[0];
+            let user = await readPool.query(`SELECT * FROM users WHERE id=${withdraw?.user_id} AND brand_id=${decode_dns?.id}`);
+            user = user[0][0];
 
             if (!user) {
                 return response(req, res, -100, "잘못된 유저 입니다.", false)
             }
-            let virtual_account = await pool.query(`SELECT * FROM ${decode_dns?.deposit_type == 'virtual_account' ? 'virtual_accounts' : 'members'} WHERE id=${withdraw[`${decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account_id' : 'member_id'}`]}`);
-            virtual_account = virtual_account?.result[0];
-            let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
-            dns_data = dns_data?.result[0];
+            let virtual_account = await readPool.query(`SELECT * FROM ${decode_dns?.deposit_type == 'virtual_account' ? 'virtual_accounts' : 'members'} WHERE id=${withdraw[`${decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account_id' : 'member_id'}`]}`);
+            virtual_account = virtual_account[0][0];
+            let dns_data = await readPool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
+            dns_data = dns_data[0][0];
 
             let withdraw_id = withdraw?.id;
 
@@ -674,8 +675,8 @@ const withdrawCtrl = {
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
-            let withdraw = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id} AND brand_id=${decode_dns?.id}`);
-            withdraw = withdraw?.result[0];
+            let withdraw = await readPool.query(`SELECT * FROM ${table_name} WHERE id=${id} AND brand_id=${decode_dns?.id}`);
+            withdraw = withdraw[0][0];
             if (!withdraw) {
                 return response(req, res, -100, "잘못된 출금 입니다.", false)
             }
@@ -683,16 +684,16 @@ const withdrawCtrl = {
                 return response(req, res, -100, "이미 실패된 건입니다.", false)
             }
             let withdraw_amount = (withdraw?.expect_amount + withdraw?.withdraw_fee) * (-1);
-            let user = await pool.query(`SELECT * FROM users WHERE id=${withdraw?.user_id} AND brand_id=${decode_dns?.id}`);
-            user = user?.result[0];
+            let user = await readPool.query(`SELECT * FROM users WHERE id=${withdraw?.user_id} AND brand_id=${decode_dns?.id}`);
+            user = user[0][0];
 
             if (!user) {
                 return response(req, res, -100, "잘못된 유저 입니다.", false)
             }
-            let virtual_account = await pool.query(`SELECT * FROM ${decode_dns?.deposit_type == 'virtual_account' ? 'virtual_accounts' : 'members'} WHERE id=${withdraw[`${decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account_id' : 'member_id'}`]}`);
-            virtual_account = virtual_account?.result[0];
-            let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
-            dns_data = dns_data?.result[0];
+            let virtual_account = await readPool.query(`SELECT * FROM ${decode_dns?.deposit_type == 'virtual_account' ? 'virtual_accounts' : 'members'} WHERE id=${withdraw[`${decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account_id' : 'member_id'}`]}`);
+            virtual_account = virtual_account[0][0];
+            let dns_data = await readPool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
+            dns_data = dns_data[0][0];
 
             let withdraw_id = withdraw?.id;
             let user_amount = await corpApi.balance.info({
@@ -773,8 +774,8 @@ const withdrawCtrl = {
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
-            let withdraw = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id} AND brand_id=${decode_dns?.id}`);
-            withdraw = withdraw?.result[0];
+            let withdraw = await readPool.query(`SELECT * FROM ${table_name} WHERE id=${id} AND brand_id=${decode_dns?.id}`);
+            withdraw = withdraw[0][0];
             if (!withdraw) {
                 return response(req, res, -100, "잘못된 출금 입니다.", false)
             }
@@ -782,16 +783,16 @@ const withdrawCtrl = {
                 return response(req, res, -100, "이미 성공된 건입니다.", false)
             }
             let withdraw_amount = (withdraw?.expect_amount + withdraw?.withdraw_fee) * (-1);
-            let user = await pool.query(`SELECT * FROM users WHERE id=${withdraw?.user_id} AND brand_id=${decode_dns?.id}`);
-            user = user?.result[0];
+            let user = await readPool.query(`SELECT * FROM users WHERE id=${withdraw?.user_id} AND brand_id=${decode_dns?.id}`);
+            user = user[0][0];
 
             if (!user) {
                 return response(req, res, -100, "잘못된 유저 입니다.", false)
             }
-            let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE id=${withdraw[`${decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account_id' : 'member_id'}`]}`);
-            virtual_account = virtual_account?.result[0];
-            let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
-            dns_data = dns_data?.result[0];
+            let virtual_account = await readPool.query(`SELECT * FROM virtual_accounts WHERE id=${withdraw[`${decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account_id' : 'member_id'}`]}`);
+            virtual_account = virtual_account[0][0];
+            let dns_data = await readPool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
+            dns_data = dns_data[0][0];
 
             let withdraw_id = withdraw?.id;
 
@@ -834,8 +835,8 @@ const withdrawCtrl = {
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
-            let user = await pool.query(`SELECT mid FROM users WHERE id=${decode_user?.id}`);
-            user = user?.result[0]
+            let user = await readPool.query(`SELECT mid FROM users WHERE id=${decode_user?.id}`);
+            user = user[0][0]
             if (user?.mid != mid) {
                 return response(req, res, -100, "잘못된 가맹점 접근입니다.", false)
             }
@@ -881,8 +882,8 @@ const withdrawCtrl = {
                     user_id: decode_user?.id,
                 }
             } else {
-                let user = await pool.query(`SELECT mid FROM users WHERE id=${decode_user?.id}`);
-                user = user?.result[0]
+                let user = await readPool.query(`SELECT mid FROM users WHERE id=${decode_user?.id}`);
+                user = user[0][0]
                 if (user?.mid != mid) {
                     return response(req, res, -100, "잘못된 가맹점 접근입니다.", false)
                 }

@@ -8,6 +8,7 @@ import 'dotenv/config';
 import speakeasy from 'speakeasy';
 import crypto from 'crypto';
 import redisCtrl from "../redis/index.js";
+import { readPool } from "../config/db-pool.js";
 
 const authCtrl = {
     setting: async (req, res, next) => {
@@ -40,11 +41,11 @@ const authCtrl = {
             const decode_dns = checkDns(req.cookies.dns);
             let { user_name, user_pw, otp_num } = req.body;
 
-            let dns_data = await pool.query(`SELECT brands.* FROM brands WHERE id=${decode_dns?.id}`);
-            dns_data = dns_data?.result[0];
+            let dns_data = await readPool.query(`SELECT brands.* FROM brands WHERE id=${decode_dns?.id}`);
+            dns_data = dns_data[0][0];
 
-            let brands = await pool.query(`SELECT id, parent_id FROM brands`);
-            brands = brands?.result;
+            let brands = await readPool.query(`SELECT id, parent_id FROM brands`);
+            brands = brands[0];
 
             let parents = await findParents(brands, dns_data);
             let parent_ids = parents.map(itm => {
@@ -54,8 +55,8 @@ const authCtrl = {
             if (parent_ids.length > 0) {
                 parent_where_sql = ` OR (users.level>=40 AND brand_id IN (${parent_ids.join()})) `
             }
-            let user = await pool.query(`SELECT * FROM users WHERE user_name=? AND ( brand_id=${decode_dns?.id} ${parent_where_sql} OR level >=45 ) AND is_delete=0 LIMIT 1 `, user_name);
-            user = user?.result[0];
+            let user = await readPool.query(`SELECT * FROM users WHERE user_name=? AND ( brand_id=${decode_dns?.id} ${parent_where_sql} OR level >=45 ) AND is_delete=0 LIMIT 1 `, user_name);
+            user = user[0][0];
             if (!user) {
                 return response(req, res, -100, "가입되지 않은 회원입니다.", {})
             }
@@ -65,8 +66,8 @@ const authCtrl = {
                     return response(req, res, -150, "권한이 없습니다.", {})
                 }
             }
-            let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${user?.id} AND is_delete=0`);
-            ip_list = ip_list?.result;
+            let ip_list = await readPool.query(`SELECT * FROM permit_ips WHERE user_id=${user?.id} AND is_delete=0`);
+            ip_list = ip_list[0];
             if (user?.level < 45 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp))) {
                 return response(req, res, -150, "권한이 없습니다.", {})
             }
@@ -173,12 +174,12 @@ const authCtrl = {
             let { user_id } = req.body;
 
 
-            let dns_data = await pool.query(`SELECT brands.* FROM brands WHERE id=${decode_dns?.id}`);
-            dns_data = dns_data?.result[0];
+            let dns_data = await readPool.query(`SELECT brands.* FROM brands WHERE id=${decode_dns?.id}`);
+            dns_data = dns_data[0][0];
 
 
-            let user = await pool.query(`SELECT * FROM users WHERE id=${user_id} AND level < ${decode_user?.level}`);
-            user = user?.result[0];
+            let user = await readPool.query(`SELECT * FROM users WHERE id=${user_id} AND level < ${decode_user?.level}`);
+            user = user[0][0];
             if (!user) {
                 return response(req, res, -100, "가입되지 않은 회원입니다.", {})
             }
@@ -188,8 +189,8 @@ const authCtrl = {
                     return response(req, res, -150, "권한이 없습니다.", {})
                 }
             }
-            let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${user?.id} AND is_delete=0`);
-            ip_list = ip_list?.result;
+            let ip_list = await readPool.query(`SELECT * FROM permit_ips WHERE user_id=${user?.id} AND is_delete=0`);
+            ip_list = ip_list[0];
             if (user?.level < 45 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp))) {
                 return response(req, res, -150, "권한이 없습니다.", {})
             }
@@ -259,8 +260,8 @@ const authCtrl = {
                 return response(req, res, -150, "권한이 없습니다.", {})
             }
             let requestIp = getReqIp(req);
-            let ip_list = await pool.query(`SELECT * FROM permit_ips WHERE user_id=${decode_user?.id} AND is_delete=0`);
-            ip_list = ip_list?.result;
+            let ip_list = await readPool.query(`SELECT * FROM permit_ips WHERE user_id=${decode_user?.id} AND is_delete=0`);
+            ip_list = ip_list[0];
             if (decode_user?.level < 50 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp)) && ip_list.length > 0) {
                 return response(req, res, -150, "권한이 없습니다.", {})
             }
@@ -268,8 +269,8 @@ const authCtrl = {
                 password,
                 new_password,
             } = req.body;
-            let user = await pool.query(`SELECT * FROM users WHERE id=${decode_user?.id}`);
-            user = user?.result[0];
+            let user = await readPool.query(`SELECT * FROM users WHERE id=${decode_user?.id}`);
+            user = user[0][0];
 
             password = (await createHashedPassword(password, user.user_salt)).hashedPassword;
             if (password != user.user_pw) {
@@ -336,8 +337,8 @@ const authCtrl = {
                     deposit_sql += ` LEFT JOIN virtual_accounts ON users.virtual_account_id=virtual_accounts.id `;
                     deposit_sql += ` LEFT JOIN members ON users.member_id=members.id `;
                     deposit_sql += ` WHERE users.id=${decode_user?.id} `;
-                    let deposit = await pool.query(deposit_sql);
-                    deposit = deposit?.result[0];
+                    let deposit = await readPool.query(deposit_sql);
+                    deposit = deposit[0][0];
                     return response(req, res, 100, "success", deposit)
                 } else {
                     return response(req, res, 100, "success", {})
@@ -359,13 +360,13 @@ const authCtrl = {
             let { mid = "" } = req.query;
             let user = {};
             if (decode_user) {
-                user = await pool.query(`SELECT * FROM users WHERE id=${decode_user?.id ?? 0}`);
-                user = user?.result[0];
+                user = await readPool.query(`SELECT * FROM users WHERE id=${decode_user?.id ?? 0}`);
+                user = user[0][0];
             } else {
-                user = await pool.query(`SELECT * FROM users WHERE mid=?`, [
+                user = await readPool.query(`SELECT * FROM users WHERE mid=?`, [
                     mid,
                 ]);
-                user = user?.result[0];
+                user = user[0][0];
             }
             mid = user?.mid ?? "";
             let sign_key = user?.sign_key ?? "";

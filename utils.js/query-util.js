@@ -2,6 +2,7 @@ import { pool } from '../config/db.js';
 import 'dotenv/config';
 import when from 'when';
 import { differenceTwoDate, returnMoment } from './function.js';
+import { readPool } from '../config/db-pool.js';
 
 export const insertQuery = async (table, obj) => {
     let keys = Object.keys(obj);
@@ -117,8 +118,8 @@ export const getSelectQuery = async (sql_, columns, query, add_sql_list = [], de
     content_sql += ` ORDER BY ${table}.${order} ${is_asc ? 'ASC' : 'DESC'} `;
     content_sql += ` LIMIT ${(page - 1) * page_size}, ${page_size} `;
     let total_sql = sql.replaceAll(process.env.SELECT_COLUMN_SECRET, 'COUNT(*) as total');
-    let total = await pool.query(total_sql);
-    total = total?.result[0]?.total ?? 0;
+    let total = await readPool.query(total_sql);
+    total = total[0][0]?.total ?? 0;
     if (total > 30000 && page_size > 30000) {
         return {
             total: 0,

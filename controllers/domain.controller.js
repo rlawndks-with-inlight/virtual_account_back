@@ -1,4 +1,5 @@
 'use strict';
+import { readPool } from "../config/db-pool.js";
 import { pool } from "../config/db.js";
 import redisCtrl from "../redis/index.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
@@ -66,19 +67,19 @@ const domainCtrl = {
                 ]
                 let brand_sql = ` SELECT ${columns.join()} FROM brands `;
                 brand_sql += ` WHERE (dns='${dns}' OR admin_dns='${dns}') AND is_delete=0 `;
-                brand = await pool.query(brand_sql);
-                if (brand?.result.length == 0) {
+                brand = await readPool.query(brand_sql);
+                if (brand[0].length == 0) {
                     return response(req, res, -120, "등록된 도메인이 아닙니다.", false)
                 }
-                brand = brand?.result[0];
+                brand = brand[0][0];
                 brand['theme_css'] = JSON.parse(brand?.theme_css ?? '{}');
                 brand['setting_obj'] = JSON.parse(brand?.setting_obj ?? '{}');
                 brand['level_obj'] = JSON.parse(brand?.level_obj ?? '{}');
                 brand['bizppurio_obj'] = JSON.parse(brand?.bizppurio_obj ?? '{}');
 
                 brand['operator_list'] = getOperatorList(brand);
-                let brands = await pool.query(`SELECT id, parent_id FROM brands `);
-                brands = brands?.result;
+                let brands = await readPool.query(`SELECT id, parent_id FROM brands `);
+                brands = brands[0];
                 let childrens = findChildIds(brands, brand?.id);
                 childrens.push(brand?.id)
                 let parents = findParents(brands, brand)

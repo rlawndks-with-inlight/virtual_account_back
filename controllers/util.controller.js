@@ -9,6 +9,7 @@ import 'dotenv/config';
 import { asd_list } from "../asd.js";
 import xlsx from 'xlsx';
 import axios from "axios";
+import { writePool } from "../config/db-pool.js";
 
 const utilCtrl = {
     setting: async (req, res, next) => {
@@ -53,7 +54,7 @@ const utilCtrl = {
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
-            let result = await pool.query(`UPDATE ${table} SET ${column_name}=? WHERE id=?`, [value, id]);
+            let result = await writePool.query(`UPDATE ${table} SET ${column_name}=? WHERE id=?`, [value, id]);
             return response(req, res, 100, "success", {});
         } catch (err) {
             console.log(err)
@@ -102,7 +103,7 @@ const insertCooconDeposit = async () => { //쿠콘 입금 누락건 추가
             'created_at',
             'updated_at',
         ]
-        let result = await pool.query(`INSERT INTO deposits (${key_list.join()}) VALUES ?`, [insert_list]);
+        let result = await writePool.query(`INSERT INTO deposits (${key_list.join()}) VALUES ?`, [insert_list]);
     } catch (err) {
         console.log(err);
     }

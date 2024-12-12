@@ -7,6 +7,7 @@ import _ from 'lodash';
 import 'dotenv/config';
 import axios from "axios";
 import corpApi, { getDnsData } from "../utils.js/corp-util/index.js";
+import { readPool } from "../config/db-pool.js";
 
 const table_name = 'deposits';
 
@@ -213,8 +214,8 @@ const depositCtrl = {
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
-            let data = await pool.query(`SELECT * FROM ${table_name} WHERE id=${id}`)
-            data = data?.result[0];
+            let data = await readPool.query(`SELECT * FROM ${table_name} WHERE id=${id}`)
+            data = data[0][0];
             if (!isItemBrandIdSameDnsId(decode_dns, data)) {
                 return lowLevelException(req, res);
             }
@@ -235,11 +236,11 @@ const depositCtrl = {
                 mid, amount, deposit_bank_code, deposit_acct_num, deposit_acct_name
             } = req.body;
 
-            let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
-            dns_data = dns_data?.result[0];
+            let dns_data = await readPool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
+            dns_data = dns_data[0][0];
             dns_data['operator_list'] = getOperatorList(dns_data);
-            let mcht = await pool.query(`SELECT * FROM users WHERE mid=? AND level=10`, [mid]);
-            mcht = mcht?.result[0];
+            let mcht = await readPool.query(`SELECT * FROM users WHERE mid=? AND level=10`, [mid]);
+            mcht = mcht[0][0];
 
             let obj = {
                 brand_id: dns_data?.id,
@@ -339,11 +340,11 @@ const depositCtrl = {
             }
             let dns_data = await getDnsData(decode_dns);
 
-            let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE guid=? AND brand_id=?`, [
+            let virtual_account = await readPool.query(`SELECT * FROM virtual_accounts WHERE guid=? AND brand_id=?`, [
                 guid,
                 decode_dns?.id,
             ])
-            virtual_account = virtual_account?.result[0];
+            virtual_account = virtual_account[0][0];
             if (!virtual_account) {
                 return response(req, res, -100, "존재하지 않는 가상계좌 guid 입니다.", false)
             }
@@ -397,14 +398,14 @@ const depositCtrl = {
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
-            let dns_data = await pool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
-            dns_data = dns_data?.result[0];
-            let sum_deposit_cancel = await pool.query(`SELECT SUM(amount) AS cancel_amount FROM deposits WHERE deposit_id=${id} AND is_cancel=1`);
-            sum_deposit_cancel = sum_deposit_cancel?.result[0]?.cancel_amount ?? 0;
+            let dns_data = await readPool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
+            dns_data = dns_data[0][0];
+            let sum_deposit_cancel = await readPool.query(`SELECT SUM(amount) AS cancel_amount FROM deposits WHERE deposit_id=${id} AND is_cancel=1`);
+            sum_deposit_cancel = sum_deposit_cancel[0][0]?.cancel_amount ?? 0;
             let deposit = await selectQuerySimple(table_name, id);
             deposit = deposit?.result[0];
-            let virtual_account = await pool.query(`SELECT * FROM virtual_accounts WHERE id=${deposit?.virtual_account_id}`);
-            virtual_account = virtual_account?.result[0];
+            let virtual_account = await readPool.query(`SELECT * FROM virtual_accounts WHERE id=${deposit?.virtual_account_id}`);
+            virtual_account = virtual_account[0][0];
             if (sum_deposit_cancel + deposit?.amount <= 0) {
                 return response(req, res, -100, "이미 취소가 완료된 건입니다.", false)
             }
