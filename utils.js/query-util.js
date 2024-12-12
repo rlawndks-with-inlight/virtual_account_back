@@ -156,6 +156,12 @@ export const getSelectQuery = async (sql_, columns, query, add_sql_list = [], de
     return_result.page = parseInt(return_result.page);
     return_result.page_size = parseInt(return_result.page_size);
     for (var i = 0; i < return_result.content.length; i++) {
+        let keys = Object.keys(return_result.content[i]);
+        for (var j = 0; j < keys.length; j++) {
+            if (keys[j].includes('d_at')) {
+                return_result.content[i][keys[j]] = returnMoment(return_result.content[i][keys[j]])
+            }
+        }
         return_result.content[i]['No_'] = getNumberByTable(return_result.total, return_result.page, return_result.page_size, i);
     }
     if (is_excel) {
