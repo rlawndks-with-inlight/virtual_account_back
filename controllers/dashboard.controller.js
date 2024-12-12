@@ -1,7 +1,7 @@
 'use strict';
 import { readPool } from "../config/db-pool.js";
 import { pool } from "../config/db.js";
-import { checkIsManagerUrl } from "../utils.js/function.js";
+import { checkIsManagerUrl, returnMoment } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, getOperatorList, isItemBrandIdSameDnsId, lowLevelException, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
@@ -106,6 +106,14 @@ const dashboardCtrl = {
             sql += ` ORDER BY created_at DESC `;
             let data = await readPool.query(sql);
             data = data[0];
+            for (var i = 0; i < data.length; i++) {
+                let keys = Object.keys(data[i]);
+                for (var j = 0; j < keys.length; j++) {
+                    if (keys[j].includes('d_at')) {
+                        data[i][keys[j]] = returnMoment(data[i][keys[j]])
+                    }
+                }
+            }
             let chart_obj = {
 
             };
