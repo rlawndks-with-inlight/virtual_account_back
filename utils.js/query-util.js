@@ -77,7 +77,7 @@ export const getTableNameBySelectQuery = (sql) => {// select query 가지고 불
     }
     return table;
 }
-export const getSelectQuery = async (sql_, columns, query, add_sql_list = [], decode_user, decode_dns) => {
+export const getSelectQuery = async (sql_, columns, query, add_sql_list = [], decode_user, decode_dns, not_use_delete = false) => {
 
     const { page = 1, page_size = 100000, is_asc = false, order = 'id', s_dt, e_dt, is_excel } = query;
 
@@ -110,9 +110,9 @@ export const getSelectQuery = async (sql_, columns, query, add_sql_list = [], de
         attempt_excel_id = attempt_excel?.insertId;
     }
 
-    sql = settingSelectQueryWhere(sql, query, table);
+    sql = settingSelectQueryWhere(sql, query, table, not_use_delete);
     for (var i = 0; i < add_sql_list.length; i++) {
-        add_sql_list[i].sql = settingSelectQueryWhere(add_sql_list[i].sql, query, table);
+        add_sql_list[i].sql = settingSelectQueryWhere(add_sql_list[i].sql, query, table, not_use_delete);
     }
     let content_sql = sql.replaceAll(process.env.SELECT_COLUMN_SECRET, columns.join());
     content_sql += ` ORDER BY ${table}.${order} ${is_asc ? 'ASC' : 'DESC'} `;
@@ -179,10 +179,12 @@ const getNumberByTable = (total = 0, page = 1, page_size = 10, idx = 0) => {
     result -= idx;
     return result;
 }
-const settingSelectQueryWhere = (sql_, query, table) => {
+const settingSelectQueryWhere = (sql_, query, table, not_use_delete = false) => {
     let sql = sql_;
     const { s_dt, e_dt, search, is_delete } = query;
-    sql += ` ${sql.includes('WHERE') ? 'AND' : 'WHERE'} ${table}.is_delete=${is_delete || '0'} `;
+    if (!not_use_delete) {
+        sql += ` ${sql.includes('WHERE') ? 'AND' : 'WHERE'} ${table}.is_delete=${is_delete || '0'} `;
+    }
     let add_sql = '';
     if (s_dt) {
         add_sql += ` AND ${table}.created_at >= '${s_dt} 00:00:00' `;
