@@ -195,7 +195,7 @@ const depositCtrl = {
             let data = await getSelectQuery(sql, columns, req.query, [{
                 table: 'chart',
                 sql: chart_sql,
-            }], decode_user, decode_dns);
+            }], decode_user, decode_dns, true);
             data.chart = data?.chart[0] ?? {}
             return response(req, res, 100, "success", data);
         } catch (err) {
