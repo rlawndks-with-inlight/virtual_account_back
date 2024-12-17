@@ -844,6 +844,32 @@ export const findBlackList = async (word, type, decode_dns = {}) => {
         console.log(err);
     }
 }
+function detectSQLInjection(input) {
+    // 입력값을 소문자로 변환하여 대소문자 구분 없이 검사하도록 함
+    const sanitizedInput = input.toLowerCase();  // 소문자로 변환
+    // SQL 인젝션 공격에서 흔히 사용되는 패턴
+    const sqlInjectionPatterns = [
+        /--/,         // SQL 주석
+        /\b(OR|AND)\b.*=\s*\d+/i, // OR 또는 AND와 함께 조건식 사용
+        /;/i,   // 작은따옴표, 큰따옴표, 괄호, 등호, 세미콜론 등의 특수 문자
+        /\bunion\b.*\bselect\b/i, // UNION SELECT 패턴
+        /\bselect\b.*\bfrom\b/i,  // SELECT ... FROM 패턴
+        /\bdrop\b.*\btable\b/i,   // DROP TABLE 패턴
+        /\binsert\b.*\binto\b/i,  // INSERT INTO 패턴
+        /\bupdate\b.*\bset\b/i,   // UPDATE SET 패턴
+        /\bdelete\b.*\bfrom\b/i,  // DELETE FROM 패턴
+        /\bwhere\b.*\b1=1\b/i,    // WHERE 1=1 조건
+    ];
+
+    // 각 패턴에 대해 입력값을 검사하여 하나라도 일치하면 인젝션 가능성 있음
+    for (let pattern of sqlInjectionPatterns) {
+        if (pattern.test(sanitizedInput)) {
+            return true; // 의심스러운 SQL 인젝션 패턴 발견
+        }
+    }
+
+    return false; // 인젝션 패턴 없음
+}
 export const userAgentMiddleware = (req, res, next) => {
     const userAgent = req.get('User-Agent');
     const isMobile = /mobile|android|iphone|ipad|windows phone/i.test(userAgent);
@@ -851,13 +877,36 @@ export const userAgentMiddleware = (req, res, next) => {
     let requestIp = getReqIp(req);
 
     const language = req.headers['accept-language'];
+
+    let body_string = Object.values(req?.body ?? {}).map(String).join(' ');
+    let query_string = Object.values(req?.query ?? {}).map(String).join('');
+    let params_string = Object.values(req?.params ?? {}).map(String).join(' ');
+    if (
+        detectSQLInjection(body_string.toLowerCase()) ||
+        detectSQLInjection(query_string.toLowerCase()) ||
+        detectSQLInjection(params_string.toLowerCase())
+    ) {
+        let result = insertQuery(`hacks`, {
+            ip: requestIp,
+            user_agent: userAgent,
+            uri: req.originalUrl,
+            language,
+            req_body: JSON.stringify(req?.body ?? {}).substring(0, 2000),
+            req_query: JSON.stringify(req?.query ?? {}).substring(0, 2000),
+            req_params: JSON.stringify(req?.params ?? {}).substring(0, 2000),
+        })
+        return response(req, res, -300, "잘못된 접근 입니다. 아이피가 수집 되었으며, 보안팀에서 검토 예정입니다.", false)
+    }
+
     if ((!isMobile && !isPC) || language == '*' || !language) {
         let result = insertQuery(`hacks`, {
             ip: requestIp,
             user_agent: userAgent,
             uri: req.originalUrl,
             language,
-            req_body: JSON.stringify(req?.body ?? {})
+            req_body: JSON.stringify(req?.body ?? {}).substring(0, 2000),
+            req_query: JSON.stringify(req?.query ?? {}).substring(0, 2000),
+            req_params: JSON.stringify(req?.params ?? {}).substring(0, 2000),
         })
         return response(req, res, -300, "잘못된 접근 입니다. 아이피가 수집 되었으며, 보안팀에서 검토 예정입니다.", false)
     }
