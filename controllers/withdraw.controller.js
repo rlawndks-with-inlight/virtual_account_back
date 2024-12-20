@@ -465,7 +465,7 @@ const withdrawCtrl = {
             if (!withdraw) {
                 return response(req, res, -100, "잘못된 출금 입니다.", false)
             }
-            if (withdraw?.is_pass_confirm == 1) {
+            if (withdraw?.is_pass_confirm == 1 || withdraw?.is_withdraw_hold != 1) {
                 return response(req, res, -100, "이미 허용된 출금입니다.", false)
             }
             let trx_id = withdraw?.trx_id;
