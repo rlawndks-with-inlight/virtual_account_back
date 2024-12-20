@@ -1,5 +1,4 @@
 import { readPool, writePool } from "../../config/db-pool.js";
-import { pool } from "../../config/db.js";
 import { returnMoment } from "../function.js";
 import { insertQuery, updateQuery } from "../query-util.js";
 import { commarNumber } from "../util.js";

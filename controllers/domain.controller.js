@@ -1,6 +1,5 @@
 'use strict';
 import { readPool } from "../config/db-pool.js";
-import { pool } from "../config/db.js";
 import redisCtrl from "../redis/index.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
 import { checkLevel, findChildIds, findParents, getOperatorList, makeUserToken, operatorLevelList, response } from "../utils.js/util.js";

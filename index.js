@@ -16,7 +16,6 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import { uploadMultipleFiles } from "./utils.js/api-util.js";
 import { confirm_ip_list, limiter } from "./utils.js/limiter/index.js";
-import { pool } from "./config/db.js";
 import { insertQuery } from "./utils.js/query-util.js";
 
 const __filename = fileURLToPath(import.meta.url);

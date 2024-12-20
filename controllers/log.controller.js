@@ -1,6 +1,5 @@
 'use strict';
 import axios from "axios";
-import { pool } from "../config/db.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, makeSearchQuery, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, createHashedPassword, getReqIp, isItemBrandIdSameDnsId, lowLevelException, response, settingFiles } from "../utils.js/util.js";

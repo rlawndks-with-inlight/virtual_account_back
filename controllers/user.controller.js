@@ -1,6 +1,5 @@
 'use strict';
 import _ from "lodash";
-import db, { pool } from "../config/db.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, makeSearchQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, createHashedPassword, getOperatorList, getUserDepositFee, isItemBrandIdSameDnsId, lowLevelException, makeObjByList, makeUserChildrenList, makeUserTree, operatorLevelList, response, settingFiles, settingMchtFee } from "../utils.js/util.js";
@@ -356,7 +355,6 @@ const userCtrl = {
             }
 
 
-            await db.beginTransaction();
 
             let result = await insertQuery(`${table_name}`, obj);
             let user_id = result?.insertId;
@@ -383,16 +381,13 @@ const userCtrl = {
                     mcht_obj = mcht_obj.data
                     let mcht_result = await insertQuery(`merchandise_columns`, mcht_obj);
                 } else {
-                    await db.rollback();
                     return response(req, res, -100, mcht_obj.message, false)
                 }
             }
 
-            await db.commit();
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
-            await db.rollback();
             return response(req, res, -200, "서버 에러 발생", false)
         } finally {
 
@@ -444,7 +439,6 @@ const userCtrl = {
                     }, children_brand?.id)
                 }
             }
-            await db.beginTransaction();
 
             let operator_list = decode_dns?.operator_list;
             let result = await updateQuery(`${table_name}`, obj, id);
@@ -488,11 +482,9 @@ const userCtrl = {
                     mcht_obj = mcht_obj.data
                     let mcht_result = await updateQuery(`merchandise_columns`, mcht_obj, id, 'mcht_id');
                 } else {
-                    await db.rollback();
                     return response(req, res, -100, mcht_obj.message, false)
                 }
             }
-            await db.commit();
 
             await redisCtrl.delete(`user_only_connect_ip_${id}`);
             await redisCtrl.delete(`user_ip_list_${id}`);
@@ -500,7 +492,6 @@ const userCtrl = {
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
-            await db.rollback();
             return response(req, res, -200, "서버 에러 발생", false)
         } finally {
 
@@ -663,7 +654,6 @@ const asdsdaasd = async () => {
                 mcht_nuser_names: mchts
             },
         ]
-        await db.beginTransaction();
         for (var i = 0; i < brand_list.length; i++) {
             for (var j = 0; j < brand_list[i].mcht_nuser_names.length; j++) {
                 let mcht = brand_list[i].mcht_nuser_names[j];
@@ -689,10 +679,8 @@ const asdsdaasd = async () => {
                 }
             }
         }
-        await db.commit();
         console.log('success')
     } catch (err) {
-        await db.rollback();
         console.log(err);
     }
 }

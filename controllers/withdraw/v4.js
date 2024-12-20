@@ -1,6 +1,5 @@
 'use strict';
 import { readPool } from "../../config/db-pool.js";
-import db, { pool } from "../../config/db.js";
 import redisCtrl from "../../redis/index.js";
 import corpApi from "../../utils.js/corp-util/index.js";
 import { checkIsManagerUrl, getUserWithDrawFee, returnMoment } from "../../utils.js/function.js";

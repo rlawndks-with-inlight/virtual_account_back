@@ -1,5 +1,4 @@
 import { readPool } from "../../config/db-pool.js";
-import { pool } from "../../config/db.js";
 import virtualAccountCtrl from "../../controllers/virtual_account.controller.js";
 import _ from "lodash";
 

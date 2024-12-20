@@ -1,5 +1,4 @@
 import 'dotenv/config';
-import { pool } from '../../config/db.js';
 import axios from 'axios';
 import { insertQuery, updateQuery } from '../query-util.js';
 import { returnMoment } from '../function.js';

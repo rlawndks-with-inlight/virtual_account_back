@@ -1,4 +1,3 @@
-import { pool } from '../config/db.js';
 import 'dotenv/config';
 import when from 'when';
 import { differenceTwoDate, returnMoment } from './function.js';

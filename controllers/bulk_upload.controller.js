@@ -1,6 +1,5 @@
 'use strict';
 import _ from "lodash";
-import db, { pool } from "../config/db.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, createHashedPassword, getOperatorList, isItemBrandIdSameDnsId, response, settingFiles, settingMchtFee } from "../utils.js/util.js";
@@ -28,7 +27,6 @@ const bulkUploadCtrl = {
             let operators = await readPool.query(`SELECT user_name, id, level FROM users WHERE brand_id=${decode_dns?.id} AND level > 10 AND level < 40`);
             operators = operators[0];
 
-            await db.beginTransaction();
             for (var i = 0; i < data.length; i++) {
                 let is_error = false;
                 let {
@@ -119,16 +117,13 @@ const bulkUploadCtrl = {
                 }
             }
             if (error_list.length > 0) {
-                await db.rollback();
             } else {
-                await db.commit();
             }
             return response(req, res, 100, "success", {
                 error_list
             })
         } catch (err) {
             console.log(err)
-            await db.rollback();
             return response(req, res, -200, "서버 에러 발생", false)
         } finally {
 

@@ -1,5 +1,4 @@
 import _ from "lodash";
-import { pool } from "../../config/db.js";
 import { sendNotiPush } from "../util.js";
 import { readPool } from "../../config/db-pool.js";
 

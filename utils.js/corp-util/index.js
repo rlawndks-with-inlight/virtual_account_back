@@ -1,4 +1,3 @@
-import { pool } from "../../config/db.js";
 import { selectQuerySimple } from "../query-util.js";
 import { findChildIds, findParents } from "../util.js";
 import { banknersApi } from "./bankners.js";

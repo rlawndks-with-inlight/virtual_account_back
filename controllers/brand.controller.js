@@ -1,6 +1,5 @@
 'use strict';
 import axios from "axios";
-import db, { pool } from "../config/db.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, createHashedPassword, generateRandomString, getMotherDeposit, lowLevelException, response, settingFiles } from "../utils.js/util.js";
@@ -130,7 +129,6 @@ const brandCtrl = {
             obj['api_key'] = api_key;
 
 
-            await db.beginTransaction();
 
             let result = await insertQuery(`${table_name}`, obj);
             let user_obj = {
@@ -147,11 +145,9 @@ const brandCtrl = {
             user_obj['user_salt'] = user_salt;
             let user_sign_up = await insertQuery('users', user_obj);
 
-            await db.commit();
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
-            await db.rollback();
             return response(req, res, -200, "서버 에러 발생", false)
         }
     },
@@ -199,7 +195,6 @@ const brandCtrl = {
                 parent_dns_data = (parent_dns_data[0][0] ?? {});
                 obj['parent_id'] = parent_dns_data?.id ?? 0;
             }
-            await db.beginTransaction();
 
 
 
@@ -210,7 +205,6 @@ const brandCtrl = {
                 let virtual_account = await readPool.query(`SELECT * FROM ${table}s WHERE guid=? AND brand_id=${id}`, [guid]);
                 virtual_account = virtual_account[0][0];
                 if (!virtual_account) {
-                    await db.rollback();
                     return response(req, res, -100, "가상계좌가 존재하지 않습니다.", false)
                 }
                 obj[`${table}_id`] = virtual_account?.id;
@@ -265,11 +259,9 @@ const brandCtrl = {
             }
             let result = await updateQuery(`${table_name}`, obj, id);
 
-            await db.commit();
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
-            await db.rollback();
             return response(req, res, -200, "서버 에러 발생", false)
         } finally {
 
@@ -345,19 +337,15 @@ const brandCtrl = {
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
-            await db.beginTransaction();
             let result = await insertQuery(`deposits`, obj);
 
             let data = await getMotherDeposit(decode_dns);
             if (data?.real_amount < 0) {
-                await db.rollback();
                 return response(req, res, -200, "모계좌 잔액은 마이너스가 될 수 없습니다.", false)
             }
-            await db.commit();
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
-            await db.rollback();
             return response(req, res, -200, "서버 에러 발생", false)
         } finally {
 

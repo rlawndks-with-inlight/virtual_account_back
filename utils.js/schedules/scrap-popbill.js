@@ -1,7 +1,6 @@
 import popbill from 'popbill';
 import { differenceSecondTwoDate, returnMoment } from '../function.js';
 import 'dotenv/config';
-import { pool } from '../../config/db.js';
 import { updateQuery } from '../query-util.js';
 import axios from 'axios';
 import { readPool } from '../../config/db-pool.js';

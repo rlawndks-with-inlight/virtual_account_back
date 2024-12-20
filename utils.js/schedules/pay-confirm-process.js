@@ -1,5 +1,4 @@
 import _ from "lodash";
-import { pool } from "../../config/db.js";
 import corpApi from "../corp-util/index.js";
 import { generateRandomString } from "../util.js";
 import { updateQuery } from "../query-util.js";
