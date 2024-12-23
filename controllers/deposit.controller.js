@@ -135,6 +135,9 @@ const depositCtrl = {
             if (is_cancel) {
                 where_sql += ` AND ${table_name}.is_cancel=${is_cancel} `
             }
+            if (is_delete) {
+                where_sql += ` AND ${table_name}.is_delete=${is_delete} `
+            }
             if (deposit_status) {
                 where_sql += ` AND ${table_name}.deposit_status=${deposit_status} `;
             }
