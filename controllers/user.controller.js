@@ -190,6 +190,8 @@ const userCtrl = {
             sql += ` WHERE ${table_name}.id=${id} AND (level < ${decode_user?.level} OR ${table_name}.id=${decode_user?.id})  `;
             let data = await readPool.query(sql)
             data = data[0][0];
+            delete data.user_pw;
+            delete data.user_salt;
             let ip_logs = await readPool.query(`SELECT * FROM connected_ips WHERE user_id=${data?.id} ORDER BY id DESC`);
             ip_logs = ip_logs[0];
             data['telegram_chat_ids'] = JSON.parse(data?.telegram_chat_ids ?? '[]').join();
