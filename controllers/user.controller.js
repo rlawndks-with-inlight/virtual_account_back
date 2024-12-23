@@ -131,7 +131,7 @@ const userCtrl = {
                 where_sql += makeSearchQuery(search_columns, search);
             }
             sql = sql + where_sql;
-            let data = await getSelectQuery(sql, columns, req.query, [], decode_user, decode_dns);
+            let data = await getSelectQuery(sql, columns, req.query, [], decode_user, decode_dns, true);
 
             return response(req, res, 100, "success", data);
         } catch (err) {
