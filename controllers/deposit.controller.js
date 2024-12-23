@@ -138,6 +138,8 @@ const depositCtrl = {
             }
             if (is_delete) {
                 where_sql += ` AND ${table_name}.is_delete=${is_delete} `
+            } else {
+                where_sql += ` AND ${table_name}.is_delete=0 `
             }
             if (deposit_status) {
                 where_sql += ` AND ${table_name}.deposit_status=${deposit_status} `;
