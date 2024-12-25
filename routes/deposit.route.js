@@ -21,5 +21,8 @@ router
 router
     .route('/cancel')
     .post(depositCtrl.cancel);
+router
+    .route('/check-deposit/:id')
+    .put(depositCtrl.checkDeposit);
 
 export default router;
