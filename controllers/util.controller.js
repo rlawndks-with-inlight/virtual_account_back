@@ -46,7 +46,7 @@ const utilCtrl = {
     changeStatus: async (req, res, next) => {
         try {
 
-            const decode_user = await checkLevel(req.cookies.token, 10, req);
+            const decode_user = await checkLevel(req.cookies.token, 40, req);
             const decode_dns = checkDns(req.cookies.dns);
             const { table, column_name } = req.params;
             const { value, id } = req.body;
