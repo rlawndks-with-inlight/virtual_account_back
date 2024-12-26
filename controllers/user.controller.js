@@ -266,7 +266,7 @@ const userCtrl = {
             let columns = [
                 `connected_ips.*`,
             ]
-            let user = readPool.query(`SELECT level FROM users WHERE id=${id}`);
+            let user = await readPool.query(`SELECT level FROM users WHERE id=${id}`);
             user = user[0][0];
 
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM connected_ips `;
