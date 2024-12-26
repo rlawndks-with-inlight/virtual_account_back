@@ -86,11 +86,11 @@ const authCtrl = {
             } else if (user?.only_connect_ip) {
                 if (requestIp != user?.only_connect_ip) {
                     is_fail_count_up = true;
-                    err_message = '가입되지 않은 회원입니다 .';
+                    err_message = '권한이 없습니다.';
                 }
             } else if (user?.level < 45 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp))) {
                 is_fail_count_up = true;
-                err_message = '가입되지 않은 회원입니다 .';
+                err_message = '권한이 없습니다.';
             }
             if (dns_data?.is_use_otp == 1 && user?.level < 45 && !is_fail_count_up) {
                 let otp_token = '';
