@@ -156,16 +156,5 @@ const bellContentCtrl = {
         }
     },
 };
-const asdsad = async () => {
-    try {
-        let result = await axios.get(`https://virtual-yg.com/api/domain?asdasd=qwerasdzxc`, {
-            headers: {
-                'x-forwarded-for': '123.123.123.'
-            }
-        })
-        console.log(result)
-    } catch (err) {
-        console.log(err);
-    }
-}
+
 export default bellContentCtrl;

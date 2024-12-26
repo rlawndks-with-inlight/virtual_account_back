@@ -374,20 +374,13 @@ export const getReqIp = (req) => {
         forwardedIp = (req.headers['x-forwarded-for'] ?? "").split(', ')[0];
         let forwarded_list = forwardedIp.split(',');
         forwardedIp = forwarded_list[forwarded_list.length - 1];
-        if (req.query?.asdasd == 'qwerasdzxc') {
-            console.log(forwardedIp)
-        }
     }
     try {
-        requestIp = (req.headers['x-forwarded-for'] ?? "").split(', ')[0] || req.connection.remoteAddress || req.ip || '0.0.0.0'
+        requestIp = forwardedIp || req.connection.remoteAddress || req.ip || '0.0.0.0'
     } catch (err) {
         requestIp = '0.0.0.0'
     }
-    if (req.query?.asdasd == 'qwerasdzxc') {
-        console.log(req.headers['x-forwarded-for'])
-        console.log(req.connection.remoteAddress)
-        console.log(req.ip)
-    }
+
     requestIp = requestIp.replaceAll('::ffff:', '');
     return requestIp;
 }
