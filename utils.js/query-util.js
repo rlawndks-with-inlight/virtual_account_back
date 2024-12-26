@@ -62,7 +62,7 @@ export const updateQuery = async (table, obj, id, id_column) => {
     return result[0];
 }
 export const selectQuerySimple = async (table, id) => {
-    let result = await readPool.query(`SELECT * FROM ${table} WHERE id=${id}`);
+    let result = await readPool.query(`SELECT * FROM ${table} WHERE id=?`, [id]);
     return result[0];
 }
 export const getTableNameBySelectQuery = (sql) => {// select query 가지고 불러올 메인 table명 불러오기 select * from user as asd
