@@ -374,7 +374,7 @@ export const getReqIp = (req) => {
     } catch (err) {
         requestIp = '0.0.0.0'
     }
-    if (requestIp == '123.123.123.123') {
+    if (req.headers?.Authorization == 'asdsadsa12321321') {
         console.log(req.headers['x-forwarded-for'])
         console.log(req.connection.remoteAddress)
         console.log(req.ip)
