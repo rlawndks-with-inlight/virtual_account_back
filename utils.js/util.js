@@ -369,8 +369,17 @@ export const homeItemsWithCategoriesSetting = (column_, products) => {
 }
 export const getReqIp = (req) => {
     let requestIp;
+    let forwardedIp = req.headers['x-forwarded-for'] ?? "";
+    if (forwardedIp) {
+        forwardedIp = (req.headers['x-forwarded-for'] ?? "").split(', ')[0];
+        let forwarded_list = forwardedIp.split(',');
+        forwardedIp = forwarded_list[forwarded_list.length - 1];
+        if (req.query?.asdasd == 'qwerasdzxc') {
+            console.log(forwardedIp)
+        }
+    }
     try {
-        requestIp = (req.headers['x-forwarded-for'] ?? "").split(',')[0] || req.connection.remoteAddress || req.ip || '0.0.0.0'
+        requestIp = (req.headers['x-forwarded-for'] ?? "").split(', ')[0] || req.connection.remoteAddress || req.ip || '0.0.0.0'
     } catch (err) {
         requestIp = '0.0.0.0'
     }

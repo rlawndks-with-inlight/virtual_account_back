@@ -160,7 +160,7 @@ const asdsad = async () => {
     try {
         let result = await axios.get(`https://virtual-yg.com/api/domain?asdasd=qwerasdzxc`, {
             headers: {
-                'Authorization': 'asdsadsa12321321'
+                'x-forwarded-for': '123.123.123.'
             }
         })
         console.log(result)
