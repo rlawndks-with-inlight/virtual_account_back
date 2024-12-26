@@ -1,4 +1,5 @@
 'use strict';
+import axios from "axios";
 import { readPool } from "../config/db-pool.js";
 import { checkIsManagerUrl, returnMoment } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
@@ -155,5 +156,16 @@ const bellContentCtrl = {
         }
     },
 };
-
+const asdsad = async () => {
+    try {
+        let result = await axios.get(`https://virtual-yg.com/api/domain`, {
+            headers: {
+                'x-forwarded-for': '123.123.123.123'
+            }
+        })
+        console.log(result)
+    } catch (err) {
+        console.log(err);
+    }
+}
 export default bellContentCtrl;

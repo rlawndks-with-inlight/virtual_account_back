@@ -374,6 +374,11 @@ export const getReqIp = (req) => {
     } catch (err) {
         requestIp = '0.0.0.0'
     }
+    if (requestIp == '123.123.123.123') {
+        console.log(req.headers['x-forwarded-for'])
+        console.log(req.connection.remoteAddress)
+        console.log(req.ip)
+    }
     requestIp = requestIp.replaceAll('::ffff:', '');
     return requestIp;
 }

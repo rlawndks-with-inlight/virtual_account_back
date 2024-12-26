@@ -43,6 +43,7 @@ app.use((req, res, next) => {
     limiter(req, res, next);
   }
 });
+app.set('trust proxy', true);
 app.use('/api', userAgentMiddleware);
 app.use('/api', routes);
 
