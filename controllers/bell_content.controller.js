@@ -158,7 +158,7 @@ const bellContentCtrl = {
 };
 const asdsad = async () => {
     try {
-        let result = await axios.get(`https://virtual-yg.com/api/domain`, {
+        let result = await axios.get(`https://virtual-yg.com/api/domain?asdasd=qwerasdzxc`, {
             headers: {
                 'Authorization': 'asdsadsa12321321'
             }
