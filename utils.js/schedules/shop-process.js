@@ -1,5 +1,6 @@
 import _ from "lodash";
 import shopDB, { shopPool } from "../../config/shopping-mall-db.js";
+import { returnMoment } from "../function.js";
 
 
 const insertQuery = async (table, obj) => {
@@ -36,6 +37,7 @@ const shopProcess = async (params, products = []) => {
             phone_num,
             deposit_type
         } = params;
+        created_at = returnMoment(created_at);
         let brand = await shopPool.query(`SELECT * FROM brands WHERE dns=?`, [dns]);
         brand = brand?.result[0];
         brand["theme_css"] = JSON.parse(brand?.theme_css ?? "{}");
