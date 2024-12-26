@@ -60,16 +60,7 @@ const authCtrl = {
                 return response(req, res, -100, "가입되지 않은 회원입니다.", {})
             }
             let requestIp = getReqIp(req);
-            if (user?.only_connect_ip) {
-                if (requestIp != user?.only_connect_ip) {
-                    return response(req, res, -150, "권한이 없습니다.", {})
-                }
-            }
-            let ip_list = await readPool.query(`SELECT * FROM permit_ips WHERE user_id=${user?.id} AND is_delete=0`);
-            ip_list = ip_list[0];
-            if (user?.level < 45 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp))) {
-                return response(req, res, -150, "권한이 없습니다.", {})
-            }
+
             if (is_manager && user.level <= 0) {
                 return response(req, res, -100, "가입되지 않은 회원입니다.", {})
             }
@@ -80,11 +71,28 @@ const authCtrl = {
                 return response(req, res, -100, "로그인 차단 회원입니다. 관리자에게 문의하세요.", {})
             }
             user_pw = (await createHashedPassword(user_pw, user.user_salt)).hashedPassword;
+
+            let login_fail_obj = {
+                login_fail_count: user?.login_fail_count + 1,
+            }
+            let err_message = '가입되지 않은 회원입니다.';
+            let is_count_up = false;
+            let ip_list = await readPool.query(`SELECT * FROM permit_ips WHERE user_id=${user?.id} AND is_delete=0`);
+            ip_list = ip_list[0];
+
             if (user_pw != user.user_pw) {
-                let login_fail_obj = {
-                    login_fail_count: user?.login_fail_count + 1,
+                is_count_up = true;
+                err_message = '가입되지 않은 회원입니다.';
+            } else if (user?.only_connect_ip) {
+                if (requestIp != user?.only_connect_ip) {
+                    is_count_up = true;
+                    err_message = '가입되지 않은 회원입니다 .';
                 }
-                let err_message = '가입되지 않은 회원입니다.';
+            } else if (user?.level < 45 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp))) {
+                is_count_up = true;
+                err_message = '가입되지 않은 회원입니다 .';
+            }
+            if (is_count_up) {
                 if (login_fail_obj.login_fail_count == 5) {
                     login_fail_obj.status = 2;
                     err_message = `로그인 5회실패, 관리자에게 문의해주세요.`
