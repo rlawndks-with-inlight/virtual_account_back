@@ -376,11 +376,7 @@ export const getReqIp = (req) => {
         let forwarded_list = forwardedIp.split(',');
         forwardedIp = forwarded_list[forwarded_list.length - 1];
     }
-    if (forwardedIp == '112.167.162.249') {
-        console.log(req.headers['x-forwarded-for'])
-        console.log(req.connection.remoteAddress)
-        console.log(req.ip)
-    }
+
     try {
         requestIp = forwardedIp || req.connection.remoteAddress || req.ip || '0.0.0.0'
     } catch (err) {
