@@ -206,6 +206,7 @@ export const response = async (req, res, code, message, data) => { //응답 포�
     }
 }
 export const lowLevelException = (req, res) => {
+    res.clearCookie('token');
     return response(req, res, -150, "권한이 없습니다.", false);
 }
 export const isItemBrandIdSameDnsId = (decode_dns, item) => {
