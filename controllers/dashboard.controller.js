@@ -29,7 +29,9 @@ const dashboardCtrl = {
             count_sub_sql += sub_query_where_sql;
             mcht_amount_sub_sql += sub_query_where_sql;
             let columns = [
-                `users.*`,
+                `users.id`,
+                `users.user_name`,
+                `users.mid`,
                 `users.nickname AS label`,
                 `(${amount_sub_sql}) AS amount`,
                 `(${count_sub_sql}) AS count`,
