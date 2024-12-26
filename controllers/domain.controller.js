@@ -65,8 +65,8 @@ const domainCtrl = {
                     `(CASE WHEN deposit_corp_type=6 THEN deposit_sign_key ELSE NULL END) AS deposit_sign_key`,
                 ]
                 let brand_sql = ` SELECT ${columns.join()} FROM brands `;
-                brand_sql += ` WHERE (dns='${dns}' OR admin_dns='${dns}') AND is_delete=0 `;
-                brand = await readPool.query(brand_sql);
+                brand_sql += ` WHERE (dns=? OR admin_dns=?) AND is_delete=0 `;
+                brand = await readPool.query(brand_sql, [dns, dns]);
                 if (brand[0].length == 0) {
                     return response(req, res, -120, "등록된 도메인이 아닙니다.", false)
                 }
