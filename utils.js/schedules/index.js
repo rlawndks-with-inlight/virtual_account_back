@@ -15,7 +15,7 @@ const scheduleIndex = () => {
 
         if (parseInt(process.env.INSTANCE_ID) == parseInt(process.env.instances) - 1) {
             //destructAutoVirtualAcct();
-            pushDepositNoti();
+            //pushDepositNoti();
             onParentBrandSettle(return_moment);
         }
         if (parseInt(process.env.INSTANCE_ID) == parseInt(process.env.instances) - 2) {
