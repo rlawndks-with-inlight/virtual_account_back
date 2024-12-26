@@ -1,6 +1,6 @@
 'use strict';
-import { checkIsManagerUrl } from "../utils.js/function.js";
-import { deleteQuery, getSelectQuery, insertQuery, makeSearchQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
+import { checkIsManagerUrl, returnMoment } from "../utils.js/function.js";
+import { deleteQuery, getMultipleQueryByWhen, getSelectQuery, insertQuery, makeSearchQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, getNumberByPercent, isItemBrandIdSameDnsId, response, settingFiles, operatorLevelList, getOperatorList, lowLevelException, getChildrenBrands } from "../utils.js/util.js";
 import _ from 'lodash';
 import 'dotenv/config';
@@ -16,7 +16,16 @@ const depositCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = await checkLevel(req.cookies.token, 10, req);
             const decode_dns = checkDns(req.cookies.dns);
-            const { is_mother, pay_type, s_dt, e_dt, search, is_delete, corp_account_id, virtual_account_id, is_cancel, deposit_status, is_pay_confirm } = req.query;
+            const {
+                is_mother,
+                pay_type,
+                s_dt, e_dt,
+                search,
+                is_asc,
+                page,
+                page_size,
+                is_delete, corp_account_id, virtual_account_id, is_cancel, deposit_status, is_pay_confirm
+            } = req.query;
 
             if (!decode_user) {
                 return lowLevelException(req, res);
@@ -125,6 +134,12 @@ const depositCtrl = {
                 }
             }
             let where_sql = ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
+            if (s_dt) {
+                where_sql += ` AND ${table_name}.created_at >= '${s_dt} 00:00:00' `;
+            }
+            if (e_dt) {
+                where_sql += ` AND ${table_name}.created_at <= '${e_dt} 23:59:59' `;
+            }
             if (is_mother) {
                 where_sql += ` AND (${table_name}.amount > 0 OR ${table_name}.amount < 0) `
             } else {
@@ -177,8 +192,8 @@ const depositCtrl = {
                 where_sql += makeSearchQuery(search_columns, search);
             }
             sql = sql + where_sql;
-
             let chart_columns = [
+                `COUNT(*) AS total`,
                 `SUM(${table_name}.expect_amount) AS expect_amount`,
                 `SUM(${table_name}.amount) AS amount`,
                 `SUM(${table_name}.mcht_amount) AS mcht_amount`,
@@ -190,18 +205,36 @@ const depositCtrl = {
                 chart_columns.push(`SUM(${table_name}.sales${operator_list[i]?.num}_amount) AS sales${operator_list[i]?.num}_amount`)
             }
             let chart_sql = sql;
-            if (s_dt) {
-                chart_sql += ` AND ${table_name}.created_at >= '${s_dt} 00:00:00' `;
-            }
-            if (e_dt) {
-                chart_sql += ` AND ${table_name}.created_at <= '${e_dt} 23:59:59' `;
-            }
             chart_sql = chart_sql.replaceAll(process.env.SELECT_COLUMN_SECRET, chart_columns.join());
+
+            sql += ` ORDER BY ${table_name}.id ${is_asc ? 'ASC' : 'DESC'} `;
+            sql += ` LIMIT ${(page - 1) * page_size}, ${page_size} `;
+            sql = sql.replaceAll(process.env.SELECT_COLUMN_SECRET, columns.join());
+            let data = await getMultipleQueryByWhen([
+                { table: 'content', sql: sql, },
+                { table: 'chart', sql: chart_sql, },
+            ])
+            /*
             let data = await getSelectQuery(sql, columns, req.query, [{
                 table: 'chart',
                 sql: chart_sql,
             }], decode_user, decode_dns, true);
-            data.chart = data?.chart[0] ?? {}
+            */
+            for (var i = 0; i < data.content.length; i++) {
+                let keys = Object.keys(data.content[i]);
+                for (var j = 0; j < keys.length; j++) {
+                    if (keys[j].includes('d_at')) {
+                        data.content[i][keys[j]] = returnMoment(data.content[i][keys[j]])
+                    }
+                }
+            }
+            data.chart = data?.chart[0] ?? {};
+            data = {
+                ...data,
+                total: data.chart?.total,
+                page,
+                page_size,
+            }
             return response(req, res, 100, "success", data);
         } catch (err) {
             console.log(err)

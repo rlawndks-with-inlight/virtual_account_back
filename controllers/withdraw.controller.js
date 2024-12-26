@@ -24,7 +24,7 @@ const withdrawCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = await checkLevel(req.cookies.token, 10, req);
             const decode_dns = checkDns(req.cookies.dns);
-            const { withdraw_status, search, s_dt, e_dt, is_hand } = req.query;
+            const { withdraw_status, search, s_dt, e_dt, is_hand, is_asc, page, page_size } = req.query;
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
@@ -77,7 +77,14 @@ const withdrawCtrl = {
                 }
             }
 
-            let where_sql = ` WHERE ${table_name}.brand_id=${decode_dns?.id} AND pay_type IN (5, 10, 20) `;
+            let where_sql = ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
+            if (s_dt) {
+                where_sql += ` AND ${table_name}.created_at >= '${s_dt} 00:00:00' `;
+            }
+            if (e_dt) {
+                where_sql += ` AND ${table_name}.created_at <= '${e_dt} 23:59:59' `;
+            }
+            where_sql += ` AND pay_type IN (5, 10, 20) `
             if (decode_user?.level < 40) {
                 if (decode_user?.level == 10) {
                     where_sql += ` AND ${table_name}.mcht_id=${decode_user?.id} `;
@@ -106,23 +113,36 @@ const withdrawCtrl = {
 
             sql = sql + where_sql;
             let chart_columns = [
+                `COUNT(*) AS total`,
                 `SUM(${table_name}.expect_amount) AS expect_amount`,
                 `SUM(${table_name}.amount) AS amount`,
                 `SUM(${table_name}.withdraw_fee) AS withdraw_fee`,
             ]
             let chart_sql = sql;
-            if (s_dt) {
-                chart_sql += ` AND ${table_name}.created_at >= '${s_dt} 00:00:00' `;
-            }
-            if (e_dt) {
-                chart_sql += ` AND ${table_name}.created_at <= '${e_dt} 23:59:59' `;
-            }
             chart_sql = chart_sql.replaceAll(process.env.SELECT_COLUMN_SECRET, chart_columns.join());
-            let data = await getSelectQuery(sql, columns, req.query, [{
-                table: 'chart',
-                sql: chart_sql,
-            }], decode_user, decode_dns, true);
+
+            sql += ` ORDER BY ${table_name}.id ${is_asc ? 'ASC' : 'DESC'} `;
+            sql += ` LIMIT ${(page - 1) * page_size}, ${page_size} `;
+            sql = sql.replaceAll(process.env.SELECT_COLUMN_SECRET, columns.join());
+            let data = await getMultipleQueryByWhen([
+                { table: 'content', sql: sql, },
+                { table: 'chart', sql: chart_sql, },
+            ])
+            for (var i = 0; i < data.content.length; i++) {
+                let keys = Object.keys(data.content[i]);
+                for (var j = 0; j < keys.length; j++) {
+                    if (keys[j].includes('d_at')) {
+                        data.content[i][keys[j]] = returnMoment(data.content[i][keys[j]])
+                    }
+                }
+            }
             data.chart = data?.chart[0] ?? {};
+            data = {
+                ...data,
+                total: data.chart?.total,
+                page,
+                page_size,
+            }
 
             return response(req, res, 100, "success", data);
         } catch (err) {
