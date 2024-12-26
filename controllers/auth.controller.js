@@ -76,31 +76,23 @@ const authCtrl = {
                 login_fail_count: user?.login_fail_count + 1,
             }
             let err_message = '가입되지 않은 회원입니다.';
-            let is_count_up = false;
+            let is_fail_count_up = false;
             let ip_list = await readPool.query(`SELECT * FROM permit_ips WHERE user_id=${user?.id} AND is_delete=0`);
             ip_list = ip_list[0];
 
             if (user_pw != user.user_pw) {
-                is_count_up = true;
+                is_fail_count_up = true;
                 err_message = '가입되지 않은 회원입니다.';
             } else if (user?.only_connect_ip) {
                 if (requestIp != user?.only_connect_ip) {
-                    is_count_up = true;
+                    is_fail_count_up = true;
                     err_message = '가입되지 않은 회원입니다 .';
                 }
             } else if (user?.level < 45 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp))) {
-                is_count_up = true;
+                is_fail_count_up = true;
                 err_message = '가입되지 않은 회원입니다 .';
             }
-            if (is_count_up) {
-                if (login_fail_obj.login_fail_count == 5) {
-                    login_fail_obj.status = 2;
-                    err_message = `로그인 5회실패, 관리자에게 문의해주세요.`
-                }
-                let add_login_fail_count = await updateQuery(`users`, login_fail_obj, user?.id);
-                return response(req, res, -100, err_message, {});
-            }
-            if (dns_data?.is_use_otp == 1 && user?.level < 45) {
+            if (dns_data?.is_use_otp == 1 && user?.level < 45 && !is_fail_count_up) {
                 let otp_token = '';
                 if (!otp_num) {
                     return response(req, res, -100, "OTP번호를 입력해주세요.", {})
@@ -120,9 +112,19 @@ const authCtrl = {
                     token: otp_num
                 });
                 if (!verified) {
-                    return response(req, res, -100, "OTP번호가 잘못되었습니다.", {})
+                    is_fail_count_up = true;
+                    err_message = 'OTP번호가 잘못되었습니다.';
                 }
             }
+            if (is_fail_count_up) {
+                if (login_fail_obj.login_fail_count == 5) {
+                    login_fail_obj.status = 2;
+                    err_message = `로그인 5회실패, 관리자에게 문의해주세요.`
+                }
+                let add_login_fail_count = await updateQuery(`users`, login_fail_obj, user?.id);
+                return response(req, res, -100, err_message, {});
+            }
+
 
             let user_obj = {
                 id: user.id,
