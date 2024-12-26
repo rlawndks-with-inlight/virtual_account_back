@@ -75,7 +75,7 @@ const authCtrl = {
             let login_fail_obj = {
                 login_fail_count: user?.login_fail_count + 1,
             }
-            let err_message = '가입되지 않은 회원입니다.';
+            let err_message = '';
             let is_fail_count_up = false;
             let ip_list = await readPool.query(`SELECT * FROM permit_ips WHERE user_id=${user?.id} AND is_delete=0`);
             ip_list = ip_list[0];
