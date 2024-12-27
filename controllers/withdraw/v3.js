@@ -43,7 +43,6 @@ const withdrawV3Ctrl = {
             if (is_manager) {
                 user = await readPool.query(`SELECT * FROM users WHERE id=${user_id}`);
                 user = user[0][0];
-                console.log(user)
             } else {
                 let operator_list = getOperatorList(dns_data);
                 let mcht_sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM users `;
@@ -65,6 +64,9 @@ const withdrawV3Ctrl = {
                 mcht_sql = mcht_sql.replace(process.env.SELECT_COLUMN_SECRET, mcht_columns.join())
                 user = await readPool.query(mcht_sql, [mid, dns_data?.id]);
                 user = user[0][0];
+            }
+            if (user_id == 241) {
+                console.log(req)
             }
             let requestIp = getReqIp(req);
             let ip_list = await readPool.query(`SELECT * FROM permit_ips WHERE user_id=${user?.id} AND is_delete=0`);
@@ -157,7 +159,7 @@ const withdrawV3Ctrl = {
                 return response(req, res, -100, "반환 권한이 없습니다.", false)
             }
             if (!user) {
-                return response(req, res, -100, "mid가 잘못 되었습니다..", false)
+                return response(req, res, -100, "mid가 잘못 되었습니다.", false)
             }
 
             let requestIp = getReqIp(req);
