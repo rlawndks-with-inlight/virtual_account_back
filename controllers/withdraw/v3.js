@@ -29,6 +29,9 @@ const withdrawV3Ctrl = {
                 mid,
                 withdraw_bank_code,
                 withdraw_acct_num,
+                birth,
+                business_num,
+                user_type = 0,
                 is_manager,
                 user_id,
             } = req.body;
@@ -83,6 +86,9 @@ const withdrawV3Ctrl = {
                 decode_user: user,
                 bank_code: withdraw_bank_code,
                 acct_num: withdraw_acct_num,
+                birth,
+                business_num,
+                user_type,
                 amount: 1000,
             })
             if (account_info.code == 100) {
