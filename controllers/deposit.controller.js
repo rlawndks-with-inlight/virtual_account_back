@@ -208,12 +208,20 @@ const depositCtrl = {
             chart_sql = chart_sql.replaceAll(process.env.SELECT_COLUMN_SECRET, chart_columns.join());
 
             sql += ` ORDER BY ${table_name}.id ${is_asc ? 'ASC' : 'DESC'} `;
-            sql += ` LIMIT ${(page - 1) * page_size}, ${page_size} `;
+
             sql = sql.replaceAll(process.env.SELECT_COLUMN_SECRET, columns.join());
-            let data = await getMultipleQueryByWhen([
-                { table: 'content', sql: sql, },
-                { table: 'chart', sql: chart_sql, },
-            ])
+            let data = {};
+            let chart = await readPool.query(chart_sql);
+            chart = chart[0];
+            if (chart[0]?.total >= page * page_size) {
+                sql += ` LIMIT ${(page - 1) * page_size}, ${page_size} `;
+            }
+            let content = await readPool.query(sql);
+            content = content[0];
+            data = {
+                content,
+                chart,
+            }
             /*
             let data = await getSelectQuery(sql, columns, req.query, [{
                 table: 'chart',
