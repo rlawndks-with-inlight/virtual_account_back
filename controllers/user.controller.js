@@ -502,7 +502,7 @@ const userCtrl = {
     changePassword: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = await checkLevel(req.cookies.token, 10, req);
+            const decode_user = await checkLevel(req.cookies.token, 40, req);
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
@@ -533,7 +533,7 @@ const userCtrl = {
     changeStatus: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = await checkLevel(req.cookies.token, 11, req);
+            const decode_user = await checkLevel(req.cookies.token, 40, req);
             const decode_dns = checkDns(req.cookies.dns);
             if (!decode_user) {
                 return lowLevelException(req, res);
