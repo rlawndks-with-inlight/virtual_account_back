@@ -85,12 +85,10 @@ const parentBrandSettle = async (brand = {}, return_moment = "") => {
             status: 0,
         })
         let success_id = sucess_result[0]?.insertId;
-        if (result.code > 0) {
-            if (withdraw_id_list.length > 0) {
-                for (var i = 0; i < withdraw_id_list.length / 1000; i++) {
-                    let update_withdraw_list = withdraw_id_list.slice(i * 1000, (i + 1) * 1000);
-                    let update_result = await writePool.query(`UPDATE deposits SET  is_confirm_parent_brand_settle=1 WHERE id IN (${update_withdraw_list.map(itm => itm?.id).join()})`);
-                }
+        if (withdraw_id_list.length > 0) {
+            for (var i = 0; i < withdraw_id_list.length / 1000; i++) {
+                let update_withdraw_list = withdraw_id_list.slice(i * 1000, (i + 1) * 1000);
+                let update_result = await writePool.query(`UPDATE deposits SET  is_confirm_parent_brand_settle=1 WHERE id IN (${update_withdraw_list.map(itm => itm?.id).join()})`);
             }
         }
 
