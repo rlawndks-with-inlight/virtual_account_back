@@ -746,7 +746,6 @@ const withdrawCtrl = {
                     pay_type: 15,
                     trx_id: mother_to_result.data?.tid,
                 };
-                let result = await insertQuery(`deposits`, obj);
             }
             let result = await updateQuery(`${table_name}`, {
                 is_withdraw_hold: 0,
