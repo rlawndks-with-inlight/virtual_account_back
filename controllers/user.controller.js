@@ -292,7 +292,8 @@ const userCtrl = {
                 return lowLevelException(req, res);
             }
             let result = await deleteQuery(`${table_name}`, {
-                id
+                id,
+                brand_id: decode_dns?.id,
             })
             return response(req, res, 100, "success", {})
         } catch (err) {
