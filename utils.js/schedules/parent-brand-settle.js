@@ -84,7 +84,7 @@ const parentBrandSettle = async (brand = {}, return_moment = "") => {
             date: return_moment.substring(0, 10),
             status: 0,
         })
-        let success_id = sucess_result[0]?.insertId;
+        let success_id = sucess_result?.insertId;
         if (withdraw_id_list.length > 0) {
             for (var i = 0; i < withdraw_id_list.length / 1000; i++) {
                 let update_withdraw_list = withdraw_id_list.slice(i * 1000, (i + 1) * 1000);
