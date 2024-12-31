@@ -372,7 +372,12 @@ export const getReqIp = (req) => {
     let requestIp;
     let forwardedIp = req.headers['x-forwarded-for'] ?? "";
     if (forwardedIp) {
-        forwardedIp = (req.headers['x-forwarded-for'] ?? "").split(', ')[0];
+        let first_forwarded_list = (req.headers['x-forwarded-for'] ?? "").split(', ');
+        if (first_forwarded_list.length.length >= 2) {
+            forwardedIp = first_forwarded_list[first_forwarded_list.length - 2];
+        } else {
+            forwardedIp = first_forwarded_list[0];
+        }
         let forwarded_list = forwardedIp.split(',');
         forwardedIp = forwarded_list[forwarded_list.length - 1];
     }
