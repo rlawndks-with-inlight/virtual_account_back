@@ -224,7 +224,6 @@ const withdrawV5Ctrl = {
             }
 
             let mother_account = await getMotherDeposit(dns_data);
-            console.log(mother_account)
             if (withdraw_amount > mother_account?.real_amount - (mother_account?.hold_amount ?? 0)) {
                 return response(req, res, -100, "모계좌 출금 실패 A", false)
             }
