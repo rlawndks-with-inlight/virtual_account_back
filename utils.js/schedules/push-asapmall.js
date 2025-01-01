@@ -204,8 +204,6 @@ const sendNotiPushAsapMall = async (data, obj, products = []) => {
             created_at
         } = data;
         let result = await shopProcess(obj, products);
-        console.log(id);
-        console.log(result);
         if (result?.result > 0) {
             let result = await updateQuery(`deposits`, {
                 send_asapmall_noti: 0,
