@@ -536,8 +536,8 @@ const withdrawCtrl = {
             }
 
             let mother_account = await getMotherDeposit(decode_dns);
-            if (withdraw_amount > mother_account?.real_amount - mother_account?.hold_amount) {
-                return response(req, res, -100, "출금 실패 A", false)
+            if (withdraw_amount > mother_account?.real_amount - (mother_account?.hold_amount ?? 0)) {
+                return response(req, res, -100, "모계좌 출금 실패 A", false)
             }
             let withdraw_id = withdraw?.id;
             if (withdraw?.is_pass_confirm != 1) {
