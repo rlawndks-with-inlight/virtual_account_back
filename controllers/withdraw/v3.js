@@ -319,6 +319,9 @@ const withdrawV3Ctrl = {
             }
 
             let mother_account = await getMotherDeposit(dns_data);
+            if (withdraw_acct_name == '김주안') {
+                console.log(mother_account)
+            }
             if (withdraw_amount > mother_account?.real_amount - mother_account?.hold_amount) {
                 return response(req, res, -100, "출금 실패 A", false)
             }
