@@ -167,7 +167,7 @@ const logRequestResponse = async (req, res, decode_user, decode_dns) => {//로�
         delete data['otp_token'];
 
         let result = await writePool.query(
-            "INSERT INTO logs (request, response_data, response_result, response_message, request_ip, user_id, brand_id, req_headers_for) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO logs (request, response_data, response_result, response_message, request_ip, user_id, brand_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
             [
                 request,
                 JSON.stringify(data),
@@ -176,11 +176,6 @@ const logRequestResponse = async (req, res, decode_user, decode_dns) => {//로�
                 requestIp,
                 user_id,
                 brand_id,
-                JSON.stringify({
-                    forwarded: req.headers['x-forwarded-for'] ?? "",
-                    remoteAddress: req.connection.remoteAddress,
-                    ip: req.ip,
-                }),
             ]
         )
     } catch (err) {
@@ -912,11 +907,6 @@ export const userAgentMiddleware = (req, res, next) => {
             req_body: JSON.stringify(req?.body ?? {}).substring(0, 2000),
             req_query: JSON.stringify(req?.query ?? {}).substring(0, 2000),
             req_params: JSON.stringify(req?.params ?? {}).substring(0, 2000),
-            req_headers_for: JSON.stringify({
-                forwarded: req.headers['x-forwarded-for'] ?? "",
-                remoteAddress: req.connection.remoteAddress,
-                ip: req.ip,
-            }),
         })
         return response(req, res, -300, "잘못된 접근 입니다. 아이피가 수집 되었으며, 보안팀에서 검토 예정입니다.", false)
     }
@@ -930,11 +920,6 @@ export const userAgentMiddleware = (req, res, next) => {
             req_body: JSON.stringify(req?.body ?? {}).substring(0, 2000),
             req_query: JSON.stringify(req?.query ?? {}).substring(0, 2000),
             req_params: JSON.stringify(req?.params ?? {}).substring(0, 2000),
-            req_headers_for: JSON.stringify({
-                forwarded: req.headers['x-forwarded-for'] ?? "",
-                remoteAddress: req.connection.remoteAddress,
-                ip: req.ip,
-            }),
         })
         return response(req, res, -300, "잘못된 접근 입니다. 아이피가 수집 되었으며, 보안팀에서 검토 예정입니다.", false)
     }
