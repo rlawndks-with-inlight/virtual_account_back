@@ -663,6 +663,7 @@ const withdrawCtrl = {
                 is_hand: 1,
             }, withdraw_id);
             //
+            /*
             let result2 = await userCtrl.changeUserDeposit({
                 ...req, IS_RETURN: true, body: {
                     amount: withdraw_amount + withdraw?.withdraw_fee,
@@ -671,6 +672,8 @@ const withdrawCtrl = {
                     note: `${withdraw?.created_at}건 출금 반려`,
                 }
             }, res, next);
+            */
+
             /*
             let trx_id = `${new Date().getTime()}${decode_dns?.id}${user?.id}5`;
             let deposit_obj = {
@@ -763,6 +766,7 @@ const withdrawCtrl = {
                 is_hand: 1,
             }, withdraw_id);
 
+            /*
             let result2 = await userCtrl.changeUserDeposit({
                 ...req, IS_RETURN: true, body: {
                     amount: withdraw_amount + withdraw?.withdraw_fee,
@@ -770,7 +774,9 @@ const withdrawCtrl = {
                     user_id: user?.id,
                     note: `${withdraw?.created_at}건 출금 실패`,
                 }
-            }, res, next);
+            }, res, next); 
+            */
+
 
             /*
             let trx_id = `${new Date().getTime()}${decode_dns?.id}${user?.id}5`;
@@ -786,6 +792,7 @@ const withdrawCtrl = {
                 user_id: user?.id,
             }
             */
+            console.log(123)
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
