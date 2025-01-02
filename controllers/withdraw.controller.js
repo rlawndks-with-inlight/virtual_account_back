@@ -640,6 +640,9 @@ const withdrawCtrl = {
             if (!withdraw) {
                 return response(req, res, -100, "잘못된 출금 입니다.", false)
             }
+            if (withdraw?.withdraw_status == 0) {
+                return response(req, res, -100, "이미 성공된 건입니다.", false)
+            }
             if (withdraw?.withdraw_status == 15) {
                 return response(req, res, -100, "이미 반려된 건입니다.", false)
             }
