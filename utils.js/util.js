@@ -529,6 +529,10 @@ export const getMotherDeposit = async (decode_dns, is_detail) => {
 
     let brand_columns = [
         `brands.id`,
+        `brands.name`,
+        `brands.head_office_fee`,
+        `brands.deposit_head_office_fee`,
+        `brands.withdraw_head_office_fee`,
         `virtual_accounts.guid`,
         `virtual_accounts.virtual_bank_code`,
         `virtual_accounts.virtual_acct_num`,
@@ -550,9 +554,10 @@ export const getMotherDeposit = async (decode_dns, is_detail) => {
         `SUM(mcht_amount) AS total_mcht_amount`,
         `SUM(CASE WHEN withdraw_status=0 THEN 0 ELSE mcht_amount END) AS total_attempt_mcht_withdraw_amount`,
         `SUM(CASE WHEN pay_type=25 THEN mcht_amount ELSE 0 END) AS total_manager_mcht_give_amount`,
-        `SUM(CASE WHEN (pay_type=0 AND deposit_status=0) THEN amount ELSE 0 END) AS total_deposit_amount`,
-        `SUM(CASE WHEN (pay_type=0 AND deposit_status=0) THEN 1 ELSE 0 END) AS total_deposit_count`,
-        `SUM(CASE WHEN (pay_type IN (5, 20) AND withdraw_status=0) THEN 1 ELSE 0 END) AS total_withdraw_count`,
+
+        `SUM(CASE WHEN (created_at>=CURDATE() AND pay_type=0 AND deposit_status=0) THEN amount ELSE 0 END) AS total_deposit_amount`,
+        `SUM(CASE WHEN (created_at>=CURDATE() AND deposit_status=0) THEN 1 ELSE 0 END) AS total_deposit_count`,
+        `SUM(CASE WHEN (created_at>=CURDATE() AND pay_type IN (5, 20) AND withdraw_status=0) THEN 1 ELSE 0 END) AS total_withdraw_count`,
     ]
     for (var i = 0; i < operator_list.length; i++) {
         sum_columns.push(`SUM(sales${operator_list[i].num}_amount) AS total_sales${operator_list[i].num}_amount`);
