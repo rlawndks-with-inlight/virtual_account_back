@@ -533,6 +533,7 @@ export const getMotherDeposit = async (decode_dns, is_detail) => {
         `brands.head_office_fee`,
         `brands.deposit_head_office_fee`,
         `brands.withdraw_head_office_fee`,
+        `brands.hold_amount`,
         `virtual_accounts.guid`,
         `virtual_accounts.virtual_bank_code`,
         `virtual_accounts.virtual_acct_num`,
