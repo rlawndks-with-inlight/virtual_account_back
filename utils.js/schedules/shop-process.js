@@ -40,7 +40,7 @@ const shopProcess = async (params, products = []) => {
         } = params;
         created_at = returnMoment(created_at);
         let brand = await shopPool.query(`SELECT * FROM brands WHERE dns=?`, [dns]);
-        brand = brand?.result[0];
+        brand = brand[0][0];
         brand["theme_css"] = JSON.parse(brand?.theme_css ?? "{}");
         //brand["slider_css"] = JSON.parse(brand?.slider_css ?? "{}");
         brand["setting_obj"] = JSON.parse(brand?.setting_obj ?? "{}");
@@ -58,7 +58,7 @@ const shopProcess = async (params, products = []) => {
         }
         phone_num = (phone_num ?? "").replaceAll('null', '')
         let random_addr = await shopPool.query(`SELECT * FROM user_addresses ORDER BY RAND() LIMIT 1`);
-        random_addr = random_addr?.result[0];
+        random_addr = random_addr[0][0];
         let obj = {
             brand_id: brand?.id,
             user_id: 0,
