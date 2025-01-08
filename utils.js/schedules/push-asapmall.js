@@ -104,7 +104,7 @@ export const pushAsapMall = async (return_moment = "") => {
         let is_stop_func = false;
 
         let shop_brands = await shopPool.query(`SELECT id, dns FROM brands`);
-        shop_brands = shop_brands?.result;
+        shop_brands = shop_brands[0];
 
         let brand_product_obj = {};
         for (var i = 0; i < data.length; i++) {
@@ -143,7 +143,7 @@ export const pushAsapMall = async (return_moment = "") => {
                 if (!brand_product_obj[asapmall_dns]) {
                     let shop_brand = _.find(shop_brands, { dns: asapmall_dns });
                     products = await shopPool.query(`SELECT * FROM products WHERE brand_id=${shop_brand?.id}`);
-                    products = products?.result;
+                    products = products[0];
 
                     brand_product_obj[asapmall_dns] = products;
                 } else {

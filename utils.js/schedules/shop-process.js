@@ -1,9 +1,9 @@
 import _ from "lodash";
-import shopDB, { shopPool } from "../../config/shopping-mall-db.js";
+import { shopPool } from "../../config/shopping-mall-db.js";
 import { returnMoment } from "../function.js";
 
 
-const insertQuery = async (table, obj) => {
+const insertQuery = async (conn, table, obj) => {
     let keys = Object.keys(obj);
     if (keys.length == 0) {
         return false;
@@ -14,13 +14,14 @@ const insertQuery = async (table, obj) => {
     let values = keys.map(key => {
         return obj[key]
     });
-    let result = await shopPool.query(`INSERT INTO ${table} (${keys.join()}) VALUES (${question_list.join()})`, values);
-    return result;
+    let result = await conn.query(`INSERT INTO ${table} (${keys.join()}) VALUES (${question_list.join()})`, values);
+    return result[0];
 }
 const table_name = "transactions";
 
 const shopProcess = async (params, products = []) => {
     //가상계좌노티
+    const conn = await shopPool.getConnection();
     try {
         let {
             amount,
@@ -89,9 +90,9 @@ const shopProcess = async (params, products = []) => {
         } else if (pay_type == 'return') {
             obj['is_cancel'] = 1;
         }
-        await shopDB.beginTransaction();
-        let result = await insertQuery(`${table_name}`, obj);
-        let trans_id = result?.result?.insertId;
+        await conn.beginTransaction();
+        let result = await insertQuery(conn, `${table_name}`, obj);
+        let trans_id = result?.insertId;
         if (pay_type == 'deposit') {
             // let products = await shopPool.query(`SELECT * FROM products WHERE brand_id=${brand?.id}`);
             // products = products?.result;
@@ -111,21 +112,21 @@ const shopProcess = async (params, products = []) => {
                 ]);
             }
             if (insert_item_data.length > 0) {
-                let insert_item_result = await shopPool.query(
+                let insert_item_result = await conn.query(
                     `INSERT INTO transaction_orders (trans_id, product_id, order_name, order_amount, order_count, order_groups, delivery_fee, seller_id, seller_trx_fee) VALUES ?`,
                     [insert_item_data]
                 );
             }
         }
 
-        await shopDB.commit();
+        await conn.commit();
         return {
             result: 100,
             message: 'success',
             data: {},
         };
     } catch (err) {
-        await shopDB.rollback();
+        await conn.rollback();
         console.log(err);
         return {
             result: -200,
@@ -133,7 +134,7 @@ const shopProcess = async (params, products = []) => {
             data: {},
         };
     } finally {
-
+        await conn.release();
     }
 }
 
