@@ -8,8 +8,7 @@ import 'dotenv/config';
 const domainCtrl = {
     get: async (req, res, next) => {
         try {
-            let { dns } = req.query;
-            dns = `virtual-yg.com`
+            const { dns } = req.query;
             let brand = await redisCtrl.get(`brand_${dns}`);
             if (brand) {
                 brand = JSON.parse(brand ?? "{}");
