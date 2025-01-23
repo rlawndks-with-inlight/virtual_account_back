@@ -1,4 +1,5 @@
 'use strict';
+import _ from "lodash";
 import { readPool } from "../config/db-pool.js";
 import { checkIsManagerUrl, returnMoment } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
@@ -25,20 +26,14 @@ const dashboardCtrl = {
             if (e_dt) {
                 sub_query_where_sql += ` AND created_at <= '${e_dt} 23:59:59' `;
             }
-            amount_sub_sql += sub_query_where_sql;
-            count_sub_sql += sub_query_where_sql;
-            mcht_amount_sub_sql += sub_query_where_sql;
             let columns = [
                 `users.id`,
                 `users.user_name`,
                 `users.mid`,
                 `users.nickname AS label`,
-                `(${amount_sub_sql}) AS amount`,
-                `(${count_sub_sql}) AS count`,
-                `(${mcht_amount_sub_sql}) AS mcht_amount`,
             ]
             let sql = `SELECT ${columns.join()} FROM users `;
-            sql += ` WHERE users.level=10 AND users.brand_id=${decode_dns?.id} `;
+            sql += ` WHERE users.brand_id=${decode_dns?.id} AND users.level=10 `;
 
             let operator_list = getOperatorList(decode_dns);
             for (var i = 0; i < operator_list.length; i++) {
@@ -46,15 +41,47 @@ const dashboardCtrl = {
                     sql += ` AND users.id IN (SELECT mcht_id FROM merchandise_columns WHERE sales${operator_list[i].num}_id=${decode_user?.id}) `;
                 }
             }
-
             if (decode_user?.level == 10) {
                 sql += ` AND users.id=${decode_user?.id} `;
             }
-            sql += ` HAVING amount > 0 `;
-            sql += ` ORDER BY amount DESC `;
-
-            let result = await readPool.query(sql);
-            result = result[0];
+            let users = await readPool.query(sql);
+            users = users[0];
+            let result = [];
+            if (users?.length > 0) {
+                let columns = [
+                    `mcht_id`,
+                    `SUM(amount) AS amount`,
+                    `COUNT(*) AS count`,
+                    `SUM(mcht_amount) AS mcht_amount`,
+                ];
+                let amount_sql = ` SELECT ${columns.join()} FROM deposits `;
+                amount_sql += ` WHERE brand_id=${decode_dns?.id} `;
+                if (s_dt) {
+                    amount_sql += ` AND created_at >= '${s_dt} 00:00:00' `;
+                }
+                if (e_dt) {
+                    amount_sql += ` AND created_at <= '${e_dt} 23:59:59' `;
+                }
+                amount_sql += ` AND pay_type=0 `;
+                amount_sql += ` AND mcht_id IN (${users.map(el => { return el?.id })})`;
+                amount_sql += ` GROUP BY mcht_id `;
+                let amount_data = await readPool.query(amount_sql);
+                amount_data = amount_data[0];
+                users = users.map(el => {
+                    return {
+                        ...el,
+                        ..._.find(amount_data, { [`mcht_id`]: el?.id })
+                    }
+                })
+                result = users.filter(el => el?.count > 0);
+                result = result.sort((a, b) => {
+                    if (a.amount > b.amount) return -1
+                    if (a.amount < b.amount) return 1
+                    return 0
+                })
+            } else {
+                result = [];
+            }
             return response(req, res, 100, "success", result);
         } catch (err) {
             console.log(err)
