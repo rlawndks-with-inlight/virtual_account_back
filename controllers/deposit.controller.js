@@ -189,8 +189,6 @@ const depositCtrl = {
                 where_sql += ` AND ${table_name}.virtual_account_id=${virtual_account_id} `
             }
 
-
-
             if (search) {
                 where_sql += makeSearchQuery(search_columns, search);
             }

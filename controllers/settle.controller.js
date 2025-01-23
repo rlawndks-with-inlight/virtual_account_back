@@ -1,9 +1,10 @@
 'use strict';
-import { checkIsManagerUrl } from "../utils.js/function.js";
+import { checkIsManagerUrl, returnMoment } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, makeSearchQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, getNumberByPercent, isItemBrandIdSameDnsId, response, settingFiles, operatorLevelList, getOperatorList } from "../utils.js/util.js";
 import _ from 'lodash';
 import 'dotenv/config';
+import { readPool } from "../config/db-pool.js";
 
 const table_name = 'deposits';
 
@@ -13,7 +14,11 @@ const settleCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
-            const { level, pay_type, s_dt, e_dt, search } = req.query;
+            const { level, pay_type, s_dt, e_dt, search,
+                is_asc,
+                page,
+                page_size,
+            } = req.query;
 
             let search_columns = [
                 `users.user_name`,
@@ -63,6 +68,12 @@ const settleCtrl = {
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
             sql += ` LEFT JOIN users ON ${table_name}.${user_id_column}=users.id `;
             let where_sql = ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
+            if (s_dt) {
+                where_sql += ` AND ${table_name}.created_at >= '${s_dt} 00:00:00' `;
+            }
+            if (e_dt) {
+                where_sql += ` AND ${table_name}.created_at <= '${e_dt} 23:59:59' `;
+            }
             if (decode_user?.level >= 40) {
                 where_sql += ` AND ${table_name}.${user_id_column} > 0 `;
                 if (req.query[user_id_column] > 0) {
@@ -79,22 +90,43 @@ const settleCtrl = {
             }
             sql = sql + where_sql;
             //chart
-            let chart_columns = [];
+            let chart_columns = [
+                `COUNT(*) AS total`,
+            ];
             chart_columns.push(`SUM(${user_amount_column}) AS user_amount`);
-            let chart_sql = sql;
-            if (s_dt) {
-                chart_sql += ` AND ${table_name}.created_at >= '${s_dt} 00:00:00' `;
-            }
-            if (e_dt) {
-                chart_sql += ` AND ${table_name}.created_at <= '${e_dt} 23:59:59' `;
-            }
-            chart_sql = chart_sql.replaceAll(process.env.SELECT_COLUMN_SECRET, chart_columns.join());
-            let data = await getSelectQuery(sql, columns, req.query, [{
-                table: 'chart',
-                sql: chart_sql,
-            }], decode_user, decode_dns);
-            data.chart = data?.chart[0] ?? {};
 
+            let chart_sql = sql;
+            chart_sql = chart_sql.replaceAll(process.env.SELECT_COLUMN_SECRET, chart_columns.join());
+
+            sql += ` ORDER BY ${table_name}.id ${is_asc ? 'ASC' : 'DESC'} `;
+            sql = sql.replaceAll(process.env.SELECT_COLUMN_SECRET, columns.join());
+            let data = {};
+            let chart = await readPool.query(chart_sql);
+            chart = chart[0];
+            if (chart[0]?.total >= 1 * page_size) {
+                sql += ` LIMIT ${(page - 1) * page_size}, ${page_size} `;
+            }
+            let content = await readPool.query(sql);
+            content = content[0];
+            data = {
+                content,
+                chart,
+            }
+            for (var i = 0; i < data.content.length; i++) {
+                let keys = Object.keys(data.content[i]);
+                for (var j = 0; j < keys.length; j++) {
+                    if (keys[j].includes('d_at')) {
+                        data.content[i][keys[j]] = returnMoment(data.content[i][keys[j]])
+                    }
+                }
+            }
+            data.chart = data?.chart[0] ?? {};
+            data = {
+                ...data,
+                total: data.chart?.total,
+                page,
+                page_size,
+            }
             return response(req, res, 100, "success", data);
 
         } catch (err) {
