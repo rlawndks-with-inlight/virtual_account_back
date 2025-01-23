@@ -14,7 +14,8 @@ const settleCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = await checkLevel(req.cookies.token, 0, req);
             const decode_dns = checkDns(req.cookies.dns);
-            const { level, pay_type, s_dt, e_dt, search,
+            const {
+                level, pay_type, s_dt, e_dt, search,
                 is_asc,
                 page,
                 page_size,
@@ -129,6 +130,50 @@ const settleCtrl = {
             }
             return response(req, res, 100, "success", data);
 
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
+    checkDeposit: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = await checkLevel(req.cookies.token, 0, req);
+            const decode_dns = checkDns(req.cookies.dns);
+            const { level, id } = req.body;
+
+            let user_id_column = '';
+            let user_amount_column = '';
+            let operator_list = getOperatorList(decode_dns);
+
+            if (decode_user?.level >= 40) {
+                if (level == 10) {
+                    user_id_column = `mcht_id`;
+                    user_amount_column = `mcht_amount`;
+                }
+                for (var i = 0; i < operator_list.length; i++) {
+                    if (level == operator_list[i]?.value) {
+                        user_id_column = `sales${operator_list[i]?.num}_id`;
+                        user_amount_column = `sales${operator_list[i]?.num}_amount`;
+                    }
+                }
+            } else {
+                if (decode_user?.level == 10) {
+                    user_id_column = `mcht_id`;
+                    user_amount_column = `mcht_amount`;
+                }
+                for (var i = 0; i < operator_list.length; i++) {
+                    if (decode_user?.level == operator_list[i]?.value) {
+                        user_id_column = `sales${operator_list[i]?.num}_id`;
+                        user_amount_column = `sales${operator_list[i]?.num}_amount`;
+                    }
+                }
+            }
+            let data = await readPool.query(`SELECT SUM(${user_amount_column}) AS new_amount FROM ${table_name} WHERE id <= ${id} AND ${user_id_column}=${req.body[user_id_column]}`);
+            data = data[0][0];
+            return response(req, res, 100, "success", data);
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)
