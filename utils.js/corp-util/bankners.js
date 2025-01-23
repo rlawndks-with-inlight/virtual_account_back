@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import https from 'https';
 
 const API_URL = process.env.NODE_ENV == 'production' ? "api.bankners.com" : "stgapi.bankners.com";
+const BEARER_API_URL = process.env.NODE_ENV == 'production' ? "https://on-api.epayday.co.kr" : "https://on-api.dev-epayday.co.kr";
 
 const makeHeaderData = (dns_data, pay_type, decode_user) => {
     let cur_time = new Date().getTime();
@@ -411,136 +412,74 @@ export const banknersApi = {
                 }
                 */
                 const bank_list = [
-                    {
-                        bank_id: '039',
-                        bank_nm: '경남은행',
-                        bank_en_nm: 'Kyongnam Bank',
-                        swift_cd: 'KYNAKR22'
-                    },
-                    {
-                        bank_id: '003',
-                        bank_nm: 'IBK기업은행',
-                        bank_en_nm: '',
-                        swift_cd: 'IBKOKRSE'
-                    },
-                    {
-                        bank_id: '088',
-                        bank_nm: '신한은행',
-                        bank_en_nm: 'SHINHAN BANK',
-                        swift_cd: 'SHBKKRSE'
-                    },
-                    {
-                        bank_id: '004',
-                        bank_nm: 'KB국민은행',
-                        bank_en_nm: '',
-                        swift_cd: 'CZNBKRSE'
-                    },
-                    {
-                        bank_id: '081',
-                        bank_nm: 'KEB하나은행',
-                        bank_en_nm: 'KEB Hana Bank',
-                        swift_cd: 'KOEXKRSE'
-                    },
-                    {
-                        bank_id: '090',
-                        bank_nm: '카카오뱅크',
-                        bank_en_nm: 'KAKAO BANK',
-                        swift_cd: 'CITIKRSXKA'
-                    },
-                    {
-                        bank_id: '089',
-                        bank_nm: '케이뱅크',
-                        bank_en_nm: 'K BANK',
-                        swift_cd: ''
-                    },
-                    {
-                        bank_id: '071',
-                        bank_nm: '우체국',
-                        bank_en_nm: '',
-                        swift_cd: 'SHBKKRSEKP'
-                    },
-                    {
-                        bank_id: '007',
-                        bank_nm: 'Sh수협은행',
-                        bank_en_nm: '',
-                        swift_cd: 'NFFCKRSE'
-                    },
-                    {
-                        bank_id: '020',
-                        bank_nm: '우리은행',
-                        bank_en_nm: '',
-                        swift_cd: 'HVBKKRSE'
-                    },
-                    {
-                        bank_id: '011',
-                        bank_nm: 'NH농협은행',
-                        bank_en_nm: '',
-                        swift_cd: 'NACFKRSE'
-                    },
-                    {
-                        bank_id: '012',
-                        bank_nm: '지역농축협',
-                        bank_en_nm: '',
-                        swift_cd: ''
-                    },
-                    {
-                        bank_id: '048',
-                        bank_nm: '신협은행',
-                        bank_en_nm: 'Credit Union',
-                        swift_cd: ''
-                    },
-                    {
-                        bank_id: '045',
-                        bank_nm: '새마을금고',
-                        bank_en_nm: 'Korea Federation of Community Credit Cooperative.',
-                        swift_cd: ''
-                    },
-                    {
-                        bank_id: '034',
-                        bank_nm: '광주은행',
-                        bank_en_nm: 'Kwangju Bank',
-                        swift_cd: 'KWABKRSE'
-                    },
-                    {
-                        bank_id: '037',
-                        bank_nm: '전북은행',
-                        bank_en_nm: 'Jeonbuk Bank',
-                        swift_cd: 'JEONKRSE'
-                    },
-                    {
-                        bank_id: '031',
-                        bank_nm: '대구은행',
-                        bank_en_nm: 'Daegu Bank',
-                        swift_cd: 'DAEBKR22'
-                    },
-                    {
-                        bank_id: '032',
-                        bank_nm: '부산은행',
-                        bank_en_nm: 'Busan Bank',
-                        swift_cd: 'PUSBKR2P'
-                    },
-                    {
-                        bank_id: '092',
-                        bank_nm: '토스뱅크',
-                        bank_en_nm: 'TOSS Bank',
-                        swift_cd: ''
-                    },
-                    {
-                        bank_id: '035',
-                        bank_nm: '제주은행',
-                        bank_en_nm: 'Jeju Bank',
-                        swift_cd: 'JJBKKR22'
-                    },
+                    { label: '산업', value: '002', },
+                    { label: '기업', value: '003', },
+                    { label: '국민', value: '004', },
+                    { label: '수협', value: '007', },
+                    { label: '농협', value: '011', },
+                    { label: '지역농축협', value: '012', },
+                    { label: '우리', value: '020', },
+                    { label: 'SC 제일', value: '023', },
+                    { label: '대구', value: '031', },
+                    { label: '부산', value: '032', },
+                    { label: '광주', value: '034', },
+                    { label: '제주', value: '035', },
+                    { label: '전북', value: '037', },
+                    { label: '경남', value: '039', },
+                    { label: '우리카드', value: '041', },
+                    { label: '새마을금고중앙회', value: '045', },
+                    { label: '신협', value: '048', },
+                    { label: '상호저축은행', value: '050', },
+                    { label: 'HSBC은행', value: '054', },
+                    { label: '도이치', value: '055', },
+                    { label: 'JP모간체이스은행', value: '057', },
+                    { label: 'BOA은행', value: '060', },
+                    { label: 'BNP파리바은행', value: '061', },
+                    { label: '중국공상은행', value: '062', },
+                    { label: '산림조합중앙회', value: '064', },
+                    { label: '우체국', value: '071', },
+                    { label: 'KEB하나', value: '081', },
+                    { label: '신한', value: '088', },
+                    { label: '케이뱅크', value: '089', },
+                    { label: '카카오뱅크', value: '090', },
+                    { label: '토스', value: '092', },
+                    { label: '유안타증권', value: '209', },
+                    { label: 'KB증권', value: '218', },
+                    { label: 'IBK증권', value: '225', },
+                    { label: 'KTB투자증권', value: '227', },
+                    { label: '미래에셋대우', value: '238', },
+                    { label: '삼성증권', value: '240', },
+                    { label: '한국투자증권', value: '243', },
+                    { label: 'NH투자증권', value: '247', },
+                    { label: '교보증권', value: '261', },
+                    { label: '하이투자증권', value: '262', },
+                    { label: 'HMC투자증권', value: '263', },
+                    { label: '키움증권', value: '264', },
+                    { label: '이베스트투자증권', value: '265', },
+                    { label: 'SK증권', value: '266', },
+                    { label: '대신증권', value: '267', },
+                    { label: '한화투자증권', value: '269', },
+                    { label: '하나금융투자', value: '270', },
+                    { label: '토스증권', value: '271', },
+                    { label: '신한금융투자', value: '278', },
+                    { label: 'DB금융투자', value: '279', },
+                    { label: '유진투자증권', value: '280', },
+                    { label: '메리츠증권', value: '287', },
+                    { label: '부국증권', value: '290', },
+                    { label: '신영증권', value: '291', },
+                    { label: '포스증권', value: '294', },
+                    { label: 'BC', value: '361', },
+                    { label: '삼성카드', value: '365', },
+                    { label: '신한카드', value: '366', },
+                    { label: '현대카드', value: '367', },
+                    { label: '롯데카드', value: '368', },
+                    { label: '하나카드', value: '374', },
+                    { label: 'KB국민카드', value: '381', },
                 ]
                 let result = {
                     code: 100,
                     message: 'success',
                     data: bank_list
-                }
-
-                for (var i = 0; i < result.data.length; i++) {
-                    result.data[i].label = result.data[i]?.bank_nm;
-                    result.data[i].value = result.data[i]?.bank_id;
                 }
                 return {
                     code: 100,
