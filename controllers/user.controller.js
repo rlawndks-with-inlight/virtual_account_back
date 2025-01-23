@@ -101,6 +101,7 @@ const userCtrl = {
                 }
 
             }
+            /*
             if (level && level < 40) {
                 let level_column = level == 10 ? 'mcht' : `sales${_.find(operatorLevelList, { level: parseInt(level) }).num}`;
                 columns.push(`(SELECT SUM(${level_column}_amount) FROM deposits WHERE ${level_column}_id=${table_name}.id) AS settle_amount`);
@@ -110,7 +111,9 @@ const userCtrl = {
                 columns.push(`(SELECT SUM(${level_column}_amount) FROM deposits WHERE ${level_column}_id=${table_name}.id AND pay_type IN (25)) AS manager_plus_amount`);
                 columns.push(`(SELECT SUM(${level_column}_amount) FROM deposits WHERE ${level_column}_id=${table_name}.id AND pay_type IN (30)) AS manager_minus_amount`);
                 columns.push(`(SELECT SUM(withdraw_fee) FROM deposits WHERE ${level_column}_id=${table_name}.id AND pay_type IN (5, 20)) AS withdraw_fee_amount`);
-            }
+            }  
+            */
+
             if (level) {
                 where_sql += ` AND ${table_name}.level = ${level} `;
             }
@@ -132,7 +135,31 @@ const userCtrl = {
             }
             sql = sql + where_sql;
             let data = await getSelectQuery(sql, columns, req.query, [], decode_user, decode_dns);
-
+            if (level && level < 40 && data.content.length > 0) {
+                let level_column = level == 10 ? 'mcht' : `sales${_.find(operatorLevelList, { level: parseInt(level) }).num}`;
+                let columns = [
+                    `SUM(${level_column}_amount) AS settle_amount`,
+                    `SUM(CASE WHEN pay_type IN (0) THEN ${level_column}_amount ELSE 0 END) AS settle_amount`,
+                    `SUM(CASE WHEN pay_type IN (5, 20) THEN ${level_column}_amount ELSE 0 END) AS withdraw_amount`,
+                    `SUM(CASE WHEN pay_type IN (5, 20) AND withdraw_status IN (10, 15) THEN ${level_column}_amount ELSE 0 END) AS withdraw_fail_amount`,
+                    `SUM(CASE WHEN pay_type IN (25) THEN ${level_column}_amount ELSE 0 END) AS manager_plus_amount`,
+                    `SUM(CASE WHEN pay_type IN (30) THEN ${level_column}_amount ELSE 0 END) AS manager_minus_amount`,
+                    `SUM(CASE WHEN pay_type IN (5, 20) THEN withdraw_fee ELSE 0 END) AS withdraw_fee_amount`,
+                    `${level_column}_id`
+                ];
+                let sql = `SELECT ${columns.join()} FROM deposits `;
+                sql += ` WHERE brand_id=${decode_dns?.id} `;
+                sql += ` AND ${level_column}_id IN (${data.content.map(el => { return el?.id })})`;
+                sql += ` GROUP BY ${level_column}_id `;
+                let amount_data = await readPool.query(sql);
+                amount_data = amount_data[0];
+                data.content = data.content.map(el => {
+                    return {
+                        ...el,
+                        ..._.find(amount_data, { [`${level_column}_id`]: el?.id })
+                    }
+                })
+            }
             return response(req, res, 100, "success", data);
         } catch (err) {
             console.log(err)
