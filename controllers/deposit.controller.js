@@ -151,6 +151,11 @@ const depositCtrl = {
             if (req.query?.mcht_id > 0) {
                 where_sql += ` AND ${table_name}.mcht_id=${req.query?.mcht_id} `;
             }
+            for (var i = 0; i < operator_list.length; i++) {
+                if (req.query[`sales${operator_list[i]?.num}_id`] > 0) {
+                    where_sql += ` AND ${table_name}.sales${operator_list[i]?.num}_id=${req.query[`sales${operator_list[i]?.num}_id`]} `;
+                }
+            }
             if (is_mother) {
                 where_sql += ` AND (${table_name}.amount > 0 OR ${table_name}.amount < 0) `
             } else {
@@ -184,11 +189,7 @@ const depositCtrl = {
                 where_sql += ` AND ${table_name}.virtual_account_id=${virtual_account_id} `
             }
 
-            for (var i = 0; i < operator_list.length; i++) {
-                if (req.query[`sales${operator_list[i]?.num}_id`] > 0) {
-                    where_sql += ` AND ${table_name}.sales${operator_list[i]?.num}_id=${req.query[`sales${operator_list[i]?.num}_id`]} `;
-                }
-            }
+
 
             if (search) {
                 where_sql += makeSearchQuery(search_columns, search);
