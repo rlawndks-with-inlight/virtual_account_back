@@ -63,10 +63,6 @@ const settleCtrl = {
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
             sql += ` LEFT JOIN users ON ${table_name}.${user_id_column}=users.id `;
             let where_sql = ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
-            if (pay_type) {
-                where_sql += ` AND ${table_name}.pay_type=${pay_type} `
-            }
-
             if (decode_user?.level >= 40) {
                 where_sql += ` AND ${table_name}.${user_id_column} > 0 `;
                 if (req.query[user_id_column] > 0) {
@@ -75,11 +71,13 @@ const settleCtrl = {
             } else {
                 where_sql += ` AND ${table_name}.${user_id_column}=${decode_user?.id} `;
             }
+            if (pay_type) {
+                where_sql += ` AND ${table_name}.pay_type=${pay_type} `
+            }
             if (search) {
                 where_sql += makeSearchQuery(search_columns, search);
             }
             sql = sql + where_sql;
-            console.log(user_amount_column)
             //chart
             let chart_columns = [];
             chart_columns.push(`SUM(${user_amount_column}) AS user_amount`);
