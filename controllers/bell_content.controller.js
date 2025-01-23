@@ -21,7 +21,7 @@ const bellContentCtrl = {
             let columns = [
                 `${table_name}.*`,
             ]
-            let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
+            let sql = `SELECT ${columns.join()} FROM ${table_name} `;
             sql += ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
             if (decode_user?.level < 40) {
                 sql += ` AND ${table_name}.user_id=${decode_user?.id} `;
@@ -30,8 +30,14 @@ const bellContentCtrl = {
                 sql += ` AND ${table_name}.is_manager_delete=0 `;
             }
             sql += ` AND created_at >='${returnMoment(false, -3)}'`;
-            let data = await getSelectQuery(sql, columns, req.query, [], decode_user, decode_dns);
-            return response(req, res, 100, "success", data);
+            sql += ` ORDER BY id DESC `;
+            sql += ` LIMIT 0, 500 `;
+            let bells = await readPool.query(sql);
+            bells = bells[0];
+            //let data = await getSelectQuery(sql, columns, req.query, [], decode_user, decode_dns);
+            return response(req, res, 100, "success", {
+                content: bells,
+            });
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)
