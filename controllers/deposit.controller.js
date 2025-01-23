@@ -140,6 +140,17 @@ const depositCtrl = {
             if (e_dt) {
                 where_sql += ` AND ${table_name}.created_at <= '${e_dt} 23:59:59' `;
             }
+            if (decode_user?.level < 40) {
+                if (decode_user?.level == 10) {
+                    where_sql += ` AND ${table_name}.mcht_id=${decode_user?.id} `;
+                } else {
+                    let sales_num = _.find(operatorLevelList, { level: decode_user?.level })?.num;
+                    where_sql += ` AND ${table_name}.sales${sales_num}_id=${decode_user?.id} `;
+                }
+            }
+            if (req.query?.mcht_id > 0) {
+                where_sql += ` AND ${table_name}.mcht_id=${req.query?.mcht_id} `;
+            }
             if (is_mother) {
                 where_sql += ` AND (${table_name}.amount > 0 OR ${table_name}.amount < 0) `
             } else {
@@ -172,22 +183,13 @@ const depositCtrl = {
             if (virtual_account_id) {
                 where_sql += ` AND ${table_name}.virtual_account_id=${virtual_account_id} `
             }
-            if (decode_user?.level < 40) {
-                if (decode_user?.level == 10) {
-                    where_sql += ` AND ${table_name}.mcht_id=${decode_user?.id} `;
-                } else {
-                    let sales_num = _.find(operatorLevelList, { level: decode_user?.level })?.num;
-                    where_sql += ` AND ${table_name}.sales${sales_num}_id=${decode_user?.id} `;
-                }
-            }
+
             for (var i = 0; i < operator_list.length; i++) {
                 if (req.query[`sales${operator_list[i]?.num}_id`] > 0) {
                     where_sql += ` AND ${table_name}.sales${operator_list[i]?.num}_id=${req.query[`sales${operator_list[i]?.num}_id`]} `;
                 }
             }
-            if (req.query?.mcht_id > 0) {
-                where_sql += ` AND ${table_name}.mcht_id=${req.query?.mcht_id} `;
-            }
+
             if (search) {
                 where_sql += makeSearchQuery(search_columns, search);
             }
