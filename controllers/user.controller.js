@@ -139,7 +139,7 @@ const userCtrl = {
                 let level_column = level == 10 ? 'mcht' : `sales${_.find(operatorLevelList, { level: parseInt(level) }).num}`;
                 let columns = [
                     `SUM(${level_column}_amount) AS settle_amount`,
-                    `SUM(CASE WHEN pay_type IN (0) THEN ${level_column}_amount ELSE 0 END) AS settle_amount`,
+                    `SUM(CASE WHEN pay_type IN (0) THEN ${level_column}_amount ELSE 0 END) AS deposit_amount`,
                     `SUM(CASE WHEN pay_type IN (5, 20) THEN ${level_column}_amount ELSE 0 END) AS withdraw_amount`,
                     `SUM(CASE WHEN pay_type IN (5, 20) AND withdraw_status IN (10, 15) THEN ${level_column}_amount ELSE 0 END) AS withdraw_fail_amount`,
                     `SUM(CASE WHEN pay_type IN (25) THEN ${level_column}_amount ELSE 0 END) AS manager_plus_amount`,

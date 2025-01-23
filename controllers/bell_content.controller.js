@@ -14,7 +14,7 @@ const bellContentCtrl = {
             let is_manager = await checkIsManagerUrl(req);
             const decode_user = await checkLevel(req.cookies.token, 10, req);
             const decode_dns = checkDns(req.cookies.dns);
-            const { } = req.query;
+            const { page, page_size } = req.query;
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
