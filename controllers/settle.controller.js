@@ -67,7 +67,8 @@ const settleCtrl = {
 
 
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
-            sql += ` LEFT JOIN users ON ${table_name}.${user_id_column}=users.id `;
+            let join_sql = ``;
+            join_sql += ` LEFT JOIN users ON ${table_name}.${user_id_column}=users.id `;
             let where_sql = ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
             if (s_dt) {
                 where_sql += ` AND ${table_name}.created_at >= '${s_dt} 00:00:00' `;
@@ -89,16 +90,16 @@ const settleCtrl = {
             if (search) {
                 where_sql += makeSearchQuery(search_columns, search);
             }
-            sql = sql + where_sql;
             //chart
             let chart_columns = [
                 `COUNT(*) AS total`,
             ];
             chart_columns.push(`SUM(${user_amount_column}) AS user_amount`);
 
-            let chart_sql = sql;
+            let chart_sql = sql + where_sql;
             chart_sql = chart_sql.replaceAll(process.env.SELECT_COLUMN_SECRET, chart_columns.join());
 
+            sql = sql + join_sql + where_sql;
             sql += ` ORDER BY ${table_name}.id ${is_asc ? 'ASC' : 'DESC'} `;
             sql = sql.replaceAll(process.env.SELECT_COLUMN_SECRET, columns.join());
             let data = {};
