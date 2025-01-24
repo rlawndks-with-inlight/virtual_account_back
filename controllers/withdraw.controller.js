@@ -32,8 +32,6 @@ const withdrawCtrl = {
                 return lowLevelException(req, res);
             }
             let search_columns = [
-                `users.user_name`,
-                `users.nickname`,
                 `${table_name}.settle_acct_num`,
                 `${table_name}.settle_acct_name`,
                 `${table_name}.trx_id`,
