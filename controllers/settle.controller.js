@@ -21,7 +21,7 @@ const settleCtrl = {
                 page_size,
             } = req.query;
             if ([10, 20, 30, 50, 100].includes(page_size)) {
-                return response(req, res, -100, "페이지 크기가 잘못되었습니다", false)
+                return response(req, res, -100, "페이지 크기가 잘못되었습니다.", false)
             }
             let search_columns = [
                 `users.user_name`,
