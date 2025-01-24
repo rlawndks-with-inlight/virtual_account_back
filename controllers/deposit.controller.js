@@ -99,10 +99,9 @@ const depositCtrl = {
             ]
 
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
-            let same_sql = ``
             let join_sql = ``;
             if (decode_dns?.deposit_type == 'gift_card') {
-                same_sql += ` LEFT JOIN members ON ${table_name}.member_id=members.id `;
+                join_sql += ` LEFT JOIN members ON ${table_name}.member_id=members.id `;
                 columns = [
                     ...columns,
                     `members.guid AS member_guid`,
@@ -110,7 +109,7 @@ const depositCtrl = {
                     `members.phone_num AS member_phone_num`,
                 ]
             } else if (decode_dns?.deposit_type == 'virtual_account') {
-                same_sql += ` LEFT JOIN virtual_accounts ON ${table_name}.virtual_account_id=virtual_accounts.id `;
+                join_sql += ` LEFT JOIN virtual_accounts ON ${table_name}.virtual_account_id=virtual_accounts.id `;
                 columns = [
                     ...columns,
                     `CASE WHEN ${table_name}.virtual_account_id > 0  THEN virtual_accounts.virtual_bank_code ELSE ${table_name}.virtual_bank_code END AS virtual_bank_code`,
@@ -212,10 +211,10 @@ const depositCtrl = {
             for (var i = 0; i < operator_list.length; i++) {
                 chart_columns.push(`SUM(${table_name}.sales${operator_list[i]?.num}_amount) AS sales${operator_list[i]?.num}_amount`)
             }
-            let chart_sql = sql + same_sql + where_sql;
+            let chart_sql = sql + join_sql + where_sql;
             chart_sql = chart_sql.replaceAll(process.env.SELECT_COLUMN_SECRET, chart_columns.join());
 
-            sql = sql + same_sql + join_sql + where_sql;
+            sql = sql + join_sql + where_sql;
             sql += ` ORDER BY ${table_name}.id ${is_asc ? 'ASC' : 'DESC'} `;
 
             sql = sql.replaceAll(process.env.SELECT_COLUMN_SECRET, columns.join());
