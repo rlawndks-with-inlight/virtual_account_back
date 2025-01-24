@@ -93,8 +93,9 @@ const depositCtrl = {
             ]
 
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
+            let join_sql = ``;
             if (decode_dns?.deposit_type == 'gift_card') {
-                sql += ` LEFT JOIN members ON ${table_name}.member_id=members.id `;
+                join_sql += ` LEFT JOIN members ON ${table_name}.member_id=members.id `;
                 columns = [
                     ...columns,
                     `members.guid AS member_guid`,
@@ -102,7 +103,7 @@ const depositCtrl = {
                     `members.phone_num AS member_phone_num`,
                 ]
             } else if (decode_dns?.deposit_type == 'virtual_account') {
-                sql += ` LEFT JOIN virtual_accounts ON ${table_name}.virtual_account_id=virtual_accounts.id `;
+                join_sql += ` LEFT JOIN virtual_accounts ON ${table_name}.virtual_account_id=virtual_accounts.id `;
                 columns = [
                     ...columns,
                     `CASE WHEN ${table_name}.virtual_account_id > 0  THEN virtual_accounts.virtual_bank_code ELSE ${table_name}.virtual_bank_code END AS virtual_bank_code`,
@@ -120,17 +121,17 @@ const depositCtrl = {
                 columns.push(`corp_accounts.bank_code AS corp_bank_code`)
                 columns.push(`corp_accounts.acct_num AS corp_acct_num`)
                 columns.push(`corp_accounts.acct_name AS corp_acct_name`)
-                sql += ` LEFT JOIN corp_accounts ON ${table_name}.corp_account_id=corp_accounts.id `;
+                join_sql += ` LEFT JOIN corp_accounts ON ${table_name}.corp_account_id=corp_accounts.id `;
             }
-            sql += ` LEFT JOIN users ON ${table_name}.mcht_id=users.id `;
-            sql += ` LEFT JOIN users AS mchts ON ${table_name}.mcht_id=mchts.id `;
+            join_sql += ` LEFT JOIN users ON ${table_name}.mcht_id=users.id `;
+            join_sql += ` LEFT JOIN users AS mchts ON ${table_name}.mcht_id=mchts.id `;
             for (var i = 0; i < decode_dns?.operator_list.length; i++) {
                 if (decode_user?.level >= decode_dns?.operator_list[i]?.value) {
                     columns.push(`sales${decode_dns?.operator_list[i]?.num}.user_name AS sales${decode_dns?.operator_list[i]?.num}_user_name`);
                     columns.push(`sales${decode_dns?.operator_list[i]?.num}.nickname AS sales${decode_dns?.operator_list[i]?.num}_nickname`);
                     search_columns.push(`sales${decode_dns?.operator_list[i]?.num}.user_name`);
                     search_columns.push(`sales${decode_dns?.operator_list[i]?.num}.nickname`);
-                    sql += ` LEFT JOIN users AS sales${decode_dns?.operator_list[i]?.num} ON sales${decode_dns?.operator_list[i]?.num}.id=${table_name}.sales${decode_dns?.operator_list[i]?.num}_id `;
+                    join_sql += ` LEFT JOIN users AS sales${decode_dns?.operator_list[i]?.num} ON sales${decode_dns?.operator_list[i]?.num}.id=${table_name}.sales${decode_dns?.operator_list[i]?.num}_id `;
                 }
             }
             let where_sql = ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
@@ -192,7 +193,6 @@ const depositCtrl = {
             if (search) {
                 where_sql += makeSearchQuery(search_columns, search);
             }
-            sql = sql + where_sql;
             let chart_columns = [
                 `COUNT(*) AS total`,
                 `SUM(${table_name}.expect_amount) AS expect_amount`,
@@ -205,9 +205,10 @@ const depositCtrl = {
             for (var i = 0; i < operator_list.length; i++) {
                 chart_columns.push(`SUM(${table_name}.sales${operator_list[i]?.num}_amount) AS sales${operator_list[i]?.num}_amount`)
             }
-            let chart_sql = sql;
+            let chart_sql = sql + where_sql;
             chart_sql = chart_sql.replaceAll(process.env.SELECT_COLUMN_SECRET, chart_columns.join());
 
+            sql = sql + join_sql + where_sql;
             sql += ` ORDER BY ${table_name}.id ${is_asc ? 'ASC' : 'DESC'} `;
 
             sql = sql.replaceAll(process.env.SELECT_COLUMN_SECRET, columns.join());
