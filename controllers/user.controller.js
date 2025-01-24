@@ -133,6 +133,7 @@ const userCtrl = {
                 let search_columns = [
                     `${table_name}.user_name`,
                     `${table_name}.nickname`,
+                    `${table_name}.name`,
                 ]
                 if (level == 10) {
                     for (var i = 0; i < operator_list.length; i++) {
