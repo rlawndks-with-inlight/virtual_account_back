@@ -116,7 +116,7 @@ export const getSelectQuery = async (sql_, columns, query, add_sql_list = [], de
     let content_sql = sql.replaceAll(process.env.SELECT_COLUMN_SECRET, columns.join());
     content_sql += ` ORDER BY ${table}.${order} ${is_asc ? 'ASC' : 'DESC'} `;
     content_sql += ` LIMIT ${(page - 1) * page_size}, ${page_size} `;
-    console.log(content_sql)
+
     let total_sql = sql.replaceAll(process.env.SELECT_COLUMN_SECRET, 'COUNT(*) as total');
     let total = await readPool.query(total_sql);
     total = total[0][0]?.total ?? 0;
