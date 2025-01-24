@@ -145,7 +145,7 @@ const userCtrl = {
             let chart_columns = [
                 `COUNT(*) AS total`,
             ]
-            let chart_sql = sql + where_sql;
+            let chart_sql = sql + (level == 10 ? join_sql : '') + where_sql;
             chart_sql = chart_sql.replaceAll(process.env.SELECT_COLUMN_SECRET, chart_columns.join());
 
             sql = sql + join_sql + where_sql;
