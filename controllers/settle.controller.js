@@ -20,7 +20,9 @@ const settleCtrl = {
                 page,
                 page_size,
             } = req.query;
-
+            if ([10, 20, 30, 50, 100].includes(page_size)) {
+                return response(req, res, -100, "서버 에러 발생", false)
+            }
             let search_columns = [
                 `users.user_name`,
                 `users.nickname`,

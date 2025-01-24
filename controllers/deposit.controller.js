@@ -26,7 +26,9 @@ const depositCtrl = {
                 page_size,
                 is_delete, corp_account_id, virtual_account_id, is_cancel, deposit_status, is_pay_confirm
             } = req.query;
-
+            if ([10, 20, 30, 50, 100].includes(page_size)) {
+                return response(req, res, -100, "페이지 크기가 잘못되었습니다.", false)
+            }
             if (!decode_user) {
                 return lowLevelException(req, res);
             }

@@ -25,6 +25,9 @@ const withdrawCtrl = {
             const decode_user = await checkLevel(req.cookies.token, 10, req);
             const decode_dns = checkDns(req.cookies.dns);
             const { withdraw_status, search, s_dt, e_dt, is_hand, is_asc, page, page_size } = req.query;
+            if ([10, 20, 30, 50, 100].includes(page_size)) {
+                return response(req, res, -100, "페이지 크기가 잘못되었습니다.", false)
+            }
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
@@ -63,7 +66,8 @@ const withdrawCtrl = {
             let operator_list = getOperatorList(decode_dns);
 
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
-            sql += ` LEFT JOIN users ON ${table_name}.user_id=users.id `;
+            let join_sql = ``;
+            join_sql += ` LEFT JOIN users ON ${table_name}.user_id=users.id `;
 
             for (var i = 0; i < operator_list.length; i++) {
                 if (decode_user?.level >= operator_list[i]?.value) {
@@ -111,16 +115,16 @@ const withdrawCtrl = {
                 where_sql += makeSearchQuery(search_columns, search);
             }
 
-            sql = sql + where_sql;
             let chart_columns = [
                 `COUNT(*) AS total`,
                 `SUM(${table_name}.expect_amount) AS expect_amount`,
                 `SUM(${table_name}.amount) AS amount`,
                 `SUM(${table_name}.withdraw_fee) AS withdraw_fee`,
             ]
-            let chart_sql = sql;
+            let chart_sql = sql + where_sql;
             chart_sql = chart_sql.replaceAll(process.env.SELECT_COLUMN_SECRET, chart_columns.join());
 
+            sql = sql + join_sql + where_sql;
             sql += ` ORDER BY ${table_name}.id ${is_asc ? 'ASC' : 'DESC'} `;
             sql = sql.replaceAll(process.env.SELECT_COLUMN_SECRET, columns.join());
 
