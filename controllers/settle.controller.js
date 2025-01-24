@@ -24,8 +24,7 @@ const settleCtrl = {
                 return response(req, res, -100, "페이지 크기가 잘못되었습니다.", false)
             }
             let search_columns = [
-                `users.user_name`,
-                `users.nickname`,
+                `${table_name}.trx_id`,
             ]
 
             let columns = [
