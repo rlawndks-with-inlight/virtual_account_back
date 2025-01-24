@@ -18,7 +18,14 @@ const userCtrl = {
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
-            const { level, level_list = [], search } = req.query;
+            const {
+                level, level_list = [],
+                s_dt, e_dt,
+                search,
+                is_asc,
+                page,
+                page_size,
+            } = req.query;
             let table = decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account' : 'member'
 
             let columns = [
@@ -56,10 +63,11 @@ const userCtrl = {
                 ]]
             }
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
-            sql += ` LEFT JOIN merchandise_columns ON merchandise_columns.mcht_id=${table_name}.id `;
-            sql += ` LEFT JOIN brands ON brands.id=${table_name}.brand_id `;
-            sql += ` LEFT JOIN virtual_accounts ON ${table_name}.virtual_account_id=virtual_accounts.id `;
-            sql += ` LEFT JOIN members ON ${table_name}.member_id=members.id `;
+            let join_sql = ``;
+            join_sql += ` LEFT JOIN merchandise_columns ON merchandise_columns.mcht_id=${table_name}.id `;
+            join_sql += ` LEFT JOIN brands ON brands.id=${table_name}.brand_id `;
+            join_sql += ` LEFT JOIN virtual_accounts ON ${table_name}.virtual_account_id=virtual_accounts.id `;
+            join_sql += ` LEFT JOIN members ON ${table_name}.member_id=members.id `;
             let operator_list = decode_dns?.operator_list;
             for (var i = 0; i < operator_list.length; i++) {
                 columns.push(`merchandise_columns.sales${operator_list[i]?.num}_id`);
@@ -68,7 +76,7 @@ const userCtrl = {
                 columns.push(`merchandise_columns.sales${operator_list[i]?.num}_deposit_fee`);
                 columns.push(`sales${operator_list[i]?.num}.user_name AS sales${operator_list[i]?.num}_user_name`);
                 columns.push(`sales${operator_list[i]?.num}.nickname AS sales${operator_list[i]?.num}_nickname`);
-                sql += ` LEFT JOIN users AS sales${operator_list[i]?.num} ON sales${operator_list[i]?.num}.id=merchandise_columns.sales${operator_list[i]?.num}_id `;
+                join_sql += ` LEFT JOIN users AS sales${operator_list[i]?.num} ON sales${operator_list[i]?.num}.id=merchandise_columns.sales${operator_list[i]?.num}_id `;
             }
             let where_sql = ` WHERE ${(decode_dns?.is_main_dns == 1 && level == 40) ? '1=1' : `${table_name}.brand_id=${decode_dns?.id}`}  `;
             where_sql += ` AND ${table_name}.level <= ${decode_user?.level} `;
@@ -120,6 +128,7 @@ const userCtrl = {
             if (level_list.length > 0) {
                 where_sql += ` AND ${table_name}.level IN (${level_list}) `;
             }
+            where_sql += ` AND ${table_name}.is_delete=0 `
             if (search) {
                 let search_columns = [
                     `${table_name}.user_name`,
@@ -133,8 +142,28 @@ const userCtrl = {
                 }
                 where_sql += makeSearchQuery(search_columns, search);
             }
-            sql = sql + where_sql;
-            let data = await getSelectQuery(sql, columns, req.query, [], decode_user, decode_dns);
+            let chart_columns = [
+                `COUNT(*) AS total`,
+            ]
+            let chart_sql = sql + where_sql;
+            chart_sql = chart_sql.replaceAll(process.env.SELECT_COLUMN_SECRET, chart_columns.join());
+
+            sql = sql + join_sql + where_sql;
+            sql += ` ORDER BY ${table_name}.id ${is_asc ? 'ASC' : 'DESC'} `;
+            sql = sql.replaceAll(process.env.SELECT_COLUMN_SECRET, columns.join());
+            let data = {};
+            let chart = await readPool.query(chart_sql);
+            chart = chart[0];
+            if (chart[0]?.total >= 1 * page_size) {
+                sql += ` LIMIT ${(page - 1) * page_size}, ${page_size} `;
+            }
+            let content = await readPool.query(sql);
+            content = content[0];
+            data = {
+                content,
+                chart,
+            }
+
             if (level && level < 40 && data.content.length > 0) {
                 let level_column = level == 10 ? 'mcht' : `sales${_.find(operatorLevelList, { level: parseInt(level) }).num}`;
                 let columns = [
@@ -159,6 +188,13 @@ const userCtrl = {
                         ..._.find(amount_data, { [`${level_column}_id`]: el?.id })
                     }
                 })
+            }
+            data.chart = data?.chart[0] ?? {};
+            data = {
+                ...data,
+                total: data.chart?.total,
+                page,
+                page_size,
             }
             return response(req, res, 100, "success", data);
         } catch (err) {
