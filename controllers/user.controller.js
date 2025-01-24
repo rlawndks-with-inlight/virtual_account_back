@@ -26,6 +26,9 @@ const userCtrl = {
                 page,
                 page_size,
             } = req.query;
+            if ([10, 20, 30, 50, 100].includes(page_size)) {
+                return response(req, res, -100, "페이지 크기가 잘못되었습니다.", false)
+            }
             let table = decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account' : 'member'
 
             let columns = [
