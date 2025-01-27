@@ -323,6 +323,14 @@ const withdrawV3Ctrl = {
             if (withdraw_amount > mother_account?.real_amount - (mother_account?.hold_amount ?? 0)) {
                 return response(req, res, -100, "모계좌 출금 실패 A", false)
             }
+            let last_deposit_same_acct_num = await readPool.query(`SELECT id FROM deposits WHERE brand_id=${dns_data?.id} AND created_at >= NOW() - INTERVAL 1 MINUTE AND settle_acct_num=? AND user_id=${user?.id} `, [
+                withdraw_acct_num
+            ])
+            last_deposit_same_acct_num = last_deposit_same_acct_num[0][0];
+            if (last_deposit_same_acct_num && user?.is_not_same_acct_withdraw_minute == 1) {
+                return response(req, res, -100, "1분내 동일계좌 출금이 불가합니다.", false)
+            }
+
             let check_account = await corpApi.account.info({
                 pay_type: 'withdraw',
                 dns_data: dns_data,
