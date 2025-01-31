@@ -66,7 +66,7 @@ const withdrawCtrl = {
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
             let join_sql = ``;
             join_sql += ` LEFT JOIN users ON ${table_name}.user_id=users.id `;
-
+            let is_chart_use_join = false;
             for (var i = 0; i < operator_list.length; i++) {
                 if (decode_user?.level >= operator_list[i]?.value) {
                     columns = [...columns, ...[

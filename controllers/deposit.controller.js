@@ -131,6 +131,7 @@ const depositCtrl = {
             }
             join_sql += ` LEFT JOIN users ON ${table_name}.mcht_id=users.id `;
             join_sql += ` LEFT JOIN users AS mchts ON ${table_name}.mcht_id=mchts.id `;
+            let is_chart_use_join = false;
             for (var i = 0; i < decode_dns?.operator_list.length; i++) {
                 if (decode_user?.level >= decode_dns?.operator_list[i]?.value) {
                     columns.push(`sales${decode_dns?.operator_list[i]?.num}.user_name AS sales${decode_dns?.operator_list[i]?.num}_user_name`);
@@ -198,6 +199,7 @@ const depositCtrl = {
 
             if (search) {
                 where_sql += makeSearchQuery(search_columns, search);
+                is_chart_use_join = true;
             }
             let chart_columns = [
                 `COUNT(*) AS total`,
@@ -211,7 +213,7 @@ const depositCtrl = {
             for (var i = 0; i < operator_list.length; i++) {
                 chart_columns.push(`SUM(${table_name}.sales${operator_list[i]?.num}_amount) AS sales${operator_list[i]?.num}_amount`)
             }
-            let chart_sql = sql + join_sql + where_sql;
+            let chart_sql = sql + (is_chart_use_join ? join_sql : '') + where_sql;
             chart_sql = chart_sql.replaceAll(process.env.SELECT_COLUMN_SECRET, chart_columns.join());
 
             sql = sql + join_sql + where_sql;
