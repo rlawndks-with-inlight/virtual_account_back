@@ -331,8 +331,8 @@ const virtualAccountCtrl = {
                     guid: virtual_account?.guid,
                     bank_id: virtual_account?.deposit_bank_code,
                     deposit_acct_num: virtual_account?.deposit_acct_num,
+                    ci: virtual_account?.ci,
                 })
-                console.log('2:' + api_result_account_delete);
                 if (api_result_account_delete?.code != 100) {
                     return response(req, res, -100, (api_result_account_delete?.message || "서버 에러 발생"), false)
                 }

@@ -34,7 +34,7 @@ export const icbApi = {
                     timestamp,
                     memKey: ci,
                 }
-                let uri = `/v1/merchant/settle/balance/getInfo`;
+                let uri = `/v3/merchant/balance/getInfo`;
                 if (dns_data?.deposit_process_type == 1) {
                     uri = `/v2/merchant/settle/balance/getInfo`;
                 }
@@ -81,7 +81,8 @@ export const icbApi = {
                 timestamp,
                 memKey: ci,
             }
-            let { data: response } = await axios.post(`${API_URL}/v1/pg/publishVirtAcnt`, query, {
+
+            let { data: response } = await axios.post(`${API_URL}/v3/member/publish/virtAcnt`, query, {
                 headers: getDefaultHeader(dns_data, pay_type, timestamp)
             });
             if (response?.code != 200) {
@@ -218,7 +219,7 @@ export const icbApi = {
                     depoAcntNo: acct_num,
                     depoNm: name,
                 }
-                let { data: response } = await axios.post(`${API_URL}/v1/pg/acntCert/request`, query, {
+                let { data: response } = await axios.post(`${API_URL}/v3/member/acntCert/realName/request`, query, {
                     headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
                 if (response?.code != 200) {
@@ -317,7 +318,7 @@ export const icbApi = {
                     depoAcntNo: acct_num,
                     depoNm: name,
                 }
-                let { data: response } = await axios.post(`${API_URL}/v1/pg/withdrawAcntCert`, query, {
+                let { data: response } = await axios.post(`${API_URL}/v3/member/getInfo`, query, {
                     headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
                 if (response?.code != 200) {
@@ -369,7 +370,7 @@ export const icbApi = {
                     telComCd: tel_com,
                     telNo: phone_num,
                 }
-                let { data: response } = await axios.post(`${API_URL}/v1/pg/hpCert/request`, query, {
+                let { data: response } = await axios.post(`${API_URL}/v3/member/hpCert/request`, query, {
                     headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
                 if (response?.code != 200) {
@@ -415,7 +416,7 @@ export const icbApi = {
                     hpCertCd: vrf_word,
                     hpCertTrxNo: tid,
                 }
-                let { data: response } = await axios.post(`${API_URL}/v1/pg/hpCert/confirm`, query, {
+                let { data: response } = await axios.post(`${API_URL}/v3/member/hpCert/confirm`, query, {
                     headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
                 if (response?.code != 200) {
@@ -459,14 +460,14 @@ export const icbApi = {
                     trxAmt: amount,
                     partnerTrxNo: trx_id,
                 }
-                let uri = `/v1/pg/paymentRequest`;
+
+                let uri = `/v3/member/payment/request`;
                 if (dns_data?.deposit_process_type == 1) {
                     uri = `/v2/merchant/member/payment`;
                 }
                 let { data: response } = await axios.post(`${API_URL}${uri}`, query, {
                     headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
-                console.log(response)
                 if (response?.code != 200) {
                     return {
                         code: -100,
@@ -515,7 +516,7 @@ export const icbApi = {
                 let { data: response } = await axios.post(`${API_URL}${uri}`, query, {
                     headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
-                console.log(response)
+
                 if (response?.code != 200) {
                     return {
                         code: -100,
@@ -553,15 +554,15 @@ export const icbApi = {
                     partnerCnclNo: cancel_trx_id,
                     partnerTrxNo: trx_id,
                 }
-                let uri = `/v1/merchant/payment/cancel`;
+                let uri = `/v3/member/payment/cancel`;
                 if (dns_data?.deposit_process_type == 1) {
                     uri = `/v2/merchant/member/charge/cancel`;
                 }
-                console.log(query)
+
                 let { data: response } = await axios.post(`${API_URL}${uri}`, query, {
                     headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
-                console.log(response)
+
 
                 let obj = {};
                 if (response?.code != 200) {
@@ -609,8 +610,8 @@ export const icbApi = {
                     trxAmt: amount,
                     partnerTrxNo: trx_id,
                 }
-                console.log(getDefaultHeader(dns_data, pay_type, timestamp))
-                let { data: response } = await axios.post(`${API_URL}/v1/merchant/settle/member/request/amt`, query, {
+
+                let { data: response } = await axios.post(`${API_URL}/v3/member/settle/request/amt`, query, {
                     headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
                 if (response?.code != 200) {
@@ -653,7 +654,7 @@ export const icbApi = {
                     memKey: ci,
                     partnerTrxNos: tid,
                 }
-                let uri = `/v1/merchant/settle/member/inquiry`;
+                let uri = `/v3/merchant/settle/inquiry`;
                 if (dns_data?.deposit_process_type == 1) {
                     uri = `/v2/merchant/settle/inquiry`;
                 }
@@ -713,7 +714,7 @@ export const icbApi = {
                     trxAmt: amount,
                     partnerTrxNo: trx_id,
                 }
-                let uri = `/v1/merchant/settle/request${is_deposit == 1 ? '/deposit' : ''}/amt`;
+                let uri = `/v3/merchant/settle/request${is_deposit == 1 ? '/deposit' : ''}/amt`;
                 if (dns_data?.deposit_process_type == 1) {
                     uri = `/v2/merchant/settle/request`;
                 }
@@ -758,13 +759,15 @@ export const icbApi = {
                 timestamp,
                 memKey: ci,
             }
-            let uri = `/v1/merchant/member/quit`;
+            let uri = `/v3/member/quit`;
             if (dns_data?.deposit_process_type == 1) {
                 uri = `/v2/merchant/member/quit`;
             }
+
             let { data: response } = await axios.post(`${API_URL}${uri}`, query, {
                 headers: getDefaultHeader(dns_data, pay_type, timestamp)
             });
+
             if (response?.code != 200) {
                 return {
                     code: -100,
