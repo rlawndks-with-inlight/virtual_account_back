@@ -139,7 +139,6 @@ const withdrawCtrl = {
                 chart,
             }
 
-
             for (var i = 0; i < data.content.length; i++) {
                 let keys = Object.keys(data.content[i]);
                 for (var j = 0; j < keys.length; j++) {
