@@ -14,9 +14,13 @@ router
     .get(brandCtrl.get)
     .put(brandCtrl.update)
     .delete(brandCtrl.remove);
+
 router
     .route('/otp')
     .post(brandCtrl.settingOtp);
+router
+    .route('/setting-sales-parent')
+    .post(brandCtrl.settingBySalesParent);
 router
     .route('/sign-key')
     .post(brandCtrl.settingSignKey);

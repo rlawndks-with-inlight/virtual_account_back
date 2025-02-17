@@ -609,7 +609,7 @@ export const getMotherDeposit = async (decode_dns, is_detail) => {
     return data;
 }
 
-export const settingMchtFee = async (decode_dns, user_id, body) => {
+export const settingMchtFee = async (decode_dns, user_id, body, is_oper_dns) => {
     try {
         let {
             mcht_fee,
@@ -619,17 +619,21 @@ export const settingMchtFee = async (decode_dns, user_id, body) => {
         let mother_fee = decode_dns?.head_office_fee;
         let mother_withdraw_fee = decode_dns?.withdraw_head_office_fee;
         let mother_deposit_fee = decode_dns?.deposit_head_office_fee;
-        let up_user = '본사';
+        let up_user = is_oper_dns ? '최상위본사' : '본사';
         let down_user = '';
+        let oper_label = `sales`;
+        if (is_oper_dns) {
+            oper_label = `top_offer`;
+        }
         let mcht_obj = {
             mcht_id: user_id,
             mcht_fee,
         };
         let operator_list = getOperatorList(decode_dns);
         for (var i = 0; i < operator_list.length; i++) {
-            if (body[`sales${operator_list[i]?.num}_id`] > 0) {
+            if (body[`${oper_label}${operator_list[i]?.num}_id`] > 0) {
                 down_user = operator_list[i]?.label;
-                if (decode_dns?.is_use_deposit_operator == 1 && !body[`sales${operator_list[i]?.num}_deposit_fee`]) {
+                if (decode_dns?.is_use_deposit_operator == 1 && !body[`${oper_label}${operator_list[i]?.num}_deposit_fee`]) {
                     return {
                         data: {},
                         code: -100,
@@ -638,7 +642,7 @@ export const settingMchtFee = async (decode_dns, user_id, body) => {
                         type: 'deposit_fee',
                     }
                 }
-                if (body[`sales${operator_list[i]?.num}_deposit_fee`] < mother_deposit_fee && decode_dns?.is_use_deposit_operator == 1) {
+                if (body[`${oper_label}${operator_list[i]?.num}_deposit_fee`] < mother_deposit_fee && decode_dns?.is_use_deposit_operator == 1) {
                     return {
                         data: {},
                         code: -100,
@@ -648,7 +652,7 @@ export const settingMchtFee = async (decode_dns, user_id, body) => {
 
                     }
                 }
-                if (decode_dns?.is_use_fee_operator == 1 && !body[`sales${operator_list[i]?.num}_fee`]) {
+                if (decode_dns?.is_use_fee_operator == 1 && !body[`${oper_label}${operator_list[i]?.num}_fee`]) {
                     return {
                         data: {},
                         code: -100,
@@ -657,7 +661,7 @@ export const settingMchtFee = async (decode_dns, user_id, body) => {
                         type: 'fee',
                     }
                 }
-                if (body[`sales${operator_list[i]?.num}_fee`] < mother_fee && decode_dns?.is_use_fee_operator == 1) {
+                if (body[`${oper_label}${operator_list[i]?.num}_fee`] < mother_fee && decode_dns?.is_use_fee_operator == 1) {
                     return {
                         data: {},
                         code: -100,
@@ -666,7 +670,7 @@ export const settingMchtFee = async (decode_dns, user_id, body) => {
                         type: 'fee',
                     }
                 }
-                if (decode_dns?.is_use_withdraw_operator == 1 && !body[`sales${operator_list[i]?.num}_withdraw_fee`]) {
+                if (decode_dns?.is_use_withdraw_operator == 1 && !body[`${oper_label}${operator_list[i]?.num}_withdraw_fee`]) {
                     return {
                         data: {},
                         code: -100,
@@ -675,7 +679,7 @@ export const settingMchtFee = async (decode_dns, user_id, body) => {
                         type: 'withdraw_fee',
                     }
                 }
-                if (body[`sales${operator_list[i]?.num}_withdraw_fee`] < mother_withdraw_fee && decode_dns?.is_use_withdraw_operator == 1) {
+                if (body[`${oper_label}${operator_list[i]?.num}_withdraw_fee`] < mother_withdraw_fee && decode_dns?.is_use_withdraw_operator == 1) {
                     return {
                         data: {},
                         code: -100,
@@ -686,16 +690,16 @@ export const settingMchtFee = async (decode_dns, user_id, body) => {
                 }
 
                 up_user = operator_list[i]?.label;
-                mother_fee = body[`sales${operator_list[i]?.num}_fee`];
-                mother_withdraw_fee = body[`sales${operator_list[i]?.num}_withdraw_fee`];
-                mother_deposit_fee = body[`sales${operator_list[i]?.num}_deposit_fee`];
+                mother_fee = body[`${oper_label}${operator_list[i]?.num}_fee`];
+                mother_withdraw_fee = body[`${oper_label}${operator_list[i]?.num}_withdraw_fee`];
+                mother_deposit_fee = body[`${oper_label}${operator_list[i]?.num}_deposit_fee`];
             }
-            mcht_obj[`sales${operator_list[i]?.num}_id`] = body[`sales${operator_list[i]?.num}_id`] ?? null;
-            mcht_obj[`sales${operator_list[i]?.num}_fee`] = body[`sales${operator_list[i]?.num}_fee`] ?? 0;
-            mcht_obj[`sales${operator_list[i]?.num}_withdraw_fee`] = body[`sales${operator_list[i]?.num}_withdraw_fee`] ?? 0;
-            mcht_obj[`sales${operator_list[i]?.num}_deposit_fee`] = body[`sales${operator_list[i]?.num}_deposit_fee`] ?? 0;
+            mcht_obj[`${oper_label}${operator_list[i]?.num}_id`] = body[`${oper_label}${operator_list[i]?.num}_id`] ?? null;
+            mcht_obj[`${oper_label}${operator_list[i]?.num}_fee`] = body[`${oper_label}${operator_list[i]?.num}_fee`] ?? 0;
+            mcht_obj[`${oper_label}${operator_list[i]?.num}_withdraw_fee`] = body[`${oper_label}${operator_list[i]?.num}_withdraw_fee`] ?? 0;
+            mcht_obj[`${oper_label}${operator_list[i]?.num}_deposit_fee`] = body[`${oper_label}${operator_list[i]?.num}_deposit_fee`] ?? 0;
         }
-        down_user = '가맹점';
+        down_user = is_oper_dns ? `본사` : '가맹점';
         if (deposit_fee < mother_deposit_fee && decode_dns?.is_use_deposit_operator == 1) {
             return {
                 data: {},
@@ -746,6 +750,19 @@ export const setWithdrawAmountSetting = async (amount_ = 0, user_ = {}, dns_data
     result['expect_amount'] = result['amount'];
     result['withdraw_fee'] = user?.withdraw_fee;
     if (user?.level == 10) {
+        if (dns_data?.sales_parent_id > 0) {
+            let sales_parent_brand = await readPool.query(`SELECT level_obj FROM brands WHERE id=${dns_data?.sales_parent_id}`);
+            sales_parent_brand = sales_parent_brand[0][0];
+            let total_operator_list = getOperatorList(sales_parent_brand);
+            for (var i = 0; i < total_operator_list.length; i++) {
+                if (dns_data[`top_offer${operator_list[i]?.num}_id`] > 0) {
+                    let withdraw_fee_amount = getUserWithDrawFee(dns_data, operator_list[i]?.value, operator_list, dns_data?.sales_parent_withdraw_fee, true);
+                    result[`top_offer${operator_list[i]?.num}_id`] = dns_data[`top_offer${operator_list[i]?.num}_id`];
+                    result[`top_offer${operator_list[i]?.num}_fee`] = dns_data[`top_offer${operator_list[i]?.num}_fee`];
+                    result[`top_offer${operator_list[i]?.num}_amount`] = withdraw_fee_amount;
+                }
+            }
+        }
         let mcht_columns = [
             `merchandise_columns.mcht_fee`
         ]

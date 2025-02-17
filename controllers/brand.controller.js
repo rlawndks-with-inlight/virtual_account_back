@@ -2,7 +2,7 @@
 import axios from "axios";
 import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, updateQuery } from "../utils.js/query-util.js";
-import { checkDns, checkLevel, createHashedPassword, generateRandomString, getMotherDeposit, lowLevelException, response, settingFiles } from "../utils.js/util.js";
+import { checkDns, checkLevel, createHashedPassword, generateRandomString, getMotherDeposit, getOperatorList, lowLevelException, response, settingFiles, settingMchtFee } from "../utils.js/util.js";
 import 'dotenv/config';
 import corpApi from "../utils.js/corp-util/index.js";
 import speakeasy from 'speakeasy';
@@ -28,7 +28,11 @@ const brandCtrl = {
             let sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM ${table_name} `;
             sql += ` WHERE is_delete=0 `
             if (decode_dns?.is_main_dns != 1) {
-                sql += ` AND id=${decode_dns?.id}`;
+                if (decode_dns?.is_oper_dns == 1) {
+                    sql += ` AND sales_parent_id=${decode_dns?.id}`;
+                } else {
+                    sql += ` AND id=${decode_dns?.id}`;
+                }
             }
 
             let chart_columns = [
@@ -69,7 +73,7 @@ const brandCtrl = {
             sql += ` LEFT JOIN virtual_accounts ON ${table_name}.virtual_account_id=virtual_accounts.id `;
             sql += ` LEFT JOIN brands AS parent_brands ON ${table_name}.parent_id=parent_brands.id `;
             sql += ` WHERE ${table_name}.id=${id} `;
-            if (decode_dns?.is_main_dns != 1) {
+            if (decode_dns?.is_main_dns != 1 && decode_dns?.is_oper_dns != 1) {
                 sql += ` AND ${table_name}.id=${decode_dns?.id} `;
             }
             let data = await readPool.query(sql)
@@ -258,6 +262,48 @@ const brandCtrl = {
                 }
             }
             let result = await updateQuery(`${table_name}`, obj, id);
+
+            return response(req, res, 100, "success", {})
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
+    settingBySalesParent: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = await checkLevel(req.cookies.token, 40, req);
+            const decode_dns = checkDns(req.cookies.dns);
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
+            const {
+                id,
+                sales_parent_fee,
+                sales_parent_deposit_fee,
+                sales_parent_withdraw_fee,
+                sales_parent_withdraw_bank_code,
+                sales_parent_withdraw_acct_num,
+                sales_parent_withdraw_acct_name,
+            } = req.body;
+            let obj = {
+                sales_parent_fee,
+                sales_parent_deposit_fee,
+                sales_parent_withdraw_fee,
+                sales_parent_withdraw_bank_code,
+                sales_parent_withdraw_acct_num,
+                sales_parent_withdraw_acct_name,
+            };
+            let operator_list = await getOperatorList(decode_dns);
+            for (var i = 0; i < operator_list.length; i++) {
+                obj[`top_offer${operator_list[i]?.num}_id`] = req.body[`top_offer${operator_list[i]?.num}_id`];
+                obj[`top_offer${operator_list[i]?.num}_fee`] = req.body[`top_offer${operator_list[i]?.num}_fee`];
+                obj[`top_offer${operator_list[i]?.num}_deposit_fee`] = req.body[`top_offer${operator_list[i]?.num}_deposit_fee`];
+                obj[`top_offer${operator_list[i]?.num}_withdraw_fee`] = req.body[`top_offer${operator_list[i]?.num}_withdraw_fee`];
+            }
+            let result = await updateQuery(table_name, obj, id);
 
             return response(req, res, 100, "success", {})
         } catch (err) {

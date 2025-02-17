@@ -796,7 +796,6 @@ const withdrawCtrl = {
                 user_id: user?.id,
             }
             */
-            console.log(123)
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)

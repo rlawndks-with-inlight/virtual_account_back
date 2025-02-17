@@ -654,7 +654,7 @@ export const icbApi = {
                     memKey: ci,
                     partnerTrxNos: tid,
                 }
-                let uri = `/v3/merchant/settle/inquiry`;
+                let uri = `/v3/merchant/settle/member/inquiry`;
                 if (dns_data?.deposit_process_type == 1) {
                     uri = `/v2/merchant/settle/inquiry`;
                 }

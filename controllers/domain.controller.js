@@ -27,6 +27,7 @@ const domainCtrl = {
                     'level_obj',
                     'bizppurio_obj',
                     'is_main_dns',
+                    'is_oper_dns',
                     'company_name',
                     'business_num',
                     'resident_num',
