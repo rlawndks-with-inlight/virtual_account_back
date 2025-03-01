@@ -121,11 +121,10 @@ const withdrawV3Ctrl = {
                 withdraw_acct_name,
                 identity = "",
             } = req.body;
-            let is_ing_withdraw = await redisCtrl.get(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
-            if (is_ing_withdraw) {
+            let is_ing_withdraw = await redisCtrl.addNumber(`is_ing_withdraw_${mid}_${withdraw_acct_num}`, 1, 60);
+            if (is_ing_withdraw > 1) {
                 return response(req, res, -100, "같은 건으로 출금신청 진행중인 건이 존재합니다. 출금 내역을 확인해 주세요.", {});
             }
-            await redisCtrl.set(`is_ing_withdraw_${mid}_${withdraw_acct_num}`, `1`, 60);
             if (!(withdraw_amount > 0)) {
                 await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                 return response(req, res, -100, "출금금액은 0보다 커야합니다.", {});
@@ -430,7 +429,6 @@ const withdrawV3Ctrl = {
                 user_id: user?.id,
             }
             */
-            await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
@@ -440,5 +438,6 @@ const withdrawV3Ctrl = {
         }
     },
 };
+
 
 export default withdrawV3Ctrl;

@@ -55,6 +55,30 @@ const redisCtrl = {
             return false;
         }
     },
+    addNumber: async (key, value, second = 0) => {
+        try {
+            let result = await redisCli.incrBy(key, value);
+            if (second > 0) {
+                await redisCli.expire(key, second);
+            }
+            return parseFloat(result);
+        } catch (err) {
+            console.log(err);
+            return false;
+        }
+    },
+    subNumber: async (key, value, second = 0) => {
+        try {
+            let result = await redisCli.decrBy(key, value);
+            if (second > 0) {
+                await redisCli.expire(key, second);
+            }
+            return parseFloat(result);
+        } catch (err) {
+            console.log(err);
+            return false;
+        }
+    },
 }
 
 export default redisCtrl;
