@@ -408,7 +408,6 @@ const withdrawV3Ctrl = {
                 acct_name: withdraw_acct_name,
             })
             if (api_withdraw_request_result.code != 100) {
-                await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                 return response(req, res, -120, (api_withdraw_request_result?.message || "서버 에러 발생"), false)
             }
             let result3 = await updateQuery(`deposits`, {
