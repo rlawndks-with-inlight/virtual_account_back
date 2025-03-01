@@ -121,14 +121,22 @@ const withdrawV3Ctrl = {
                 withdraw_acct_name,
                 identity = "",
             } = req.body;
+            let is_ing_withdraw = await redisCtrl.get(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
+            if (is_ing_withdraw) {
+                return response(req, res, -100, "같은 건으로 출금신청 진행중인 건이 존재합니다. 출금 내역을 확인해 주세요.", {});
+            }
+            await redisCtrl.set(`is_ing_withdraw_${mid}_${withdraw_acct_num}`, `1`, 60);
             if (!(withdraw_amount > 0)) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                 return response(req, res, -100, "출금금액은 0보다 커야합니다.", {});
             }
             withdraw_amount = parseInt(withdraw_amount);
             if (!api_key) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                 return response(req, res, -100, "api key를 입력해주세요.", {});
             }
             if (!mid) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                 return response(req, res, -100, "mid를 입력해주세요.", {});
             }
             let dns_data = await redisCtrl.get(`dns_data_${api_key}`);
@@ -142,6 +150,7 @@ const withdrawV3Ctrl = {
 
 
             if (!dns_data) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                 return response(req, res, -100, "api key가 잘못되었습니다.", {});
             }
             dns_data['setting_obj'] = JSON.parse(dns_data?.setting_obj ?? '{}');
@@ -154,6 +163,7 @@ const withdrawV3Ctrl = {
                 pay_type_name = '반환';
                 pay_type = 20;
             } else {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                 return response(req, res, -100, "결제타입에러", false)
             }
 
@@ -165,9 +175,11 @@ const withdrawV3Ctrl = {
             ]);
             user = user[0][0];
             if (user?.can_return != 1 && pay_type == 20) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                 return response(req, res, -100, "반환 권한이 없습니다.", false)
             }
             if (!user) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                 return response(req, res, -100, "mid가 잘못 되었습니다.", false)
             }
 
@@ -181,6 +193,7 @@ const withdrawV3Ctrl = {
                 await redisCtrl.set(`user_ip_list_${user?.id}`, JSON.stringify(ip_list), 60);
             }
             if ((!ip_list.map(itm => { return itm?.ip }).includes(requestIp))) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                 return response(req, res, -150, "ip 권한이 없습니다.", false)
             }
             if (dns_data?.is_use_otp == 1) {
@@ -190,31 +203,38 @@ const withdrawV3Ctrl = {
                     token: otp_num
                 });
                 if (!verified) {
+                    await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                     return response(req, res, -100, "OTP번호가 잘못되었습니다.", false);
                 }
             }
             if (!withdraw_bank_code) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                 return response(req, res, -100, "은행을 선택해 주세요.", false)
             }
             if (!withdraw_acct_num) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                 return response(req, res, -100, "계좌번호를 입력해 주세요.", false)
             }
             if (!withdraw_acct_name) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                 return response(req, res, -100, "예금주명을 입력해 주세요.", false)
             }
             if (dns_data?.is_use_sign_key == 1) {
                 let user_api_sign_val = makeSignValueSha256(`${api_key}${mid}${user?.sign_key}`);
                 if (user_api_sign_val != api_sign_val) {
+                    await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                     return response(req, res, -100, "서명값이 잘못 되었습니다.", false)
                 }
             }
             let return_time = returnMoment().substring(11, 16);
             if (dns_data?.setting_obj?.not_withdraw_s_time >= dns_data?.setting_obj?.not_withdraw_e_time) {
                 if (return_time >= dns_data?.setting_obj?.not_withdraw_s_time || return_time <= dns_data?.setting_obj?.not_withdraw_e_time) {
+                    await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                     return response(req, res, -100, `출금 불가 시간입니다. ${dns_data?.setting_obj?.not_withdraw_s_time} ~ ${dns_data?.setting_obj?.not_withdraw_e_time}`, false);
                 }
             } else {
                 if (return_time >= dns_data?.setting_obj?.not_withdraw_s_time && return_time <= dns_data?.setting_obj?.not_withdraw_e_time) {
+                    await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                     return response(req, res, -100, `출금 불가 시간입니다. ${dns_data?.setting_obj?.not_withdraw_s_time} ~ ${dns_data?.setting_obj?.not_withdraw_e_time}`, false);
                 }
             }
@@ -228,6 +248,7 @@ const withdrawV3Ctrl = {
                 let today_withdraw_sum = await readPool.query(today_withdraw_sum_sql);
                 today_withdraw_sum = (today_withdraw_sum[0][0]?.amount ?? 0) * (-1) - (today_withdraw_sum[0][0]?.withdraw_fee ?? 0);
                 if (dns_data?.withdraw_max_price < today_withdraw_sum + amount) {
+                    await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                     return response(req, res, -100, "출금 실패 B", false)
                 }
             }
@@ -246,6 +267,7 @@ const withdrawV3Ctrl = {
                 let month_withdraw_sum = await readPool.query(month_withdraw_sum_sql);
                 month_withdraw_sum = (month_withdraw_sum[0][0]?.amount ?? 0) * (-1) - (month_withdraw_sum[0][0]?.withdraw_fee ?? 0);
                 if (dns_data?.month_withdraw_max_price < month_withdraw_sum + amount) {
+                    await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                     return response(req, res, -100, "출금 실패 C", false)
                 }
             }
@@ -253,11 +275,13 @@ const withdrawV3Ctrl = {
                 let daliy_withdraw_amount = await getDailyWithdrawAmount(user);
                 daliy_withdraw_amount = (daliy_withdraw_amount?.withdraw_amount ?? 0) * (-1);
                 if (daliy_withdraw_amount + amount > user?.daily_withdraw_amount) {
+                    await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                     return response(req, res, -100, `일일 출금금액을 넘었습니다.\n일일 출금금액:${commarNumber(user?.daily_withdraw_amount)}`, false);
                 }
             }
             let black_item = await findBlackList(withdraw_acct_num, 0, dns_data);
             if (black_item) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                 return response(req, res, -100, "블랙리스트 유저입니다.", false);
             }
             /*
@@ -297,21 +321,27 @@ const withdrawV3Ctrl = {
             let settle_amount = await readPool.query(settle_amount_sql);
             settle_amount = settle_amount[0][0]?.settle_amount ?? 0;
             if (dns_data?.default_withdraw_max_price < withdraw_amount) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                 return response(req, res, -100, `최대 ${pay_type_name}액은 ${commarNumber(dns_data?.default_withdraw_max_price)}원 입니다.`, false)
             }
             if (amount > settle_amount) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                 return response(req, res, -100, `${pay_type_name} 요청금이 보유정산금보다 많습니다.`, false)
             }
             if (settle_amount < user?.min_withdraw_remain_price) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                 return response(req, res, -100, `최소 ${pay_type_name}잔액은 ${commarNumber(user?.min_withdraw_remain_price)}원 입니다.`, false)
             }
             if (parseInt(withdraw_amount) < user?.min_withdraw_price) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                 return response(req, res, -100, `최소 ${pay_type_name}액은 ${commarNumber(user?.min_withdraw_price)}원 입니다.`, false)
             }
             if (parseInt(withdraw_amount) > user?.max_withdraw_price && user?.max_withdraw_price > 0) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                 return response(req, res, -100, `최대 ${pay_type_name}액은 ${commarNumber(user?.max_withdraw_price)}원 입니다.`, false)
             }
             if (settle_amount - amount < user?.min_withdraw_hold_price) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                 return response(req, res, -100, `최소 ${pay_type_name} 보류금액은 ${commarNumber(user?.min_withdraw_hold_price)}원 입니다.`, false)
             }
             if (user?.is_withdraw_hold == 1) {
@@ -321,6 +351,7 @@ const withdrawV3Ctrl = {
             let mother_account = await getMotherDeposit(dns_data);
 
             if (withdraw_amount > mother_account?.real_amount - (mother_account?.hold_amount ?? 0)) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                 return response(req, res, -100, "모계좌 출금 실패 A", false)
             }
             let last_deposit_same_acct_num = await readPool.query(`SELECT id FROM deposits WHERE brand_id=${dns_data?.id} AND created_at >= NOW() - INTERVAL 1 MINUTE AND settle_acct_num=? AND user_id=${user?.id} `, [
@@ -328,6 +359,7 @@ const withdrawV3Ctrl = {
             ])
             last_deposit_same_acct_num = last_deposit_same_acct_num[0][0];
             if (last_deposit_same_acct_num && user?.is_not_same_acct_withdraw_minute == 1) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                 return response(req, res, -100, "1분내 동일계좌 출금이 불가합니다.", false)
             }
 
@@ -342,9 +374,11 @@ const withdrawV3Ctrl = {
                 user_type: identity.length > 6 ? 1 : 0,
             })
             if (check_account.code != 100) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                 return response(req, res, -110, (check_account?.message || "서버 에러 발생"), false)
             }
             if (withdraw_acct_name != check_account.data?.withdraw_acct_name) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                 return response(req, res, -100, "예금주명이 일치하지 않습니다.", false)
             }
             let withdraw_id = 0;
@@ -355,10 +389,12 @@ const withdrawV3Ctrl = {
             settle_amount_2 = settle_amount_2[0][0]?.settle_amount ?? 0;
             if (settle_amount_2 < 0) {
                 let delete_result = await deleteQuery(`deposits`, { id: withdraw_id }, true);
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                 return response(req, res, -100, `${pay_type_name} 요청금이 보유정산금보다 많습니다.`, false)
             }
             //
             if (user?.is_withdraw_hold == 1) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                 return response(req, res, 100, "출금 요청이 완료되었습니다.", {});
             }
 
@@ -372,6 +408,7 @@ const withdrawV3Ctrl = {
                 acct_name: withdraw_acct_name,
             })
             if (api_withdraw_request_result.code != 100) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
                 return response(req, res, -120, (api_withdraw_request_result?.message || "서버 에러 발생"), false)
             }
             let result3 = await updateQuery(`deposits`, {
@@ -393,6 +430,7 @@ const withdrawV3Ctrl = {
                 user_id: user?.id,
             }
             */
+            await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
