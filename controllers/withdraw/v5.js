@@ -35,11 +35,17 @@ const withdrawV5Ctrl = {
                 api_sign_val,
                 otp_num,
             } = req.body;
+            let is_ing_withdraw = await redisCtrl.addNumber(`is_ing_withdraw_${mid}_${guid}`, 1, 60);
+            if (is_ing_withdraw > 1) {
+                return response(req, res, -100, "같은 건으로 출금신청 진행중인 건이 존재합니다. 출금 내역을 확인해 주세요.", {});
+            }
             withdraw_amount = parseInt(withdraw_amount);
             if (!api_key) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${guid}`);
                 return response(req, res, -100, "api key를 입력해주세요.", {});
             }
             if (!mid) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${guid}`);
                 return response(req, res, -100, "mid를 입력해주세요.", {});
             }
             let dns_data = await redisCtrl.get(`dns_data_${api_key}`);
@@ -51,13 +57,10 @@ const withdrawV5Ctrl = {
                 await redisCtrl.set(`dns_data_${api_key}`, JSON.stringify(dns_data), 60);
             }
             if (!dns_data) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${guid}`);
                 return response(req, res, -100, "api key가 잘못되었습니다.", false);
             }
 
-
-            if (!dns_data) {
-                return response(req, res, -100, "api key가 잘못되었습니다.", {});
-            }
             dns_data['setting_obj'] = JSON.parse(dns_data?.setting_obj ?? '{}');
             req.body.brand_id = dns_data?.id;
             let pay_type_name = '';
@@ -68,6 +71,7 @@ const withdrawV5Ctrl = {
                 pay_type_name = '반환';
                 pay_type = 20;
             } else {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${guid}`);
                 return response(req, res, -100, "결제타입에러", false)
             }
 
@@ -79,9 +83,11 @@ const withdrawV5Ctrl = {
             ]);
             user = user[0][0];
             if (user?.can_return != 1 && pay_type == 20) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${guid}`);
                 return response(req, res, -100, "반환 권한이 없습니다.", false)
             }
             if (!user) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${guid}`);
                 return response(req, res, -100, "mid가 잘못 되었습니다..", false)
             }
 
@@ -95,6 +101,7 @@ const withdrawV5Ctrl = {
                 await redisCtrl.set(`user_ip_list_${user?.id}`, JSON.stringify(ip_list), 60);
             }
             if ((!ip_list.map(itm => { return itm?.ip }).includes(requestIp))) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${guid}`);
                 return response(req, res, -150, "ip 권한이 없습니다.", false)
             }
             if (dns_data?.is_use_otp == 1) {
@@ -104,12 +111,14 @@ const withdrawV5Ctrl = {
                     token: otp_num
                 });
                 if (!verified) {
+                    await redisCtrl.delete(`is_ing_withdraw_${mid}_${guid}`);
                     return response(req, res, -100, "OTP번호가 잘못되었습니다.", false);
                 }
             }
             if (dns_data?.is_use_sign_key == 1) {
                 let user_api_sign_val = makeSignValueSha256(`${api_key}${mid}${user?.sign_key}`);
                 if (user_api_sign_val != api_sign_val) {
+                    await redisCtrl.delete(`is_ing_withdraw_${mid}_${guid}`);
                     return response(req, res, -100, "서명값이 잘못 되었습니다.", false)
                 }
             }
@@ -119,6 +128,7 @@ const withdrawV5Ctrl = {
             ]);
             virtual_account = virtual_account[0][0];
             if (!virtual_account) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${guid}`);
                 return response(req, res, -100, "가상계좌를 먼저 등록해 주세요.", false)
             }
 
@@ -132,6 +142,7 @@ const withdrawV5Ctrl = {
                 let today_withdraw_sum = await readPool.query(today_withdraw_sum_sql);
                 today_withdraw_sum = (today_withdraw_sum[0][0]?.amount ?? 0) * (-1) - (today_withdraw_sum[0][0]?.withdraw_fee ?? 0);
                 if (dns_data?.withdraw_max_price < today_withdraw_sum + amount) {
+                    await redisCtrl.delete(`is_ing_withdraw_${mid}_${guid}`);
                     return response(req, res, -100, "출금 실패 B", false)
                 }
             }
@@ -150,27 +161,32 @@ const withdrawV5Ctrl = {
                 let month_withdraw_sum = await readPool.query(month_withdraw_sum_sql);
                 month_withdraw_sum = (month_withdraw_sum[0][0]?.amount ?? 0) * (-1) - (month_withdraw_sum[0][0]?.withdraw_fee ?? 0);
                 if (dns_data?.month_withdraw_max_price < month_withdraw_sum + amount) {
+                    await redisCtrl.delete(`is_ing_withdraw_${mid}_${guid}`);
                     return response(req, res, -100, "출금 실패 C", false)
                 }
             }
             let return_time = returnMoment().substring(11, 16);
             if (dns_data?.setting_obj?.not_withdraw_s_time >= dns_data?.setting_obj?.not_withdraw_e_time) {
                 if (return_time >= dns_data?.setting_obj?.not_withdraw_s_time || return_time <= dns_data?.setting_obj?.not_withdraw_e_time) {
+                    await redisCtrl.delete(`is_ing_withdraw_${mid}_${guid}`);
                     return response(req, res, -100, `출금 불가 시간입니다. ${dns_data?.setting_obj?.not_withdraw_s_time} ~ ${dns_data?.setting_obj?.not_withdraw_e_time}\n현재시간: ${return_time}`, false);
                 }
             } else {
                 if (return_time >= dns_data?.setting_obj?.not_withdraw_s_time && return_time <= dns_data?.setting_obj?.not_withdraw_e_time) {
+                    await redisCtrl.delete(`is_ing_withdraw_${mid}_${guid}`);
                     return response(req, res, -100, `출금 불가 시간입니다. ${dns_data?.setting_obj?.not_withdraw_s_time} ~ ${dns_data?.setting_obj?.not_withdraw_e_time}\n현재시간: ${return_time}`, false);
                 }
             }
             let black_item = await findBlackList(virtual_account?.deposit_acct_num, 0, dns_data);
             if (black_item) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${guid}`);
                 return response(req, res, -100, "블랙리스트 유저입니다.", false);
             }
             if (pay_type == 20 && user?.can_return_ago_pay == 1) {
                 let deposit_count = await readPool.query(`SELECT COUNT(*) AS count FROM deposits WHERE pay_type=0 AND virtual_account_id=${virtual_account?.id}`);
                 deposit_count = deposit_count[0][0];
                 if (deposit_count?.count < 1) {
+                    await redisCtrl.delete(`is_ing_withdraw_${mid}_${guid}`);
                     return response(req, res, -100, "결제한 이력이 없는 유저이므로 반환 불가합니다.", false)
                 }
             }
@@ -202,21 +218,27 @@ const withdrawV5Ctrl = {
             let settle_amount = await readPool.query(settle_amount_sql);
             settle_amount = settle_amount[0][0]?.settle_amount ?? 0;
             if (dns_data?.default_withdraw_max_price < withdraw_amount) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${guid}`);
                 return response(req, res, -100, `최대 ${pay_type_name}액은 ${commarNumber(dns_data?.default_withdraw_max_price)}원 입니다.`, false)
             }
             if (amount > settle_amount) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${guid}`);
                 return response(req, res, -100, `${pay_type_name} 요청금이 보유정산금보다 많습니다.`, false)
             }
             if (settle_amount < user?.min_withdraw_remain_price) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${guid}`);
                 return response(req, res, -100, `최소 ${pay_type_name}잔액은 ${commarNumber(user?.min_withdraw_remain_price)}원 입니다.`, false)
             }
             if (parseInt(withdraw_amount) < user?.min_withdraw_price) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${guid}`);
                 return response(req, res, -100, `최소 ${pay_type_name}액은 ${commarNumber(user?.min_withdraw_price)}원 입니다.`, false)
             }
             if (parseInt(withdraw_amount) > user?.max_withdraw_price && user?.max_withdraw_price > 0) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${guid}`);
                 return response(req, res, -100, `최대 ${pay_type_name}액은 ${commarNumber(user?.max_withdraw_price)}원 입니다.`, false)
             }
             if (settle_amount - amount < user?.min_withdraw_hold_price) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${guid}`);
                 return response(req, res, -100, `최소 ${pay_type_name} 보류금액은 ${commarNumber(user?.min_withdraw_hold_price)}원 입니다.`, false)
             }
             if (user?.is_withdraw_hold == 1) {
@@ -225,6 +247,7 @@ const withdrawV5Ctrl = {
 
             let mother_account = await getMotherDeposit(dns_data);
             if (withdraw_amount > mother_account?.real_amount - (mother_account?.hold_amount ?? 0)) {
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${guid}`);
                 return response(req, res, -100, "모계좌 출금 실패 A", false)
             }
             let withdraw_id = 0;
@@ -235,10 +258,12 @@ const withdrawV5Ctrl = {
             settle_amount_2 = settle_amount_2[0][0]?.settle_amount ?? 0;
             if (settle_amount_2 < 0) {
                 let delete_result = await deleteQuery(`deposits`, { id: withdraw_id }, true);
+                await redisCtrl.delete(`is_ing_withdraw_${mid}_${guid}`);
                 return response(req, res, -100, `${pay_type_name} 요청금이 보유정산금보다 많습니다.`, false)
             }
             //
             if (user?.is_withdraw_hold == 1) {
+
                 return response(req, res, 100, "출금 요청이 완료되었습니다.", {});
             }
 
@@ -259,7 +284,6 @@ const withdrawV5Ctrl = {
                 trx_id: api_withdraw_request_result.data?.tid,
                 top_office_amount: api_withdraw_request_result.data?.top_amount ?? 0,
             }, withdraw_id);
-
             for (var i = 0; i < 3; i++) {
                 let api_result2 = await corpApi.withdraw.request_check({
                     pay_type: 'withdraw',

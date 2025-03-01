@@ -394,7 +394,7 @@ const withdrawV3Ctrl = {
             }
             //
             if (user?.is_withdraw_hold == 1) {
-                await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
+
                 return response(req, res, 100, "출금 요청이 완료되었습니다.", {});
             }
 
