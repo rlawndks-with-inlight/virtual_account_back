@@ -35,7 +35,7 @@ const withdrawV5Ctrl = {
                 api_sign_val,
                 otp_num,
             } = req.body;
-            let is_ing_withdraw = await redisCtrl.addNumber(`is_ing_withdraw_${mid}_${guid}`, 1, 60);
+            let is_ing_withdraw = await redisCtrl.addNumber(`is_ing_withdraw_${mid}_${guid}`, 1, 30);
             if (is_ing_withdraw > 1) {
                 return response(req, res, -100, "같은 건으로 출금신청 진행중인 건이 존재합니다. 출금 내역을 확인해 주세요.", {});
             }
