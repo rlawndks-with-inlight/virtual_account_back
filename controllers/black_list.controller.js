@@ -93,6 +93,14 @@ const blackListCtrl = {
             ) {
                 return response(req, res, -100, "필수값을 입력해 주세요.", false)
             }
+            let is_exist_acct = await readPool.query(`SELECT id FROM ${table_name} WHERE brand_id=? AND acct_num=? AND is_delete=0`, [
+                brand_id,
+                acct_num,
+            ]);
+            is_exist_acct = is_exist_acct[0][0];
+            if (is_exist_acct) {
+                return response(req, res, -100, '이미 등록된 계좌번호 입니다.', false)
+            }
             let api_result = await corpApi.bl.create({
                 pay_type: 'deposit',
                 dns_data: decode_dns,

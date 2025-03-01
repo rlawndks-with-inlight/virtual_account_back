@@ -121,6 +121,7 @@ const withdrawV3Ctrl = {
                 withdraw_acct_name,
                 identity = "",
             } = req.body;
+
             let is_ing_withdraw = await redisCtrl.addNumber(`is_ing_withdraw_${mid}_${withdraw_acct_num}`, 1, 60);
             if (is_ing_withdraw > 1) {
                 return response(req, res, -100, "같은 건으로 출금신청 진행중인 건이 존재합니다. 출금 내역을 확인해 주세요.", {});
