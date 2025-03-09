@@ -1,8 +1,8 @@
 'use strict';
 import _ from "lodash";
-import { checkIsManagerUrl } from "../utils.js/function.js";
+import { checkIsManagerUrl, getUserDepositFee } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, makeSearchQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
-import { checkDns, checkLevel, createHashedPassword, getOperatorList, getUserDepositFee, isItemBrandIdSameDnsId, lowLevelException, makeObjByList, makeUserChildrenList, makeUserTree, operatorLevelList, response, settingFiles, settingMchtFee } from "../utils.js/util.js";
+import { checkDns, checkLevel, createHashedPassword, getOperatorList, isItemBrandIdSameDnsId, lowLevelException, makeObjByList, makeUserChildrenList, makeUserTree, operatorLevelList, response, settingFiles, settingMchtFee } from "../utils.js/util.js";
 import 'dotenv/config';
 import { emitSocket } from "../utils.js/socket/index.js";
 import redisCtrl from "../redis/index.js";

@@ -3,12 +3,12 @@ import _ from "lodash";
 import corpApi from "../utils.js/corp-util/index.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
-import { checkDns, checkLevel, isItemBrandIdSameDnsId, response, settingFiles } from "../utils.js/util.js";
+import { checkDns, checkLevel, isItemBrandIdSameDnsId, response, setDepositAmountSetting, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 import { asd_list } from "../asd.js";
 import xlsx from 'xlsx';
 import axios from "axios";
-import { writePool } from "../config/db-pool.js";
+import { readPool, writePool } from "../config/db-pool.js";
 
 const utilCtrl = {
     setting: async (req, res, next) => {
@@ -132,6 +132,87 @@ const adsadsadsad = async () => {
         }
     } catch (err) {
         console.log(err);
+    }
+}
+const processAmount = async () => {
+    return;
+    try {
+        let brands = await readPool.query(`SELECT * FROM brands WHERE id IN (122, 123)`);
+        brands = brands[0];
+
+        let users = await readPool.query(`SELECT * FROM users WHERE brand_id IN (122, 123)`);
+        users = users[0];
+
+        let update_list = [];
+        for (var i = 0; i < brands.length; i++) {
+            let brand = brands[i];
+            let deposits = await readPool.query(`SELECT * FROM deposits WHERE brand_id=${brand?.id} ORDER BY id DESC`);
+            deposits = deposits[0];
+            console.log(deposits.length);
+            for (var j = 0; j < deposits.length; j++) {
+                let deposit = deposits[j];
+                let obj = {
+                    top_offer5_id: null,
+                    top_offer5_fee: 0,
+                    top_offer5_amount: 0,
+                    top_offer4_id: null,
+                    top_offer4_fee: 0,
+                    top_offer4_amount: 0,
+                    top_offer3_id: null,
+                    top_offer3_fee: 0,
+                    top_offer3_amount: 0,
+                    top_offer2_id: null,
+                    top_offer2_fee: 0,
+                    top_offer2_amount: 0,
+                    top_offer1_id: null,
+                    top_offer1_fee: 0,
+                    top_offer1_amount: 0,
+                    top_offer0_id: null,
+                    top_offer0_fee: 0,
+                    top_offer0_amount: 0,
+                };
+                let id = deposit?.id;
+                if (deposit?.pay_type == 0 && deposit?.deposit_status == 0) {
+                    let result = await setDepositAmountSetting(deposit?.amount, _.find(users, { id: deposit?.mcht_id }), brand);
+                    let filtered_obj = _.pickBy(result, (value, key) => _.includes(key, 'top_offer'));
+                    obj = {
+                        ...obj,
+                        ...filtered_obj,
+                    }
+                    update_list.push({
+                        obj,
+                        id,
+                    })
+                }
+                if ([5, 20].includes(deposit?.pay_type) && deposit?.withdraw_status == 0) {
+                    let result = await setDepositAmountSetting(Math.abs(deposit?.amount + deposit?.withdraw_fee), _.find(users, { id: deposit?.user_id }), brand);
+                    let filtered_obj = _.pickBy(result, (value, key) => _.includes(key, 'top_offer'));
+                    obj = {
+                        ...obj,
+                        ...filtered_obj,
+                    }
+                    update_list.push({
+                        obj,
+                        id,
+                    })
+                }
+                if (j % 100 == 0) {
+                    console.log(update_list[update_list.length - 1])
+                    console.log(j);
+                }
+            }
+        }
+        console.log('######')
+        console.log(update_list.length);
+        for (var i = 0; i < update_list.length; i++) {
+            let result = await updateQuery(`deposits`, update_list[i].obj, update_list[i].id);
+            if (i % 100 == 0) {
+                console.log('######')
+                console.log(i);
+            }
+        }
+    } catch (err) {
+
     }
 }
 export default utilCtrl;

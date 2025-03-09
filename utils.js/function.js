@@ -46,6 +46,32 @@ export const differenceSecondTwoDate = (f_d_, s_d_) => {//두날짜의 시간차
     let day = (f_d - s_d) / (1000 * 3600 * 24);
     return second;
 }
+export const getUserFee = (item, user_level, operator_list = [], head_office_fee, is_oper_dns) => {
+    let top_fee = head_office_fee;
+    let level = 40;
+    let result = 0;
+    let oper_label = `sales`;
+    if (is_oper_dns) {
+        oper_label = `top_offer`;
+    }
+    for (var i = 0; i < operator_list.length; i++) {
+        if (item[`${oper_label}${operator_list[i].num}_id`] > 0) {
+            if (user_level == level) {
+                return (parseFloat(item[`${oper_label}${operator_list[i].num}_fee`] ?? 0) - parseFloat(top_fee)).toFixed(3);
+            }
+            top_fee = item[`${oper_label}${operator_list[i].num}_fee`];
+            level = operator_list[i].value;
+        }
+    }
+    if (user_level == level) {
+        return (parseFloat(item[`${is_oper_dns ? `head_office_fee` : `mcht_fee`}`] ?? 0) - parseFloat(top_fee)).toFixed(3);
+    }
+    if (user_level == 10) {
+        return (100 - parseFloat(item[`mcht_fee`] ?? 0)).toFixed(3);
+    }
+    return result;
+}
+
 export const getUserWithDrawFee = (item, user_level, operator_list = [], withdraw_head_office_fee) => {
     let top_fee = withdraw_head_office_fee;
 
@@ -63,6 +89,32 @@ export const getUserWithDrawFee = (item, user_level, operator_list = [], withdra
     }
     if (user_level == level) {
         return (parseFloat(item[`withdraw_fee`] ?? 0) - parseFloat(top_fee)).toFixed(3);
+    }
+    // if (user_level == 10) {
+    //   return (100 - parseFloat(item[`withdraw_fee`] ?? 0)).toFixed(3);
+    // }
+    return result;
+}
+export const getUserDepositFee = (item, user_level, operator_list = [], deposit_head_office_fee, is_oper_dns) => {
+    let top_fee = deposit_head_office_fee;
+
+    let level = 40;
+    let result = 0;
+    let oper_label = `sales`;
+    if (is_oper_dns) {
+        oper_label = `top_offer`;
+    }
+    for (var i = 0; i < operator_list.length; i++) {
+        if (item[`${oper_label}${operator_list[i].num}_id`] > 0) {
+            if (user_level == level) {
+                return (parseFloat(item[`${oper_label}${operator_list[i].num}_deposit_fee`] ?? 0) - parseFloat(top_fee)).toFixed(3);
+            }
+            top_fee = item[`${oper_label}${operator_list[i].num}_deposit_fee`];
+            level = operator_list[i].value;
+        }
+    }
+    if (user_level == level) {
+        return (parseFloat(item[`${is_oper_dns ? `deposit_head_office_fee` : `deposit_fee`}`] ?? 0) - parseFloat(top_fee)).toFixed(3);
     }
     // if (user_level == 10) {
     //   return (100 - parseFloat(item[`withdraw_fee`] ?? 0)).toFixed(3);
