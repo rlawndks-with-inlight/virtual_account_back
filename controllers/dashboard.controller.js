@@ -16,9 +16,6 @@ const dashboardCtrl = {
                 return lowLevelException(req, res);
             }
             const { s_dt, e_dt } = req.query;
-            let amount_sub_sql = ` SELECT SUM(amount) FROM deposits  `;
-            let count_sub_sql = ` SELECT COUNT(*) FROM deposits `;
-            let mcht_amount_sub_sql = ` SELECT SUM(mcht_amount) FROM deposits `;
             let sub_query_where_sql = ` WHERE mcht_id=users.id AND users.brand_id=${decode_dns?.id} AND pay_type=0 `;
             if (s_dt) {
                 sub_query_where_sql += ` AND created_at >= '${s_dt} 00:00:00' `;
@@ -63,6 +60,7 @@ const dashboardCtrl = {
                     amount_sql += ` AND created_at <= '${e_dt} 23:59:59' `;
                 }
                 amount_sql += ` AND pay_type=0 `;
+                amount_sql += ` AND deposit_status=0 `;
                 amount_sql += ` AND mcht_id IN (${users.map(el => { return el?.id })})`;
                 amount_sql += ` GROUP BY mcht_id `;
                 let amount_data = await readPool.query(amount_sql);

@@ -840,7 +840,6 @@ export const setWithdrawAmountSetting = async (amount_ = 0, user_ = {}, dns_data
             let total_operator_list = getOperatorList(sales_parent_brand);
             for (var i = 0; i < total_operator_list.length; i++) {
                 if (dns_data[`top_offer${total_operator_list[i]?.num}_id`] > 0) {
-                    console.log(dns_data[`top_offer${total_operator_list[i]?.num}_id`])
                     let withdraw_fee_amount = getUserWithDrawFee(dns_data, total_operator_list[i]?.value, total_operator_list, dns_data?.sales_parent_withdraw_fee, true);
                     result[`top_offer${total_operator_list[i]?.num}_id`] = dns_data[`top_offer${total_operator_list[i]?.num}_id`];
                     result[`top_offer${total_operator_list[i]?.num}_fee`] = dns_data[`top_offer${total_operator_list[i]?.num}_fee`];

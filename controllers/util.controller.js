@@ -3,7 +3,7 @@ import _ from "lodash";
 import corpApi from "../utils.js/corp-util/index.js";
 import { checkIsManagerUrl } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
-import { checkDns, checkLevel, isItemBrandIdSameDnsId, response, setDepositAmountSetting, settingFiles } from "../utils.js/util.js";
+import { checkDns, checkLevel, isItemBrandIdSameDnsId, response, setDepositAmountSetting, settingFiles, setWithdrawAmountSetting } from "../utils.js/util.js";
 import 'dotenv/config';
 import { asd_list } from "../asd.js";
 import xlsx from 'xlsx';
@@ -185,7 +185,7 @@ const processAmount = async () => {
                     })
                 }
                 if ([5, 20].includes(deposit?.pay_type) && deposit?.withdraw_status == 0) {
-                    let result = await setDepositAmountSetting(Math.abs(deposit?.amount + deposit?.withdraw_fee), _.find(users, { id: deposit?.user_id }), brand);
+                    let result = await setWithdrawAmountSetting(Math.abs(deposit?.amount + deposit?.withdraw_fee), _.find(users, { id: deposit?.user_id }), brand);
                     let filtered_obj = _.pickBy(result, (value, key) => _.includes(key, 'top_offer'));
                     obj = {
                         ...obj,
@@ -215,4 +215,5 @@ const processAmount = async () => {
 
     }
 }
+
 export default utilCtrl;
