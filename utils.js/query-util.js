@@ -217,6 +217,21 @@ export const makeSearchQuery = (search_columns = [], search = "") => {
     return where_sql;
 
 }
+export const makeSearchQueryExact = (search_columns = [], search = "") => {
+    let where_sql = '';
+    for (var i = 0; i < search_columns?.length; i++) {
+        if (i == 0) {
+            where_sql += ` AND ( `
+        } else {
+            where_sql += ` OR `
+        }
+        where_sql += ` ${search_columns[i]}='${search}' `;
+    }
+    where_sql += ` ) `;
+
+    return where_sql;
+
+}
 const settingSelectQueryObj = (obj_) => {
     let obj = obj_;
     if (obj?.total) {

@@ -1,6 +1,6 @@
 'use strict';
 import { checkIsManagerUrl, returnMoment } from "../utils.js/function.js";
-import { deleteQuery, getMultipleQueryByWhen, getSelectQuery, insertQuery, makeSearchQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
+import { deleteQuery, getMultipleQueryByWhen, getSelectQuery, insertQuery, makeSearchQuery, makeSearchQueryExact, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, getNumberByPercent, isItemBrandIdSameDnsId, response, settingFiles, operatorLevelList, getOperatorList, lowLevelException, getChildrenBrands } from "../utils.js/util.js";
 import _ from 'lodash';
 import 'dotenv/config';
@@ -44,6 +44,7 @@ const depositCtrl = {
                 `${table_name}.trx_id`,
                 `virtual_accounts.virtual_acct_num`,
                 `virtual_accounts.virtual_user_name`,
+                `virtual_accounts.deposit_acct_name`,
                 /*
                 `virtual_accounts.deposit_bank_code`,
                 `virtual_accounts.deposit_acct_num`,
@@ -198,7 +199,7 @@ const depositCtrl = {
             }
 
             if (search) {
-                where_sql += makeSearchQuery(search_columns, search);
+                where_sql += makeSearchQueryExact(search_columns, search);
                 is_chart_use_join = true;
             }
             let chart_columns = [
