@@ -480,7 +480,9 @@ const virtualAccountCtrl = {
             if (!(amount > 0)) {
                 return response(req, res, -100, "입금예정액은 0원보다 커야합니다.", false)
             }
-
+            if (amount > 2000000) {
+                return response(req, res, -100, "입금예정액이 너무 큽니다.", false)
+            }
             let virtual_account = await readPool.query(`SELECT * FROM ${table_name} WHERE id=${virtual_account_id} AND is_delete=0 AND status=0`);
             virtual_account = virtual_account[0][0];
             if (!virtual_account) {
