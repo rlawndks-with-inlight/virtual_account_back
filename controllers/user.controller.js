@@ -204,8 +204,9 @@ const userCtrl = {
                 }
 
                 let amount_data = [];
-                for (var i = 0; i < data.content.length / 3; i++) {
-                    let user_ids = data.content.map(el => { return el?.id }).slice(i * 3, (i + 1) * 3);
+                let slice_num = level == 30 ? 1 : 3;
+                for (var i = 0; i < data.content.length / slice_num; i++) {
+                    let user_ids = data.content.map(el => { return el?.id }).slice(i * slice_num, (i + 1) * slice_num);
                     if (user_ids.length > 0) {
                         let sql = `SELECT ${columns.join()} FROM deposits `;
                         sql += ` WHERE ${level_column}_id IN (${user_ids.join()})`;
@@ -216,8 +217,17 @@ const userCtrl = {
                             ...amount_data,
                             ...process_amount_data,
                         ]
+
                     }
                 }
+                /*
+                console.log(returnMoment());
+                amount_data = await Promise.all(amount_queries);
+                console.log(returnMoment());
+                amount_data = amount_data.flatMap(res => res[0]);   
+                */
+
+
                 for (var i = 0; i < data.content.length; i++) {
                     let user = data.content[i];
                     let user_data = amount_data.filter(el => el[`${level_column}_id`] == user?.id);
