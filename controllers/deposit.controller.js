@@ -151,12 +151,17 @@ const depositCtrl = {
             }
 
             let where_sql = ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
-            if (s_dt) {
-                where_sql += ` AND ${table_name}.created_at >= '${s_dt} 00:00:00' `;
+            if (s_dt == e_dt && s_dt == returnMoment().substring(0, 10)) {
+                where_sql += ` AND ${table_name}.created_at >= CURDATE() `;
+            } else {
+                if (s_dt) {
+                    where_sql += ` AND ${table_name}.created_at >= '${s_dt} 00:00:00' `;
+                }
+                if (e_dt) {
+                    where_sql += ` AND ${table_name}.created_at <= '${e_dt} 23:59:59' `;
+                }
             }
-            if (e_dt) {
-                where_sql += ` AND ${table_name}.created_at <= '${e_dt} 23:59:59' `;
-            }
+
             if (decode_user?.level < 40) {
                 if (decode_user?.level == 10) {
                     where_sql += ` AND ${table_name}.mcht_id=${decode_user?.id} `;
