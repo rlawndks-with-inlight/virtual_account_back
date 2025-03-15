@@ -161,6 +161,15 @@ const userCtrl = {
             if (chart?.total >= 1 * page_size) {
                 sql += ` LIMIT ${(page - 1) * page_size}, ${page_size} `;
             }
+            if (chart?.total < (page - 1) * page_size) {
+                data = {
+                    content: [],
+                    total: chart?.total,
+                    page,
+                    page_size,
+                }
+                return response(req, res, 100, "success", data);
+            }
             let content = await readPool.query(sql);
             content = content[0];
             data = {
