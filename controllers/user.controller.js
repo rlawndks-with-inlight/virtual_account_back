@@ -217,7 +217,6 @@ const userCtrl = {
                             ...process_amount_data,
                         ]
                     }
-
                 }
                 for (var i = 0; i < data.content.length; i++) {
                     let user = data.content[i];
