@@ -249,7 +249,6 @@ const depositCtrl = {
             if (chart?.total >= 1 * page_size) {
                 sql += ` LIMIT ${(page - 1) * page_size}, ${page_size} `;
             }
-            console.log(sql)
             let content = await readPool.query(sql);
             content = content[0];
             data = {
