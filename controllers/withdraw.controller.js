@@ -28,6 +28,12 @@ const withdrawCtrl = {
             if ([10, 20, 30, 50, 100].includes(page_size)) {
                 return response(req, res, -100, "페이지 크기가 잘못되었습니다.", false)
             }
+            if (!s_dt) {
+                return response(req, res, -100, "시작일을 선택해 주세요.", false)
+            }
+            if (!e_dt) {
+                return response(req, res, -100, "종료일을 선택해 주세요.", false)
+            }
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
@@ -80,11 +86,15 @@ const withdrawCtrl = {
             }
 
             let where_sql = ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
-            if (s_dt) {
-                where_sql += ` AND ${table_name}.created_at >= '${s_dt} 00:00:00' `;
-            }
-            if (e_dt) {
-                where_sql += ` AND ${table_name}.created_at <= '${e_dt} 23:59:59' `;
+            if (s_dt == e_dt && s_dt == returnMoment().substring(0, 10)) {
+                where_sql += ` AND ${table_name}.created_at >= CURDATE() `;
+            } else {
+                if (s_dt) {
+                    where_sql += ` AND ${table_name}.created_at >= '${s_dt} 00:00:00' `;
+                }
+                if (e_dt) {
+                    where_sql += ` AND ${table_name}.created_at <= '${e_dt} 23:59:59' `;
+                }
             }
             where_sql += ` AND pay_type IN (5, 10, 20) `
             if (decode_user?.level < 40) {
