@@ -78,8 +78,14 @@ const domainCtrl = {
                 brand['bizppurio_obj'] = JSON.parse(brand?.bizppurio_obj ?? '{}');
 
                 brand['operator_list'] = getOperatorList(brand);
-                let brands = await readPool.query(`SELECT id, parent_id FROM brands `);
-                brands = brands[0];
+                let brands = await redisCtrl.get(`brands`);
+                if (brands) {
+                    brands = JSON.parse(brands ?? "[]");
+                } else {
+                    brands = await readPool.query(`SELECT id, parent_id FROM brands`);
+                    brands = brands[0];
+                    await redisCtrl.set(`brands`, JSON.stringify(brands), 60);
+                }
                 let childrens = findChildIds(brands, brand?.id);
                 childrens.push(brand?.id)
                 let parents = findParents(brands, brand)
