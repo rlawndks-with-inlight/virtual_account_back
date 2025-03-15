@@ -468,13 +468,11 @@ export const getChildrenBrands = async (brand = {}) => {
 
 export const getDailyWithdrawAmount = async (user) => {
     let return_moment = returnMoment().substring(0, 10);
-    let s_dt = return_moment + ` 00:00:00`;
-    let e_dt = return_moment + ` 23:59:59`;
     let sql = `SELECT SUM(mcht_amount) AS withdraw_amount FROM deposits `;
-    sql += ` WHERE mcht_id=${user?.id} `;
+    sql += ` WHERE created_at >= CURDATE() `;
+    sql += ` AND mcht_id=${user?.id} `;
     sql += ` AND pay_type IN (5, 20) `;
     sql += ` AND withdraw_status IN (0, 5, 20) `;
-    sql += ` AND created_at >='${s_dt}' AND created_at <='${e_dt}' `;
     let result = await readPool.query(sql);
     result = result[0][0];
     return result;
