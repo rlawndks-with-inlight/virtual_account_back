@@ -134,8 +134,8 @@ const withdrawCtrl = {
             } else {
                 chart = await readPool.query(chart_sql);
                 chart = chart[0][0];
-                await redisCtrl.set(`withdraw_chart_where_sql_${decode_user?.id}`, where_sql, 60);
-                await redisCtrl.set(`withdraw_chart_${decode_user?.id}`, JSON.stringify(chart), 60);
+                await redisCtrl.set(`withdraw_chart_where_sql_${decode_user?.id}`, where_sql, 30);
+                await redisCtrl.set(`withdraw_chart_${decode_user?.id}`, JSON.stringify(chart), 30);
             }
 
             if (chart?.total >= 1 * page_size) {

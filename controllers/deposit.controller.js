@@ -30,6 +30,12 @@ const depositCtrl = {
             if ([10, 20, 30, 50, 100].includes(page_size)) {
                 return response(req, res, -100, "페이지 크기가 잘못되었습니다.", false)
             }
+            if (!s_dt) {
+                return response(req, res, -100, "시작일을 선택해 주세요.", false)
+            }
+            if (!e_dt) {
+                return response(req, res, -100, "종료일을 선택해 주세요.", false)
+            }
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
@@ -143,6 +149,7 @@ const depositCtrl = {
                     join_sql += ` LEFT JOIN users AS sales${decode_dns?.operator_list[i]?.num} ON sales${decode_dns?.operator_list[i]?.num}.id=${table_name}.sales${decode_dns?.operator_list[i]?.num}_id `;
                 }
             }
+
             let where_sql = ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
             if (s_dt) {
                 where_sql += ` AND ${table_name}.created_at >= '${s_dt} 00:00:00' `;
@@ -231,8 +238,8 @@ const depositCtrl = {
             } else {
                 chart = await readPool.query(chart_sql);
                 chart = chart[0][0];
-                await redisCtrl.set(`deposit_chart_where_sql_${decode_user?.id}`, where_sql, 60);
-                await redisCtrl.set(`deposit_chart_${decode_user?.id}`, JSON.stringify(chart), 60);
+                await redisCtrl.set(`deposit_chart_where_sql_${decode_user?.id}`, where_sql, 30);
+                await redisCtrl.set(`deposit_chart_${decode_user?.id}`, JSON.stringify(chart), 30);
             }
 
             if (chart?.total >= 1 * page_size) {
