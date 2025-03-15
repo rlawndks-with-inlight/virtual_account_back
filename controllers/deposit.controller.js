@@ -7,6 +7,7 @@ import 'dotenv/config';
 import axios from "axios";
 import corpApi, { getDnsData } from "../utils.js/corp-util/index.js";
 import { readPool } from "../config/db-pool.js";
+import redisCtrl from "../redis/index.js";
 
 const table_name = 'deposits';
 
@@ -222,9 +223,19 @@ const depositCtrl = {
 
             sql = sql.replaceAll(process.env.SELECT_COLUMN_SECRET, columns.join());
             let data = {};
-            let chart = await readPool.query(chart_sql);
-            chart = chart[0];
-            if (chart[0]?.total >= 1 * page_size) {
+
+            let chart = await redisCtrl.get(`deposit_chart_${decode_user?.id}`);
+            let is_redis_chart_where_sql = await redisCtrl.get(`deposit_chart_where_sql_${decode_user?.id}`);
+            if (is_redis_chart_where_sql == where_sql && chart) {
+                chart = JSON.parse(chart);
+            } else {
+                chart = await readPool.query(chart_sql);
+                chart = chart[0][0];
+                await redisCtrl.set(`deposit_chart_where_sql_${decode_user?.id}`, where_sql, 60);
+                await redisCtrl.set(`deposit_chart_${decode_user?.id}`, JSON.stringify(chart), 60);
+            }
+
+            if (chart?.total >= 1 * page_size) {
                 sql += ` LIMIT ${(page - 1) * page_size}, ${page_size} `;
             }
             let content = await readPool.query(sql);
@@ -247,7 +258,6 @@ const depositCtrl = {
                     }
                 }
             }
-            data.chart = data?.chart[0] ?? {};
             data = {
                 ...data,
                 total: data.chart?.total,

@@ -157,8 +157,8 @@ const userCtrl = {
             sql = sql.replaceAll(process.env.SELECT_COLUMN_SECRET, columns.join());
             let data = {};
             let chart = await readPool.query(chart_sql);
-            chart = chart[0];
-            if (chart[0]?.total >= 1 * page_size) {
+            chart = chart[0][0];
+            if (chart?.total >= 1 * page_size) {
                 sql += ` LIMIT ${(page - 1) * page_size}, ${page_size} `;
             }
             let content = await readPool.query(sql);
@@ -209,7 +209,6 @@ const userCtrl = {
                     }
                 })
             }
-            data.chart = data?.chart[0] ?? {};
             data = {
                 ...data,
                 total: data.chart?.total,
@@ -574,7 +573,6 @@ const userCtrl = {
 
             await redisCtrl.delete(`user_only_connect_ip_${id}`);
             await redisCtrl.delete(`user_ip_list_${id}`);
-
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
@@ -590,7 +588,6 @@ const userCtrl = {
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
-            const decode_dns = checkDns(req.cookies.dns);
             const { id } = req.params
             let { user_pw } = req.body;
 
@@ -606,6 +603,7 @@ const userCtrl = {
                 user_pw, user_salt
             }
             let result = await updateQuery(`${table_name}`, obj, id);
+            await redisCtrl.delete(`sign_in_user_${user?.user_name}`);
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)

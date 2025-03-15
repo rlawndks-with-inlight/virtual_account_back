@@ -40,11 +40,23 @@ const authCtrl = {
             const decode_dns = checkDns(req.cookies.dns);
             let { user_name, user_pw, otp_num } = req.body;
 
-            let dns_data = await readPool.query(`SELECT brands.* FROM brands WHERE id=${decode_dns?.id}`);
-            dns_data = dns_data[0][0];
+            let dns_data = await redisCtrl.get(`dns_data_${decode_dns?.api_key}`);
+            if (dns_data) {
+                dns_data = JSON.parse(dns_data ?? "{}");
+            } else {
+                dns_data = await readPool.query(`SELECT * FROM brands WHERE id=?`, [decode_dns?.id]);
+                dns_data = dns_data[0][0];
+                await redisCtrl.set(`dns_data_${decode_dns?.api_key}`, JSON.stringify(dns_data), 60);
+            }
 
-            let brands = await readPool.query(`SELECT id, parent_id FROM brands`);
-            brands = brands[0];
+            let brands = await redisCtrl.get(`brands`);
+            if (brands) {
+                brands = JSON.parse(brands ?? "[]");
+            } else {
+                brands = await readPool.query(`SELECT id, parent_id FROM brands`);
+                brands = brands[0];
+                await redisCtrl.set(`brands`, JSON.stringify(brands), 60);
+            }
 
             let parents = await findParents(brands, dns_data);
             let parent_ids = parents.map(itm => {
@@ -54,9 +66,16 @@ const authCtrl = {
             if (parent_ids.length > 0) {
                 parent_where_sql = ` OR (users.level>=40 AND brand_id IN (${parent_ids.join()})) `
             }
-            let user = await readPool.query(`SELECT * FROM users WHERE user_name=? AND ( brand_id=${decode_dns?.id} ${parent_where_sql} OR level >=45 ) AND is_delete=0 LIMIT 1 `, user_name);
-            user = user[0][0];
-            if (!user) {
+            let user = await redisCtrl.get(`sign_in_user_${user_name}`);
+            if (user) {
+                user = JSON.parse(user ?? "{}");
+            } else {
+                user = await readPool.query(`SELECT * FROM users WHERE user_name=? AND ( brand_id=${decode_dns?.id} ${parent_where_sql} OR level >=45 ) AND is_delete=0 LIMIT 1 `, user_name);
+                user = user[0][0] ?? {};
+                await redisCtrl.set(`sign_in_user_${user_name}`, JSON.stringify(user), 60);
+            }
+
+            if (!user?.id) {
                 return response(req, res, -100, "가입되지 않은 회원입니다.", {})
             }
             let requestIp = getReqIp(req);
@@ -77,8 +96,14 @@ const authCtrl = {
             }
             let err_message = '';
             let is_fail_count_up = false;
-            let ip_list = await readPool.query(`SELECT * FROM permit_ips WHERE user_id=${user?.id} AND is_delete=0`);
-            ip_list = ip_list[0];
+            let ip_list = await redisCtrl.get(`user_ip_list_${user?.id}`);
+            if (ip_list) {
+                ip_list = JSON.parse(ip_list ?? "[]")
+            } else {
+                ip_list = await readPool.query(`SELECT * FROM permit_ips WHERE user_id=${user?.id} AND is_delete=0`);
+                ip_list = ip_list[0];
+                await redisCtrl.set(`user_ip_list_${user?.id}`, JSON.stringify(ip_list), 60);
+            }
 
             if (user_pw != user.user_pw) {
                 is_fail_count_up = true;
@@ -124,7 +149,6 @@ const authCtrl = {
                 let add_login_fail_count = await updateQuery(`users`, login_fail_obj, user?.id);
                 return response(req, res, -100, err_message, {});
             }
-
 
             let user_obj = {
                 id: user.id,
@@ -185,7 +209,6 @@ const authCtrl = {
 
             let dns_data = await readPool.query(`SELECT brands.* FROM brands WHERE id=${decode_dns?.id}`);
             dns_data = dns_data[0][0];
-
 
             let user = await readPool.query(`SELECT * FROM users WHERE id=${user_id} AND level < ${decode_user?.level}`);
             user = user[0][0];
@@ -268,12 +291,6 @@ const authCtrl = {
             if (!decode_user) {
                 return response(req, res, -150, "권한이 없습니다.", {})
             }
-            let requestIp = getReqIp(req);
-            let ip_list = await readPool.query(`SELECT * FROM permit_ips WHERE user_id=${decode_user?.id} AND is_delete=0`);
-            ip_list = ip_list[0];
-            if (decode_user?.level < 50 && (!ip_list.map(itm => { return itm?.ip }).includes(requestIp)) && ip_list.length > 0) {
-                return response(req, res, -150, "권한이 없습니다.", {})
-            }
             let {
                 password,
                 new_password,
@@ -292,7 +309,7 @@ const authCtrl = {
                 user_pw,
                 user_salt,
             }, decode_user?.id)
-
+            await redisCtrl.delete(`sign_in_user_${decode_user?.user_name}`);
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
