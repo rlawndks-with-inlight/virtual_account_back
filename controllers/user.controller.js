@@ -1,6 +1,6 @@
 'use strict';
 import _ from "lodash";
-import { checkIsManagerUrl, getUserDepositFee } from "../utils.js/function.js";
+import { checkIsManagerUrl, getUserDepositFee, returnMoment } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, makeSearchQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, createHashedPassword, getOperatorList, isItemBrandIdSameDnsId, lowLevelException, makeObjByList, makeUserChildrenList, makeUserTree, operatorLevelList, response, settingFiles, settingMchtFee } from "../utils.js/util.js";
 import 'dotenv/config';
@@ -187,21 +187,42 @@ const userCtrl = {
                     ];
                 } else {
                     columns = [
-                        `SUM(${level_column}_amount) AS settle_amount`,
+                        `${level_column}_id`,
+                        `SUM(${level_column}_amount) AS ${level_column}_amount`,
+                        `SUM(withdraw_fee) AS withdraw_fee`,
+                        `pay_type`,
+                        `withdraw_status`,
+                        /*
                         `SUM(CASE WHEN pay_type IN (0) THEN ${level_column}_amount ELSE 0 END) AS deposit_amount`,
                         `SUM(CASE WHEN pay_type IN (5, 20) THEN ${level_column}_amount ELSE 0 END) AS withdraw_amount`,
                         `SUM(CASE WHEN pay_type IN (5, 20) AND withdraw_status IN (10, 15) THEN ${level_column}_amount ELSE 0 END) AS withdraw_fail_amount`,
                         `SUM(CASE WHEN pay_type IN (25) THEN ${level_column}_amount ELSE 0 END) AS manager_plus_amount`,
                         `SUM(CASE WHEN pay_type IN (30) THEN ${level_column}_amount ELSE 0 END) AS manager_minus_amount`,
                         `SUM(CASE WHEN pay_type IN (5, 20) THEN withdraw_fee ELSE 0 END) AS withdraw_fee_amount`,
-                        `${level_column}_id`
+                        */
                     ];
                 }
                 let sql = `SELECT ${columns.join()} FROM deposits `;
-                sql += ` WHERE ${level_column}_id IN (${data.content.map(el => { return el?.id })})`;
-                sql += ` GROUP BY ${level_column}_id `;
+                sql += ` WHERE brand_id=${decode_dns?.id} `;
+                sql += ` AND ${level_column}_id IN (${data.content.map(el => { return el?.id })})`;
+                sql += ` GROUP BY ${level_column}_id, pay_type, withdraw_status `;
+
                 let amount_data = await readPool.query(sql);
                 amount_data = amount_data[0];
+                for (var i = 0; i < data.content.length; i++) {
+                    let user = data.content[i];
+                    let user_data = amount_data.filter(el => el[`${level_column}_id`] == user?.id);
+                    data.content[i] = {
+                        ...data.content[i],
+                        settle_amount: _.sum(user_data.map(el => { return el[`${level_column}_amount`] })),
+                        deposit_amount: _.sum(user_data.filter(el => [0].includes(el?.pay_type)).map(el => { return el[`${level_column}_amount`] })),
+                        withdraw_amount: _.sum(user_data.filter(el => [5, 20].includes(el?.pay_type)).map(el => { return el[`${level_column}_amount`] })),
+                        withdraw_fail_amount: _.sum(user_data.filter(el => [5, 20].includes(el?.pay_type) && [10, 15].includes(el?.withdraw_status)).map(el => { return el[`${level_column}_amount`] })),
+                        manager_plus_amount: _.sum(user_data.filter(el => [25].includes(el?.pay_type)).map(el => { return el[`${level_column}_amount`] })),
+                        manager_minus_amount: _.sum(user_data.filter(el => [30].includes(el?.pay_type)).map(el => { return el[`${level_column}_amount`] })),
+                        withdraw_fee_amount: _.sum(user_data.filter(el => [5, 20].includes(el?.pay_type)).map(el => { return el[`withdraw_fee`] })),
+                    }
+                }
                 data.content = data.content.map(el => {
                     return {
                         ...el,
