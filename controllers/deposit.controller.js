@@ -157,7 +157,7 @@ const depositCtrl = {
                 if (s_dt) {
                     where_sql += ` AND ${table_name}.created_at >= '${s_dt} 00:00:00' `;
                 }
-                if (e_dt) {
+                if (e_dt && e_dt < returnMoment().substring(0, 10)) {
                     where_sql += ` AND ${table_name}.created_at <= '${e_dt} 23:59:59' `;
                 }
             }
