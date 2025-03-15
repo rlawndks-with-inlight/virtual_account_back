@@ -206,7 +206,6 @@ const userCtrl = {
                 sql += ` WHERE brand_id=${decode_dns?.id} `;
                 sql += ` AND ${level_column}_id IN (${data.content.map(el => { return el?.id })})`;
                 sql += ` GROUP BY ${level_column}_id, pay_type, withdraw_status `;
-                console.log(sql)
                 let amount_data = await readPool.query(sql);
                 amount_data = amount_data[0];
                 for (var i = 0; i < data.content.length; i++) {
