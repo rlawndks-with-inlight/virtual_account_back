@@ -127,9 +127,18 @@ const withdrawCtrl = {
             sql = sql.replaceAll(process.env.SELECT_COLUMN_SECRET, columns.join());
 
             let data = {};
-            let chart = await readPool.query(chart_sql);
-            chart = chart[0];
-            if (chart[0]?.total >= 1 * page_size) {
+            let chart = await redisCtrl.get(`withdraw_chart_${decode_user?.id}`);
+            let is_redis_chart_where_sql = await redisCtrl.get(`withdraw_chart_where_sql_${decode_user?.id}`);
+            if (is_redis_chart_where_sql == where_sql && chart) {
+                chart = JSON.parse(chart);
+            } else {
+                chart = await readPool.query(chart_sql);
+                chart = chart[0][0];
+                await redisCtrl.set(`withdraw_chart_where_sql_${decode_user?.id}`, where_sql, 60);
+                await redisCtrl.set(`withdraw_chart_${decode_user?.id}`, JSON.stringify(chart), 60);
+            }
+
+            if (chart?.total >= 1 * page_size) {
                 sql += ` LIMIT ${(page - 1) * page_size}, ${page_size} `;
             }
             let content = await readPool.query(sql);
@@ -147,7 +156,6 @@ const withdrawCtrl = {
                     }
                 }
             }
-            data.chart = data?.chart[0] ?? {};
             data = {
                 ...data,
                 total: data.chart?.total,
