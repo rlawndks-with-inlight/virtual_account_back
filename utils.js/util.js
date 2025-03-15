@@ -582,31 +582,35 @@ export const getMotherDeposit = async (decode_dns, is_detail) => {
     let data = await getMultipleQueryByWhen(sql_list);
 
     data['brand'] = data['brand'][0];
-    let sum_item = {
-        total_amount: _.sum(data?.sum.filter(el => (![15].includes(el?.pay_type)) && (![1].includes(el?.is_hand))).map(el => { return el?.amount })),
-        total_withdraw_fee: _.sum(data?.sum.filter(el => [0].includes(el?.withdraw_status)).map(el => { return el?.withdraw_fee })),
-        total_deposit_fee: _.sum(data?.sum.map(el => { return el?.deposit_fee })),
-        total_mcht_amount: _.sum(data?.sum.map(el => { return el?.mcht_amount })),
-        total_attempt_mcht_withdraw_amount: _.sum(data?.sum.filter(el => ![0].includes(el?.withdraw_status)).map(el => { return el?.mcht_amount })),
-        total_manager_mcht_give_amount: _.sum(data?.sum.filter(el => [25].includes(el?.pay_type)).map(el => { return el?.mcht_amount })),
-        total_deposit_amount: _.sum(data?.sum_daily.filter(el => [0].includes(el?.pay_type) && [0].includes(el?.deposit_status)).map(el => { return el?.amount })),
-        total_deposit_count: data?.sum_daily.filter(el => [0].includes(el?.pay_type) && [0].includes(el?.deposit_status)).length,
-        total_withdraw_count: data?.sum_daily.filter(el => [5, 20].includes(el?.pay_type) && [0].includes(el?.withdraw_status)).length,
-    };
-    for (var i = 0; i < operator_list.length; i++) {
-        sum_item[`total_sales${operator_list[i].num}_amount`] = _.sum(data?.sum.map(el => { return el[`sales${operator_list[i].num}_amount`] }));
-        sum_item[`total_attempt_sales${operator_list[i].num}_withdraw_amount`] = _.sum(data?.sum.filter(el => ![0].includes(el?.withdraw_status)).map(el => { return el[`sales${operator_list[i].num}_amount`] }));
-        sum_item[`total_manager_sales${operator_list[i].num}_give_amount`] = _.sum(data?.sum.filter(el => [25].includes(el?.pay_type)).map(el => { return el[`sales${operator_list[i].num}_amount`] }));
+    if (data?.sum) {
+        let sum_item = {
+            total_amount: _.sum(data?.sum.filter(el => (![15].includes(el?.pay_type)) && (![1].includes(el?.is_hand))).map(el => { return el?.amount })),
+            total_withdraw_fee: _.sum(data?.sum.filter(el => [0].includes(el?.withdraw_status)).map(el => { return el?.withdraw_fee })),
+            total_deposit_fee: _.sum(data?.sum.map(el => { return el?.deposit_fee })),
+            total_mcht_amount: _.sum(data?.sum.map(el => { return el?.mcht_amount })),
+            total_attempt_mcht_withdraw_amount: _.sum(data?.sum.filter(el => ![0].includes(el?.withdraw_status)).map(el => { return el?.mcht_amount })),
+            total_manager_mcht_give_amount: _.sum(data?.sum.filter(el => [25].includes(el?.pay_type)).map(el => { return el?.mcht_amount })),
+            total_deposit_amount: _.sum(data?.sum_daily.filter(el => [0].includes(el?.pay_type) && [0].includes(el?.deposit_status)).map(el => { return el?.amount })),
+            total_deposit_count: data?.sum_daily.filter(el => [0].includes(el?.pay_type) && [0].includes(el?.deposit_status)).length,
+            total_withdraw_count: data?.sum_daily.filter(el => [5, 20].includes(el?.pay_type) && [0].includes(el?.withdraw_status)).length,
+        };
+        for (var i = 0; i < operator_list.length; i++) {
+            sum_item[`total_sales${operator_list[i].num}_amount`] = _.sum(data?.sum.map(el => { return el[`sales${operator_list[i].num}_amount`] }));
+            sum_item[`total_attempt_sales${operator_list[i].num}_withdraw_amount`] = _.sum(data?.sum.filter(el => ![0].includes(el?.withdraw_status)).map(el => { return el[`sales${operator_list[i].num}_amount`] }));
+            sum_item[`total_manager_sales${operator_list[i].num}_give_amount`] = _.sum(data?.sum.filter(el => [25].includes(el?.pay_type)).map(el => { return el[`sales${operator_list[i].num}_amount`] }));
+        }
+        data['sum'] = sum_item;
+        data['sum'].total_oper_amount = 0;
+        data['sum'].total_attempt_oper_withdraw_amount = 0;
+        data['sum'].total_manager_oper_give_amount = 0;
+        for (var i = 0; i < operator_list.length; i++) {
+            data['sum'].total_oper_amount += data['sum'][`total_sales${operator_list[i].num}_amount`];
+            data['sum'].total_attempt_oper_withdraw_amount += data['sum'][`total_attempt_sales${operator_list[i].num}_withdraw_amount`];
+            data['sum'].total_manager_oper_give_amount += data['sum'][`total_manager_sales${operator_list[i].num}_give_amount`];
+        }
     }
-    data['sum'] = sum_item;
-    data['sum'].total_oper_amount = 0;
-    data['sum'].total_attempt_oper_withdraw_amount = 0;
-    data['sum'].total_manager_oper_give_amount = 0;
-    for (var i = 0; i < operator_list.length; i++) {
-        data['sum'].total_oper_amount += data['sum'][`total_sales${operator_list[i].num}_amount`];
-        data['sum'].total_attempt_oper_withdraw_amount += data['sum'][`total_attempt_sales${operator_list[i].num}_withdraw_amount`];
-        data['sum'].total_manager_oper_give_amount += data['sum'][`total_manager_sales${operator_list[i].num}_give_amount`];
-    }
+
+
     let real_amount = {
         data: {},
     }
