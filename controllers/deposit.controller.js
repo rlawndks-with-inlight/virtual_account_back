@@ -157,17 +157,8 @@ const depositCtrl = {
                 if (s_dt) {
                     where_sql += ` AND ${table_name}.created_at >= '${s_dt} 00:00:00' `;
                 }
-                if (e_dt) {
+                if (e_dt && e_dt < returnMoment().substring(0, 10)) {
                     where_sql += ` AND ${table_name}.created_at <= '${e_dt} 23:59:59' `;
-                }
-            }
-
-            if (decode_user?.level < 40) {
-                if (decode_user?.level == 10) {
-                    where_sql += ` AND ${table_name}.mcht_id=${decode_user?.id} `;
-                } else {
-                    let sales_num = _.find(operatorLevelList, { level: decode_user?.level })?.num;
-                    where_sql += ` AND ${table_name}.sales${sales_num}_id=${decode_user?.id} `;
                 }
             }
             if (is_mother) {
@@ -177,6 +168,14 @@ const depositCtrl = {
             }
             if (pay_type) {
                 where_sql += ` AND ${table_name}.pay_type=${pay_type} `
+            }
+            if (decode_user?.level < 40) {
+                if (decode_user?.level == 10) {
+                    where_sql += ` AND ${table_name}.mcht_id=${decode_user?.id} `;
+                } else {
+                    let sales_num = _.find(operatorLevelList, { level: decode_user?.level })?.num;
+                    where_sql += ` AND ${table_name}.sales${sales_num}_id=${decode_user?.id} `;
+                }
             }
             if (req.query?.mcht_id > 0) {
                 where_sql += ` AND ${table_name}.mcht_id=${req.query?.mcht_id} `;
