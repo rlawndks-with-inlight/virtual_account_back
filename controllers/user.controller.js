@@ -202,12 +202,23 @@ const userCtrl = {
                         */
                     ];
                 }
-                let sql = `SELECT ${columns.join()} FROM deposits `;
-                sql += ` WHERE brand_id=${decode_dns?.id} `;
-                sql += ` AND ${level_column}_id IN (${data.content.map(el => { return el?.id })})`;
-                sql += ` GROUP BY ${level_column}_id, pay_type, withdraw_status `;
-                let amount_data = await readPool.query(sql);
-                amount_data = amount_data[0];
+
+                let amount_data = [];
+                for (var i = 0; i < data.content.length / 3; i++) {
+                    let user_ids = data.content.map(el => { return el?.id }).slice(i * 3, (i + 1) * 3);
+                    if (user_ids.length > 0) {
+                        let sql = `SELECT ${columns.join()} FROM deposits `;
+                        sql += ` WHERE ${level_column}_id IN (${user_ids.join()})`;
+                        sql += ` GROUP BY ${level_column}_id, pay_type, withdraw_status `;
+                        let process_amount_data = await readPool.query(sql);
+                        process_amount_data = process_amount_data[0];
+                        amount_data = [
+                            ...amount_data,
+                            ...process_amount_data,
+                        ]
+                    }
+
+                }
                 for (var i = 0; i < data.content.length; i++) {
                     let user = data.content[i];
                     let user_data = amount_data.filter(el => el[`${level_column}_id`] == user?.id);
@@ -222,6 +233,7 @@ const userCtrl = {
                         withdraw_fee_amount: _.sum(user_data.filter(el => [5, 20].includes(el?.pay_type)).map(el => { return el[`withdraw_fee`] })),
                     }
                 }
+
                 data.content = data.content.map(el => {
                     return {
                         ...el,
