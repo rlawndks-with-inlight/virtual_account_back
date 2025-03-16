@@ -320,7 +320,7 @@ const userCtrl = {
             sql += ` LEFT JOIN virtual_accounts ON ${table_name}.virtual_account_id=virtual_accounts.id `;
             sql += ` LEFT JOIN members ON ${table_name}.member_id=members.id `;
             sql += ` WHERE ${table_name}.id=${id} AND (level < ${decode_user?.level} OR ${table_name}.id=${decode_user?.id})  `;
-            let data = await readPool.query(sql)
+            let data = await readPool.query(sql);
             data = data[0][0];
             delete data.user_pw;
             delete data.user_salt;

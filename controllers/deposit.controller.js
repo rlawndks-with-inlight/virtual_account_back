@@ -150,7 +150,8 @@ const depositCtrl = {
                 }
             }
 
-            let where_sql = ` WHERE ${table_name}.brand_id=${decode_dns?.id} `;
+            let where_sql = ` `;
+            let brand_where_sql = ` WHERE ${table_name}.brand_id=${decode_dns?.id}  `;
             if (s_dt == e_dt && s_dt == returnMoment().substring(0, 10)) {
                 where_sql += ` AND ${table_name}.created_at >= CURDATE() `;
             } else {
@@ -172,19 +173,25 @@ const depositCtrl = {
             if (decode_user?.level < 40) {
                 if (decode_user?.level == 10) {
                     where_sql += ` AND ${table_name}.mcht_id=${decode_user?.id} `;
+                    brand_where_sql = ` WHERE 1=1 `;
                 } else {
                     let sales_num = _.find(operatorLevelList, { level: decode_user?.level })?.num;
                     where_sql += ` AND ${table_name}.sales${sales_num}_id=${decode_user?.id} `;
+                    brand_where_sql = ` WHERE 1=1 `;
+                }
+            } else {
+                if (req.query?.mcht_id > 0) {
+                    where_sql += ` AND ${table_name}.mcht_id=${req.query?.mcht_id} `;
+                    brand_where_sql = ` WHERE 1=1 `;
+                }
+                for (var i = 0; i < operator_list.length; i++) {
+                    if (req.query[`sales${operator_list[i]?.num}_id`] > 0) {
+                        where_sql += ` AND ${table_name}.sales${operator_list[i]?.num}_id=${req.query[`sales${operator_list[i]?.num}_id`]} `;
+                        brand_where_sql = ` WHERE 1=1 `;
+                    }
                 }
             }
-            if (req.query?.mcht_id > 0) {
-                where_sql += ` AND ${table_name}.mcht_id=${req.query?.mcht_id} `;
-            }
-            for (var i = 0; i < operator_list.length; i++) {
-                if (req.query[`sales${operator_list[i]?.num}_id`] > 0) {
-                    where_sql += ` AND ${table_name}.sales${operator_list[i]?.num}_id=${req.query[`sales${operator_list[i]?.num}_id`]} `;
-                }
-            }
+            where_sql = brand_where_sql + where_sql;
             if (is_cancel) {
                 where_sql += ` AND ${table_name}.is_cancel=${is_cancel} `
             }
@@ -249,6 +256,7 @@ const depositCtrl = {
             if (chart?.total >= 1 * page_size) {
                 sql += ` LIMIT ${(page - 1) * page_size}, ${page_size} `;
             }
+
             let content = await readPool.query(sql);
             content = content[0];
             data = {
