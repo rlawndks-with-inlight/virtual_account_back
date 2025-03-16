@@ -2,7 +2,7 @@
 import _ from "lodash";
 import corpApi from "../utils.js/corp-util/index.js";
 import { checkIsManagerUrl, returnMoment } from "../utils.js/function.js";
-import { deleteQuery, getMultipleQueryByWhen, getSelectQuery, insertQuery, makeSearchQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
+import { deleteQuery, getMultipleQueryByWhen, getSelectQuery, insertQuery, makeSearchQuery, makeSearchQueryExact, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, commarNumber, generateRandomString, getMotherDeposit, getOperatorList, getReqIp, isItemBrandIdSameDnsId, lowLevelException, operatorLevelList, response, setWithdrawAmountSetting, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 import userCtrl from "./user.controller.js";
@@ -120,7 +120,7 @@ const withdrawCtrl = {
                 where_sql += ` AND ${table_name}.is_hand=${is_hand} `;
             }
             if (search) {
-                where_sql += makeSearchQuery(search_columns, search);
+                where_sql += makeSearchQueryExact(search_columns, search);
             }
 
             let chart_columns = [

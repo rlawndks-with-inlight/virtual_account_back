@@ -1,6 +1,6 @@
 'use strict';
 import { checkIsManagerUrl, returnMoment } from "../utils.js/function.js";
-import { deleteQuery, getSelectQuery, insertQuery, makeSearchQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
+import { deleteQuery, getSelectQuery, insertQuery, makeSearchQuery, makeSearchQueryExact, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, getNumberByPercent, isItemBrandIdSameDnsId, response, settingFiles, operatorLevelList, getOperatorList } from "../utils.js/util.js";
 import _ from 'lodash';
 import 'dotenv/config';
@@ -89,7 +89,7 @@ const settleCtrl = {
                 where_sql += ` AND ${table_name}.pay_type=${pay_type} `
             }
             if (search) {
-                where_sql += makeSearchQuery(search_columns, search);
+                where_sql += makeSearchQueryExact(search_columns, search);
             }
             //chart
             let chart_columns = [

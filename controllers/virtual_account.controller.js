@@ -2,7 +2,7 @@
 import axios from "axios";
 import corpApi from "../utils.js/corp-util/index.js";
 import { checkIsManagerUrl, returnMoment } from "../utils.js/function.js";
-import { deleteQuery, getSelectQuery, insertQuery, makeSearchQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
+import { deleteQuery, getSelectQuery, insertQuery, makeSearchQuery, makeSearchQueryExact, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, generateRandomString, isItemBrandIdSameDnsId, lowLevelException, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 import when from "when";
@@ -50,7 +50,7 @@ const virtualAccountCtrl = {
                 sql += ` AND ${table_name}.status=${status} `
             }
             if (search) {
-                sql += makeSearchQuery(search_columns, search);
+                sql += makeSearchQueryExact(search_columns, search);
             }
             let data = await getSelectQuery(sql, columns, req.query, [], decode_user, decode_dns);
 
