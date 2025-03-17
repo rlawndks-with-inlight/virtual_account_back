@@ -7,6 +7,7 @@ import { destructAutoVirtualAcct } from './destruct-auto-virtual-acct.js';
 import { onParentBrandSettle } from './parent-brand-settle.js';
 import { blockHackIp } from './block-hack-ip.js';
 import { payConfirmProcess } from './pay-confirm-process.js';
+import { onSettleTopOffer } from './settle-top-offer.js';
 
 const scheduleIndex = () => {
     schedule.scheduleJob('0 0/1 * * * *', async function () {
@@ -17,6 +18,7 @@ const scheduleIndex = () => {
             //destructAutoVirtualAcct();
             //pushDepositNoti();
             onParentBrandSettle(return_moment);
+            onSettleTopOffer(return_moment);
         }
         if (parseInt(process.env.INSTANCE_ID) == parseInt(process.env.instances) - 2) {
             popbillScraping();

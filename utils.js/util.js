@@ -937,6 +937,7 @@ export const setWithdrawAmountSetting = async (amount_ = 0, user_ = {}, dns_data
         return result;
     }
 }
+
 export function generateRandomString(length = 1) {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let randomString = '';

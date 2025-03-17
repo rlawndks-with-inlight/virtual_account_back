@@ -192,7 +192,8 @@ const userCtrl = {
                 if (decode_dns?.is_oper_dns == 1) {
                     columns = [
                         `SUM(${level_column}_amount) AS settle_amount`,
-                        `${level_column}_id`
+                        `${level_column}_id`,
+                        `pay_type`,
                     ];
                 } else {
                     columns = [
@@ -229,13 +230,42 @@ const userCtrl = {
 
                     }
                 }
+                if (decode_dns?.is_oper_dns == 1) {
+                    let temporary_level_column = `sales${_.find(operatorLevelList, { level: parseInt(level) }).num}`;
+                    let temporary_columns = [
+                        `${temporary_level_column}_id`,
+                        `SUM(${temporary_level_column}_amount) AS ${temporary_level_column}_amount`,
+                        `pay_type`,
+                    ];
+                    for (var i = 0; i < data.content.length / slice_num; i++) {
+                        let user_ids = data.content.map(el => { return el?.id }).slice(i * slice_num, (i + 1) * slice_num);
+                        if (user_ids.length > 0) {
+                            let sql = `SELECT ${temporary_columns.join()} FROM deposits `;
+                            sql += ` WHERE ${temporary_level_column}_id IN (${user_ids.join()})`;
+                            sql += ` AND brand_id=${decode_dns?.id} `;
+                            sql += ` GROUP BY ${temporary_level_column}_id, pay_type `;
+                            let process_amount_data = await readPool.query(sql);
+                            process_amount_data = process_amount_data[0];
+                            amount_data = [
+                                ...amount_data,
+                                ...process_amount_data,
+                            ]
+                        }
+                    }
+                    for (var i = 0; i < amount_data.length; i++) {
+                        if (amount_data[i][`${temporary_level_column}_id`]) {
+                            amount_data[i][`${level_column}_id`] = amount_data[i][`${temporary_level_column}_id`];
+                            amount_data[i][`${level_column}_amount`] = amount_data[i][`${temporary_level_column}_amount`];
+                        }
+                    }
+                }
+                console.log(amount_data)
                 /*
                 console.log(returnMoment());
                 amount_data = await Promise.all(amount_queries);
                 console.log(returnMoment());
                 amount_data = amount_data.flatMap(res => res[0]);   
                 */
-
 
                 for (var i = 0; i < data.content.length; i++) {
                     let user = data.content[i];

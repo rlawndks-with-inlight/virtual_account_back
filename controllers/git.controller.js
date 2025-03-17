@@ -64,7 +64,6 @@ const execSSH = (ssh_obj_ = {}) => {
         console.log(err)
         console.log(ssh_obj_?.dns)
     }
-
 }
 
 export default gitCtrl;
