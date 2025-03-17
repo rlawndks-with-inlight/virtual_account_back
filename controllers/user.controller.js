@@ -191,9 +191,8 @@ const userCtrl = {
                 let columns = [];
                 if (decode_dns?.is_oper_dns == 1) {
                     columns = [
-                        `SUM(${level_column}_amount) AS settle_amount`,
+                        `SUM(${level_column}_amount) AS ${level_column}_amount`,
                         `${level_column}_id`,
-                        `pay_type`,
                     ];
                 } else {
                     columns = [
@@ -230,8 +229,9 @@ const userCtrl = {
 
                     }
                 }
+                let temporary_level_column = '';
                 if (decode_dns?.is_oper_dns == 1) {
-                    let temporary_level_column = `sales${_.find(operatorLevelList, { level: parseInt(level) }).num}`;
+                    temporary_level_column = `sales${_.find(operatorLevelList, { level: parseInt(level) }).num}`;
                     let temporary_columns = [
                         `${temporary_level_column}_id`,
                         `SUM(${temporary_level_column}_amount) AS ${temporary_level_column}_amount`,
@@ -252,14 +252,7 @@ const userCtrl = {
                             ]
                         }
                     }
-                    for (var i = 0; i < amount_data.length; i++) {
-                        if (amount_data[i][`${temporary_level_column}_id`]) {
-                            amount_data[i][`${level_column}_id`] = amount_data[i][`${temporary_level_column}_id`];
-                            amount_data[i][`${level_column}_amount`] = amount_data[i][`${temporary_level_column}_amount`];
-                        }
-                    }
                 }
-                console.log(amount_data)
                 /*
                 console.log(returnMoment());
                 amount_data = await Promise.all(amount_queries);
@@ -270,18 +263,23 @@ const userCtrl = {
                 for (var i = 0; i < data.content.length; i++) {
                     let user = data.content[i];
                     let user_data = amount_data.filter(el => el[`${level_column}_id`] == user?.id);
+                    if (decode_dns?.is_oper_dns == 1) {
+                        user_data = [
+                            ...user_data,
+                            ...amount_data.filter(el => el[`${temporary_level_column}_id`] == user?.id)
+                        ]
+                    }
                     data.content[i] = {
                         ...data.content[i],
                         settle_amount: _.sum(user_data.map(el => { return el[`${level_column}_amount`] })),
                         deposit_amount: _.sum(user_data.filter(el => [0].includes(el?.pay_type)).map(el => { return el[`${level_column}_amount`] })),
                         withdraw_amount: _.sum(user_data.filter(el => [5, 20].includes(el?.pay_type)).map(el => { return el[`${level_column}_amount`] })),
                         withdraw_fail_amount: _.sum(user_data.filter(el => [5, 20].includes(el?.pay_type) && [10, 15].includes(el?.withdraw_status)).map(el => { return el[`${level_column}_amount`] })),
-                        manager_plus_amount: _.sum(user_data.filter(el => [25].includes(el?.pay_type)).map(el => { return el[`${level_column}_amount`] })),
-                        manager_minus_amount: _.sum(user_data.filter(el => [30].includes(el?.pay_type)).map(el => { return el[`${level_column}_amount`] })),
+                        manager_plus_amount: _.sum(user_data.filter(el => [25].includes(el?.pay_type)).map(el => { return el[`${decode_dns?.is_oper_dns == 1 ? temporary_level_column : level_column}_amount`] })),
+                        manager_minus_amount: _.sum(user_data.filter(el => [30].includes(el?.pay_type)).map(el => { return el[`${decode_dns?.is_oper_dns == 1 ? temporary_level_column : level_column}_amount`] })),
                         withdraw_fee_amount: _.sum(user_data.filter(el => [5, 20].includes(el?.pay_type)).map(el => { return el[`withdraw_fee`] })),
                     }
                 }
-
                 data.content = data.content.map(el => {
                     return {
                         ...el,
