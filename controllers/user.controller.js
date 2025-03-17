@@ -176,7 +176,11 @@ const userCtrl = {
                 content,
                 chart,
             }
-
+            let children_brands = [];
+            if (decode_dns?.is_oper_dns == 1) {
+                children_brands = await readPool.query(`SELECT id, name FROM brands WHERE sales_parent_id=${decode_dns?.id}`);
+                children_brands = children_brands[0];
+            }
             if (level && level < 40 && data.content.length > 0) {
                 let level_column = ``;
                 if (level == 10) {
@@ -193,6 +197,7 @@ const userCtrl = {
                     columns = [
                         `SUM(${level_column}_amount) AS ${level_column}_amount`,
                         `${level_column}_id`,
+                        `brand_id`
                     ];
                 } else {
                     columns = [
@@ -219,7 +224,10 @@ const userCtrl = {
                     if (user_ids.length > 0) {
                         let sql = `SELECT ${columns.join()} FROM deposits `;
                         sql += ` WHERE ${level_column}_id IN (${user_ids.join()})`;
-                        sql += ` GROUP BY ${level_column}_id, pay_type, withdraw_status `;
+                        sql += ` GROUP BY ${level_column}_id, pay_type, withdraw_status`;
+                        if (decode_dns?.is_oper_dns == 1) {
+                            sql += `, brand_id `;
+                        }
                         let process_amount_data = await readPool.query(sql);
                         process_amount_data = process_amount_data[0];
                         amount_data = [
@@ -269,6 +277,11 @@ const userCtrl = {
                             ...amount_data.filter(el => el[`${temporary_level_column}_id`] == user?.id)
                         ]
                     }
+                    let children_settles = {};
+                    for (var j = 0; j < children_brands.length; j++) {
+                        children_settles[`settle_amount_${children_brands[j]?.id}`] = _.sum(user_data.filter(el => el?.brand_id == children_brands[j]?.id).map(el => { return el[`${level_column}_amount`] }))
+                        children_settles[`withdraw_amount_${children_brands[j]?.id}`] = _.sum(user_data.filter(el => [5, 20].includes(el?.pay_type) && el?.brand_id == children_brands[j]?.id).map(el => { return el[`${level_column}_amount`] }))
+                    }
                     data.content[i] = {
                         ...data.content[i],
                         settle_amount: _.sum(user_data.map(el => { return el[`${level_column}_amount`] })),
@@ -278,6 +291,7 @@ const userCtrl = {
                         manager_plus_amount: _.sum(user_data.filter(el => [25].includes(el?.pay_type)).map(el => { return el[`${decode_dns?.is_oper_dns == 1 ? temporary_level_column : level_column}_amount`] })),
                         manager_minus_amount: _.sum(user_data.filter(el => [30].includes(el?.pay_type)).map(el => { return el[`${decode_dns?.is_oper_dns == 1 ? temporary_level_column : level_column}_amount`] })),
                         withdraw_fee_amount: _.sum(user_data.filter(el => [5, 20].includes(el?.pay_type)).map(el => { return el[`withdraw_fee`] })),
+                        ...children_settles,
                     }
                 }
                 data.content = data.content.map(el => {
@@ -292,6 +306,7 @@ const userCtrl = {
                 total: data.chart?.total,
                 page,
                 page_size,
+                children_brands,
             }
             return response(req, res, 100, "success", data);
         } catch (err) {

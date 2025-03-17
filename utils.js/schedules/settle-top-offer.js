@@ -30,11 +30,17 @@ export const onSettleTopOffer = async (return_moment = "") => {
             sendTelegramBot(TELEBOT_DATA, message, SEND_CHAT_IDS.filter(el => el?.level >= 40).map(el => { return el.id }));
             return;
         }
-
+        if (virtual_accounts.length > 0) {
+            onProcessSettle(virtual_accounts);
+        }
     } catch (err) {
         console.log(err);
     }
 }
-const onProcessSettle = (virtual_accounts) => {
+const onProcessSettle = async (virtual_accounts = []) => {
+    try {
 
+    } catch (err) {
+
+    }
 }
