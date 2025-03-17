@@ -6,7 +6,8 @@ import { checkDns, checkLevel, createHashedPassword, generateRandomString, getMo
 import 'dotenv/config';
 import corpApi from "../utils.js/corp-util/index.js";
 import speakeasy from 'speakeasy';
-import { readPool } from "../config/db-pool.js";
+import { readPool, writePool } from "../config/db-pool.js";
+import redisCtrl from "../redis/index.js";
 const table_name = 'brands';
 
 const brandCtrl = {
@@ -262,7 +263,34 @@ const brandCtrl = {
                 }
             }
             let result = await updateQuery(`${table_name}`, obj, id);
-
+            let mcht_ids = [];
+            if (ago_brand?.is_use_fee_operator == 0 && obj?.is_use_fee_operator == 1 ||
+                ago_brand?.is_use_deposit_operator == 0 && obj?.is_use_deposit_operator == 1 ||
+                ago_brand?.is_use_withdraw_operator == 0 && obj?.is_use_withdraw_operator == 1
+            ) {
+                let mchts = await readPool.query(`SELECT id FROM users WHERE brand_id=${id} AND level=10`);
+                mchts = mchts[0];
+                mcht_ids = mchts.map(el => { return el?.id });
+            }
+            if (mcht_ids.length > 0) {
+                if (ago_brand?.is_use_fee_operator == 0 && obj?.is_use_fee_operator == 1) {
+                    let update_mcht_columns = await writePool.query(`UPDATE merchandise_columns SET mcht_fee=? WHERE mcht_id IN (${mcht_ids.join()})`, [head_office_fee]);
+                    for (var i = 0; i < 6; i++) {
+                        let update_mcht_columns_opers = await writePool.query(`UPDATE merchandise_columns SET sales${i}_fee=? WHERE mcht_id IN (${mcht_ids.join()}) AND sales${i}_id > 0`, [head_office_fee]);
+                    }
+                }
+                if (ago_brand?.is_use_deposit_operator == 0 && obj?.is_use_deposit_operator == 1) {
+                    for (var i = 0; i < 6; i++) {
+                        let update_mcht_columns_opers = await writePool.query(`UPDATE merchandise_columns SET sales${i}_deposit_fee=? WHERE mcht_id IN (${mcht_ids.join()}) AND sales${i}_id > 0`, [default_deposit_fee]);
+                    }
+                }
+                if (ago_brand?.is_use_withdraw_operator == 0 && obj?.is_use_withdraw_operator == 1) {
+                    for (var i = 0; i < 6; i++) {
+                        let update_mcht_columns_opers = await writePool.query(`UPDATE merchandise_columns SET sales${i}_withdraw_fee=? WHERE mcht_id IN (${mcht_ids.join()}) AND sales${i}_id > 0`, [default_withdraw_fee]);
+                    }
+                }
+            }
+            await redisCtrl.delete(`brand_${dns}`);
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
