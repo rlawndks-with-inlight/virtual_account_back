@@ -706,6 +706,7 @@ export const settingMchtFee = async (decode_dns, user_id, body, is_oper_dns) => 
                     }
                 }
                 if (body[`${oper_label}${operator_list[i]?.num}_withdraw_fee`] < mother_withdraw_fee && decode_dns?.is_use_withdraw_operator == 1) {
+                    console.log(1)
                     return {
                         data: {},
                         code: -100,
@@ -726,7 +727,7 @@ export const settingMchtFee = async (decode_dns, user_id, body, is_oper_dns) => 
             mcht_obj[`${oper_label}${operator_list[i]?.num}_deposit_fee`] = body[`${oper_label}${operator_list[i]?.num}_deposit_fee`] ?? 0;
         }
         down_user = is_oper_dns ? `본사` : '가맹점';
-        if (deposit_fee < mother_deposit_fee && decode_dns?.is_use_deposit_operator == 1) {
+        if (parseFloat(deposit_fee) < parseFloat(mother_deposit_fee) && decode_dns?.is_use_deposit_operator == 1) {
             return {
                 data: {},
                 code: -100,
@@ -744,7 +745,7 @@ export const settingMchtFee = async (decode_dns, user_id, body, is_oper_dns) => 
                 type: 'fee',
             }
         }
-        if (withdraw_fee < mother_withdraw_fee && decode_dns?.is_use_withdraw_operator == 1) {
+        if (parseFloat(withdraw_fee) < parseFloat(mother_withdraw_fee) && decode_dns?.is_use_withdraw_operator == 1) {
             return {
                 data: {},
                 code: -100,
