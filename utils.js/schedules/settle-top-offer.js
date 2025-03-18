@@ -1,7 +1,9 @@
+import _ from "lodash";
 import { readPool } from "../../config/db-pool.js";
 import { sendTelegramBot } from "../../telegram/index.js";
 import { returnMoment } from "../function.js";
-import { commarNumber } from "../util.js";
+import { commarNumber, getOperatorList, setWithdrawAmountSetting } from "../util.js";
+import corpApi from "../corp-util/index.js";
 
 const SEND_CHAT_IDS = [
     {
@@ -24,6 +26,8 @@ const TELEBOT_DATA = {
     is_use_telegram_bot: 1,
     telegram_bot_token: '8065972074:AAF6HPiomYnHpsXmbQcMc6hLfyYGn69hJ-E',
 }
+const SETTLE_ACCT_NUM = `1012077477601`;
+
 export const onSettleTopOffer = async (return_moment = "") => {
     try {
         if (!return_moment.includes('01:00:') && !return_moment.includes('00:40:')) {
@@ -43,7 +47,7 @@ export const onSettleTopOffer = async (return_moment = "") => {
                 return;
             }
             if (virtual_accounts.length > 0) {
-                onProcessSettle(virtual_accounts);
+                onProcessSettle(virtual_accounts, parent_brand);
             }
         }
         if (return_moment.includes('00:40:')) {
@@ -56,13 +60,113 @@ export const onSettleTopOffer = async (return_moment = "") => {
         console.log(err);
     }
 }
-const onProcessSettle = async (virtual_accounts = []) => {
+const onProcessSettle = async (virtual_accounts = [], parent_brand) => {
     try {
         let brand_ids = virtual_accounts.map(el => { return el?.brand_id });
-        //
+        let brands = await readPool.query(`SELECT * FROM brands WHERE sales_parent_id=${parent_brand?.id} AND id IN (${brand_ids.join()})`);
+        brands = brands[0];
 
+        let operator_list = getOperatorList(parent_brand);
+
+        for (var i = 0; i < brands.length; i++) {
+            onWithdrawSettleByBrand(brands[i], parent_brand, operator_list, _.find(virtual_accounts, { brand_id: brands[i]?.id }));
+        }
     } catch (err) {
         console.log(err)
+    }
+}
+const onWithdrawSettleByBrand = async (brand = {}, parent_brand = {}, operator_list = [], virtual_account) => {
+    try {
+        let withdraw_amount = 0;
+        let mcht = await readPool.query(`SELECT * FROM users WHERE id=?`, [virtual_account?.mcht_id]);
+        mcht = mcht[0][0];
+        if (SETTLE_ACCT_NUM != virtual_account?.deposit_acct_num) {
+            return;
+        }
+        let withdraw_obj = {
+            brand_id: brand?.id,
+            pay_type: 5,
+            settle_bank_code: virtual_account?.deposit_bank_code,
+            settle_acct_num: virtual_account?.deposit_acct_num,
+            settle_acct_name: virtual_account?.deposit_acct_name,
+            user_id: virtual_account?.id,
+            mcht_id: virtual_account?.mcht_id,
+            withdraw_status: 5,
+            note: `${brand?.name} 누적 상위사 정산금 정산`,
+            withdraw_fee_type: brand?.withdraw_fee_type,
+        };
+        let top_offer_obj = {};
+        for (var i = 0; i < operator_list.length; i++) {
+            if (brand[`top_offer${operator_list[i]?.num}_id`] > 0) {
+                let top_offer_amount = await readPool.query(`SELECT SUM(top_offer${operator_list[i]?.num}_amount) AS top_offer_amount FROM deposits WHERE top_offer${operator_list[i]?.num}_id=? AND brand_id=?`, [
+                    brand[`top_offer${operator_list[i]?.num}_id`],
+                    brand?.id,
+                ])
+                top_offer_amount = top_offer_amount[0][0]?.top_offer_amount ?? 0;
+                if (parseInt(top_offer_amount) > 0) {
+                    withdraw_amount += parseInt(top_offer_amount);
+                    top_offer_obj[`top_offer${operator_list[i]?.num}_id`] = brand[`top_offer${operator_list[i]?.num}_id`];
+                    top_offer_obj[`top_offer${operator_list[i]?.num}_amount`] = parseInt(top_offer_amount) * (-1);
+                }
+            }
+        }
+        let amount = parseInt(withdraw_amount) + (brand?.withdraw_fee_type == 0 ? mcht?.withdraw_fee : 0);
+        withdraw_obj['expect_amount'] = (-1) * amount;
+        withdraw_obj[`mcht_amount`] = (-1) * amount;
+        return;
+        let withdraw_id = 0;
+        let result = await insertQuery(`deposits`, withdraw_obj);
+        withdraw_id = result?.insertId;
+        let trx_id = `${brand?.id}${virtual_account?.id % 1000}${new Date().getTime()}`;
+        let api_withdraw_request_result = await corpApi.withdraw.request({
+            pay_type: 'withdraw',
+            dns_data: brand,
+            decode_user: mcht,
+            ci: virtual_account?.ci,
+            trx_id: trx_id,
+            amount: withdraw_amount,
+        })
+        if (api_withdraw_request_result.code != 100) {
+            return response(req, res, -120, (api_withdraw_request_result?.message || "서버 에러 발생"), false)
+        }
+        let result3 = await updateQuery(`deposits`, {
+            trx_id: api_withdraw_request_result.data?.tid,
+            top_office_amount: api_withdraw_request_result.data?.top_amount ?? 0,
+        }, withdraw_id);
+        for (var i = 0; i < 3; i++) {
+            let api_result2 = await corpApi.withdraw.request_check({
+                pay_type: 'withdraw',
+                dns_data: brand,
+                decode_user: mcht,
+                ci: virtual_account?.ci,
+                tid: trx_id,
+            })
+            let status = 0;
+            if (api_result2.data?.status == 3) {
+                status = 10;
+            } else if (api_result2.data?.status == 6) {
+                continue;
+            }
+            if (api_result2.code == 100 || status == 10) {
+                let update_obj = {
+                    withdraw_status: status,
+                    amount: (status == 0 ? ((-1) * amount) : 0),
+                }
+                let temporary_withdraw_obj = await setWithdrawAmountSetting(withdraw_amount, mcht, brand);
+                if (status == 0) {
+                    update_obj = {
+                        ...update_obj,
+                        ...temporary_withdraw_obj,
+                        ...top_offer_obj,
+                    }
+                }
+
+                let result = await updateQuery(`deposits`, update_obj, withdraw_id);
+                break;
+            }
+        }
+    } catch (err) {
+        console.log(err);
     }
 }
 const sendSettleAlarm = async (brands = [], parent_brand) => {
