@@ -5,6 +5,7 @@ import { returnMoment } from "../function.js";
 import { commarNumber, getOperatorList, setWithdrawAmountSetting } from "../util.js";
 import corpApi from "../corp-util/index.js";
 import logger from "../winston/index.js";
+import { insertQuery, updateQuery } from "../query-util.js";
 
 const SEND_CHAT_IDS = [
     {
