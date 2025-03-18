@@ -26,7 +26,7 @@ const TELEBOT_DATA = {
 }
 export const onSettleTopOffer = async (return_moment = "") => {
     try {
-        if (!return_moment.includes('01:00:') && !return_moment.includes('00:01:')) {
+        if (!return_moment.includes('01:00:') && !return_moment.includes('00:40:')) {
             return;
         }
         let virtual_accounts = await readPool.query(`SELECT * FROM virtual_accounts WHERE is_use_settle_top_offer=1`);
@@ -46,7 +46,7 @@ export const onSettleTopOffer = async (return_moment = "") => {
                 onProcessSettle(virtual_accounts);
             }
         }
-        if (return_moment.includes('00:01:')) {
+        if (return_moment.includes('00:40:')) {
             let brands = await readPool.query(`SELECT id, name FROM brands WHERE sales_parent_id=${parent_brand?.id}`);
             brands = brands[0];
             sendSettleAlarm(brands, parent_brand);
@@ -65,7 +65,7 @@ const onProcessSettle = async (virtual_accounts = []) => {
         console.log(err)
     }
 }
-const sendSettleAlarm = async (brands = []) => {
+const sendSettleAlarm = async (brands = [], parent_brand) => {
     try {
         for (var i = 0; i < brands.length; i++) {
             let chart_data = await getSettleDataByBrand(brands[i]);
