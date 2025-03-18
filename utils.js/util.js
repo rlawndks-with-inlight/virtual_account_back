@@ -706,7 +706,6 @@ export const settingMchtFee = async (decode_dns, user_id, body, is_oper_dns) => 
                     }
                 }
                 if (body[`${oper_label}${operator_list[i]?.num}_withdraw_fee`] < mother_withdraw_fee && decode_dns?.is_use_withdraw_operator == 1) {
-                    console.log(1)
                     return {
                         data: {},
                         code: -100,
