@@ -263,12 +263,14 @@ const brandCtrl = {
                 }
             }
             let result = await updateQuery(`${table_name}`, obj, id);
+
+            let mchts = [];
             let mcht_ids = [];
             if (ago_brand?.is_use_fee_operator == 0 && obj?.is_use_fee_operator == 1 ||
                 ago_brand?.is_use_deposit_operator == 0 && obj?.is_use_deposit_operator == 1 ||
                 ago_brand?.is_use_withdraw_operator == 0 && obj?.is_use_withdraw_operator == 1
             ) {
-                let mchts = await readPool.query(`SELECT id FROM users WHERE brand_id=${id} AND level=10`);
+                mchts = await readPool.query(`SELECT id, deposit_fee, withdraw_fee FROM users WHERE brand_id=${id} AND level=10`);
                 mchts = mchts[0];
                 mcht_ids = mchts.map(el => { return el?.id });
             }
@@ -280,13 +282,18 @@ const brandCtrl = {
                     }
                 }
                 if (ago_brand?.is_use_deposit_operator == 0 && obj?.is_use_deposit_operator == 1) {
-                    for (var i = 0; i < 6; i++) {
-                        let update_mcht_columns_opers = await writePool.query(`UPDATE merchandise_columns SET sales${i}_deposit_fee=? WHERE mcht_id IN (${mcht_ids.join()}) AND sales${i}_id > 0`, [default_deposit_fee]);
+                    for (var i = 0; i < mchts.length; i++) {
+                        let deposit_fee = mchts[i]?.deposit_fee > default_deposit_fee ? mchts[i]?.deposit_fee : default_deposit_fee;
+                        let sales_nums = [5, 4, 3, 2, 1, 0];
+                        let update_mcht_columns_opers = await writePool.query(`UPDATE merchandise_columns SET ${sales_nums.map(el => { return `sales${el}_deposit_fee=?` }).join()} WHERE mcht_id=${mchts[i]?.id}`, sales_nums.map(el => { return deposit_fee }));
                     }
+
                 }
                 if (ago_brand?.is_use_withdraw_operator == 0 && obj?.is_use_withdraw_operator == 1) {
-                    for (var i = 0; i < 6; i++) {
-                        let update_mcht_columns_opers = await writePool.query(`UPDATE merchandise_columns SET sales${i}_withdraw_fee=? WHERE mcht_id IN (${mcht_ids.join()}) AND sales${i}_id > 0`, [default_withdraw_fee]);
+                    for (var i = 0; i < mchts.length; i++) {
+                        let withdraw_fee = mchts[i]?.withdraw_fee > default_withdraw_fee ? mchts[i]?.withdraw_fee : default_withdraw_fee;
+                        let sales_nums = [5, 4, 3, 2, 1, 0];
+                        let update_mcht_columns_opers = await writePool.query(`UPDATE merchandise_columns SET ${sales_nums.map(el => { return `sales${el}_withdraw_fee=?` }).join()} WHERE mcht_id=${mchts[i]?.id}`, sales_nums.map(el => { return withdraw_fee }));
                     }
                 }
             }
