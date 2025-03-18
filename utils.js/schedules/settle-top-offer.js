@@ -4,6 +4,7 @@ import { sendTelegramBot } from "../../telegram/index.js";
 import { returnMoment } from "../function.js";
 import { commarNumber, getOperatorList, setWithdrawAmountSetting } from "../util.js";
 import corpApi from "../corp-util/index.js";
+import logger from "../winston/index.js";
 
 const SEND_CHAT_IDS = [
     {
@@ -113,7 +114,6 @@ const onWithdrawSettleByBrand = async (brand = {}, parent_brand = {}, operator_l
         let amount = parseInt(withdraw_amount) + (brand?.withdraw_fee_type == 0 ? mcht?.withdraw_fee : 0);
         withdraw_obj['expect_amount'] = (-1) * amount;
         withdraw_obj[`mcht_amount`] = (-1) * amount;
-        return;
         let withdraw_id = 0;
         let result = await insertQuery(`deposits`, withdraw_obj);
         withdraw_id = result?.insertId;
@@ -127,7 +127,7 @@ const onWithdrawSettleByBrand = async (brand = {}, parent_brand = {}, operator_l
             amount: withdraw_amount,
         })
         if (api_withdraw_request_result.code != 100) {
-            return response(req, res, -120, (api_withdraw_request_result?.message || "서버 에러 발생"), false)
+            logger.error('출금 시도중 에러1 ' + `${JSON.stringify(api_withdraw_request_result)}`)
         }
         let result3 = await updateQuery(`deposits`, {
             trx_id: api_withdraw_request_result.data?.tid,
@@ -160,8 +160,13 @@ const onWithdrawSettleByBrand = async (brand = {}, parent_brand = {}, operator_l
                         ...top_offer_obj,
                     }
                 }
-
                 let result = await updateQuery(`deposits`, update_obj, withdraw_id);
+                if (status == 0) {
+                    logger.info(`상위사 정산 출금이 완료됨`);
+                    let message = `${brand?.name} 정산 출금이 완료됨\n`;
+                    message += `${commarNumber(withdraw_amount)}원`
+                    sendTelegramBot(TELEBOT_DATA, message, SEND_CHAT_IDS.filter(el => el?.level >= 40).map(el => { return el.id }));
+                }
                 break;
             }
         }
