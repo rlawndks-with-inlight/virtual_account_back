@@ -50,6 +50,8 @@ const userCtrl = {
                 `${table_name}.last_login_time`,
                 `${table_name}.connected_ip`,
                 `${table_name}.status`,
+                `${table_name}.deposit_fee`,
+                `${table_name}.withdraw_fee`,
                 `merchandise_columns.mcht_fee`,
                 `brands.name AS brand_name`,
                 `brands.dns`,
@@ -203,7 +205,7 @@ const userCtrl = {
                     columns = [
                         `${level_column}_id`,
                         `SUM(${level_column}_amount) AS ${level_column}_amount`,
-                        `SUM(withdraw_fee) AS withdraw_fee`,
+                        `SUM(withdraw_fee) AS withdraw_fee_amount`,
                         `pay_type`,
                         `withdraw_status`,
                         /*
@@ -290,7 +292,7 @@ const userCtrl = {
                         withdraw_fail_amount: _.sum(user_data.filter(el => [5, 20].includes(el?.pay_type) && [10, 15].includes(el?.withdraw_status)).map(el => { return el[`${level_column}_amount`] })),
                         manager_plus_amount: _.sum(user_data.filter(el => [25].includes(el?.pay_type)).map(el => { return el[`${decode_dns?.is_oper_dns == 1 ? temporary_level_column : level_column}_amount`] })),
                         manager_minus_amount: _.sum(user_data.filter(el => [30].includes(el?.pay_type)).map(el => { return el[`${decode_dns?.is_oper_dns == 1 ? temporary_level_column : level_column}_amount`] })),
-                        withdraw_fee_amount: _.sum(user_data.filter(el => [5, 20].includes(el?.pay_type)).map(el => { return el[`withdraw_fee`] })),
+                        withdraw_fee_amount: _.sum(user_data.filter(el => [5, 20].includes(el?.pay_type)).map(el => { return el[`withdraw_fee_amount`] })),
                         ...children_settles,
                     }
                 }
