@@ -191,6 +191,9 @@ export const response = async (req, res, code, message, data) => { //응답 포�
         'message': message,
         'data': data,
     }
+    if (req?.IS_RETURN) {
+        return resDict;
+    }
     const decode_user = await checkLevel(req.cookies.token, 0, req, true)
     const decode_dns = checkDns(req.cookies.dns, 0)
     if (req.originalUrl?.includes('/auth') || req.method == 'DELETE' || req.method == 'POST' || req.method == 'PUT' || req.query?.page_size >= 500 || code < 0) {

@@ -8,6 +8,7 @@ import { onParentBrandSettle } from './parent-brand-settle.js';
 import { blockHackIp } from './block-hack-ip.js';
 import { payConfirmProcess } from './pay-confirm-process.js';
 import { onSettleTopOffer } from './settle-top-offer.js';
+import { onDailyCleanVirtualAccountNotUseTwoWeeks } from './daily-clean-virtual-account-not-use-twoweeks.js';
 
 const scheduleIndex = () => {
     schedule.scheduleJob('0 0/1 * * * *', async function () {
@@ -19,6 +20,7 @@ const scheduleIndex = () => {
             //pushDepositNoti();
             onParentBrandSettle(return_moment);
             onSettleTopOffer(return_moment);
+            onDailyCleanVirtualAccountNotUseTwoWeeks(return_moment)
         }
         if (parseInt(process.env.INSTANCE_ID) == parseInt(process.env.instances) - 2) {
             popbillScraping();
