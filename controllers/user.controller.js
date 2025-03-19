@@ -199,7 +199,8 @@ const userCtrl = {
                     columns = [
                         `SUM(${level_column}_amount) AS ${level_column}_amount`,
                         `${level_column}_id`,
-                        `brand_id`
+                        `brand_id`,
+                        `pay_type`
                     ];
                 } else {
                     columns = [

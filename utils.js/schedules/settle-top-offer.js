@@ -62,7 +62,6 @@ export const onSettleTopOffer = async (return_moment = "") => {
         console.log(err);
     }
 }
-
 const onProcessSettle = async (virtual_accounts = [], parent_brand) => {
     try {
         let brand_ids = virtual_accounts.map(el => { return el?.brand_id });
@@ -164,7 +163,7 @@ const onWithdrawSettleByBrand = async (brand = {}, parent_brand = {}, operator_l
                 }
                 let result = await updateQuery(`deposits`, update_obj, withdraw_id);
                 if (status == 0) {
-                    logger.info(`상위사 정산 출금이 완료됨`);
+                    logger.info(`${brand?.name} 정산 출금이 완료됨`);
                     let message = `${brand?.name} 정산 출금이 완료됨\n`;
                     message += `${commarNumber(withdraw_amount)}원`
                     sendTelegramBot(TELEBOT_DATA, message, SEND_CHAT_IDS.filter(el => el?.level >= 40).map(el => { return el.id }));
