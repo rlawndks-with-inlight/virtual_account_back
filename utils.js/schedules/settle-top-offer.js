@@ -91,7 +91,7 @@ const onWithdrawSettleByBrand = async (brand = {}, parent_brand = {}, operator_l
             settle_bank_code: virtual_account?.deposit_bank_code,
             settle_acct_num: virtual_account?.deposit_acct_num,
             settle_acct_name: virtual_account?.deposit_acct_name,
-            user_id: virtual_account?.id,
+            user_id: virtual_account?.mcht_id,
             mcht_id: virtual_account?.mcht_id,
             withdraw_status: 5,
             note: `${brand?.name} 누적 상위사 정산금 정산`,
