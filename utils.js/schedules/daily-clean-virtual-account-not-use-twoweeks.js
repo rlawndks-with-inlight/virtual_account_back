@@ -21,9 +21,7 @@ export const onDailyCleanVirtualAccountNotUseTwoWeeks = async (return_moment) =>
         console.log(err);
     }
 }
-if (parseInt(process.env.INSTANCE_ID) == parseInt(process.env.instances) - 1) {
-    onDailyCleanVirtualAccountNotUseTwoWeeks(`02:00:`)
-}
+
 const onProcessClean = async (brand = {}, left_2_weeks_deposit = {}) => {
     try {
         let not_use_virtual_accounts = await readPool.query(`SELECT * FROM virtual_accounts WHERE brand_id=${brand?.id} AND is_delete=0 AND id NOT IN (SELECT virtual_account_id FROM deposits WHERE brand_id=${brand?.id} AND id >=${left_2_weeks_deposit?.id} AND virtual_account_id > 0) ORDER BY id ASC`);
