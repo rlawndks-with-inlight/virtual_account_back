@@ -62,6 +62,7 @@ export const onSettleTopOffer = async (return_moment = "") => {
         console.log(err);
     }
 }
+
 const onProcessSettle = async (virtual_accounts = [], parent_brand) => {
     try {
         let brand_ids = virtual_accounts.map(el => { return el?.brand_id });
