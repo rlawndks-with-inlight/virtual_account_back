@@ -28,11 +28,11 @@ const onProcessClean = async (brand = {}, left_2_weeks_deposit = {}) => {
     for (var i = 0; i < not_use_virtual_accounts.length / 100; i++) {
         let process_list = not_use_virtual_accounts.slice(i * 100, (i + 1) * 100);
         let result_list = [];
-        for (var j = 0; i < process_list.length; i++) {
-            result_list.push(virtualAccountCtrl.remove({ params: { id: process_list[i]?.id }, IS_RETURN: true, dns_data: brand }, {}));
+        for (var j = 0; j < process_list.length; j++) {
+            result_list.push(virtualAccountCtrl.remove({ params: { id: process_list[j]?.id }, IS_RETURN: true, dns_data: brand }, {}));
         }
-        for (var i = 0; i < result_list.length; i++) {
-            await result_list[i];
+        for (var j = 0; j < result_list.length; j++) {
+            await result_list[j];
         }
         let result = (await when(result_list));
         break;
