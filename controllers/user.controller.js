@@ -133,7 +133,14 @@ const userCtrl = {
             if (level_list.length > 0) {
                 where_sql += ` AND ${table_name}.level IN (${level_list}) `;
             }
-            where_sql += ` AND ${table_name}.is_delete=0 `
+            where_sql += ` AND ${table_name}.is_delete=0 `;
+            if (decode_user?.level >= 40) {
+                for (var i = 0; i < operator_list.length; i++) {
+                    if (req.query[`sales${operator_list[i]?.num}_id`] > 0) {
+                        where_sql += ` AND merchandise_columns.sales${operator_list[i]?.num}_id=${req.query[`sales${operator_list[i]?.num}_id`]} `;
+                    }
+                }
+            }
             if (search) {
                 let search_columns = [
                     `${table_name}.user_name`,
