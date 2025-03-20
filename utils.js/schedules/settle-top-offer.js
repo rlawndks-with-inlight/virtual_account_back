@@ -126,6 +126,7 @@ const onWithdrawSettleByBrand = async (brand = {}, parent_brand = {}, operator_l
             mcht_id: virtual_account?.mcht_id,
             mcht_amount: amount,
         });
+        let manager_plus_id = manager_plus_result?.insertId;
         let result = await insertQuery(`deposits`, withdraw_obj);
         withdraw_id = result?.insertId;
         let trx_id = `${brand?.id}${virtual_account?.id % 1000}${new Date().getTime()}`;
