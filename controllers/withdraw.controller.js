@@ -469,6 +469,7 @@ const withdrawCtrl = {
                         tid,
                         is_mother: 1,
                     })
+                    console.log(api_result2)
                     let status = 0;
                     if (api_result2.data?.status == 3) {
                         status = 10;
