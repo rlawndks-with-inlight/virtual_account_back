@@ -391,7 +391,6 @@ const withdrawV5Ctrl = {
                 tid,
                 ci: ci,
             })
-            console.log(api_result);
             let status = 0;
             if (api_result.data?.status == 3) {
                 status = 10;
