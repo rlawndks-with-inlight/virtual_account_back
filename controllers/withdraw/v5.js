@@ -410,8 +410,6 @@ const withdrawV5Ctrl = {
                         ...withdraw_obj,
                     }
                 }
-                console.log(update_obj)
-                return;
                 let result = await updateQuery(`deposits`, update_obj, trx?.id)
 
                 return response(req, res, 100, "success", {})
