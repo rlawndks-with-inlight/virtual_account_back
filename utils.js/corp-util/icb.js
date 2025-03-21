@@ -646,6 +646,7 @@ export const icbApi = {
                     pay_type,
                     ci,
                     tid,
+                    is_mother = 0,
                 } = data;
                 let timestamp = await returnMoment().replaceAll(' ', '').replaceAll('-', '').replaceAll(':', '')
 
@@ -654,7 +655,11 @@ export const icbApi = {
                     memKey: ci,
                     partnerTrxNos: tid,
                 }
+
                 let uri = `/v3/merchant/settle/member/inquiry`;
+                if (is_mother == 1) {
+                    uri = `/v3/merchant/settle/inquiry`;
+                }
                 if (dns_data?.deposit_process_type == 1) {
                     uri = `/v2/merchant/settle/inquiry`;
                 }
