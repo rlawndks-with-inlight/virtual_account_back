@@ -403,15 +403,14 @@ const withdrawV5Ctrl = {
                     withdraw_status: status,
                     amount: (status == 0 ? trx?.expect_amount : 0),
                 }
-                let withdraw_obj = await setWithdrawAmountSetting(trx?.expect_amount * (-1) - (user?.withdraw_fee ?? 0), user ?? {}, dns_data)
-                if (status == 0) {
+                let withdraw_obj = await setWithdrawAmountSetting(trx?.expect_amount * (-1) - user?.withdraw_fee, user, dns_data)
+                if (status == 0 && trx?.pay_type != 10) {
                     update_obj = {
                         ...update_obj,
                         ...withdraw_obj,
                     }
                 }
                 console.log(update_obj)
-                console.log(trx?.id)
                 return;
                 let result = await updateQuery(`deposits`, update_obj, trx?.id)
 
