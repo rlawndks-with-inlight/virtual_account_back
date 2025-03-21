@@ -390,7 +390,7 @@ const withdrawV5Ctrl = {
                 date: returnMoment(trx?.created_at).substring(0, 10).replaceAll('-', ''),
                 tid,
                 ci: ci,
-                is_mother: 1,
+                is_mother: trx?.pay_type == 10 ? 1 : 0,
             })
             let status = 0;
             if (api_result.data?.status == 3) {
