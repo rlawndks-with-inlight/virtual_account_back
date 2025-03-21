@@ -390,6 +390,7 @@ const withdrawV5Ctrl = {
                 date: returnMoment(trx?.created_at).substring(0, 10).replaceAll('-', ''),
                 tid,
                 ci: ci,
+                is_mother: 1,
             })
             let status = 0;
             if (api_result.data?.status == 3) {
