@@ -392,7 +392,6 @@ const withdrawV5Ctrl = {
                 ci: ci,
             })
             console.log(api_result);
-            return;
             let status = 0;
             if (api_result.data?.status == 3) {
                 status = 10;
@@ -404,13 +403,14 @@ const withdrawV5Ctrl = {
                     withdraw_status: status,
                     amount: (status == 0 ? trx?.expect_amount : 0),
                 }
-                let withdraw_obj = await setWithdrawAmountSetting(trx?.expect_amount * (-1) - user?.withdraw_fee, user, dns_data)
+                let withdraw_obj = await setWithdrawAmountSetting(trx?.expect_amount * (-1) - (user?.withdraw_fee ?? 0), user ?? {}, dns_data)
                 if (status == 0) {
                     update_obj = {
                         ...update_obj,
                         ...withdraw_obj,
                     }
                 }
+                return;
                 let result = await updateQuery(`deposits`, update_obj, trx?.id)
 
                 return response(req, res, 100, "success", {})
