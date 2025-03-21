@@ -458,7 +458,7 @@ const withdrawCtrl = {
                 top_office_amount: api_withdraw_request_result.data?.top_amount ?? 0,
             }, withdraw_id);
             let tid = api_withdraw_request_result.data?.tid;
-
+            console.log(api_withdraw_request_result)
             if ([2, 5, 7].includes(dns_data?.withdraw_corp_type)) {
                 for (var i = 0; i < 3; i++) {
                     let api_result2 = await corpApi.withdraw.request_check({
