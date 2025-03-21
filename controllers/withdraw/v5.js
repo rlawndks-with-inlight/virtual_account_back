@@ -56,7 +56,7 @@ const withdrawV5Ctrl = {
                 dns_data = dns_data[0][0];
                 await redisCtrl.set(`dns_data_${api_key}`, JSON.stringify(dns_data), 60);
             }
-            if (!dns_data) {
+            if (!dns_data?.id) {
                 await redisCtrl.delete(`is_ing_withdraw_${mid}_${guid}`);
                 return response(req, res, -100, "api key가 잘못되었습니다.", false);
             }
@@ -337,12 +337,18 @@ const withdrawV5Ctrl = {
             if (!api_key) {
                 return response(req, res, -100, "api key를 입력해주세요.", false);
             }
-            let dns_data = await readPool.query(`SELECT * FROM brands WHERE api_key=?`, [api_key]);
-            dns_data = dns_data[0][0];
-            let operator_list = getOperatorList(dns_data);
-            if (!dns_data) {
+            let dns_data = await redisCtrl.get(`dns_data_${api_key}`);
+            if (dns_data) {
+                dns_data = JSON.parse(dns_data ?? "{}");
+            } else {
+                dns_data = await readPool.query(`SELECT * FROM brands WHERE api_key=?`, [api_key]);
+                dns_data = dns_data[0][0];
+                await redisCtrl.set(`dns_data_${api_key}`, JSON.stringify(dns_data), 60);
+            }
+            if (!dns_data?.id) {
                 return response(req, res, -100, "api key가 잘못되었습니다.", false);
             }
+            let operator_list = getOperatorList(dns_data);
             req.body.brand_id = dns_data?.id;
 
             let mcht_sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM users `;
@@ -381,7 +387,7 @@ const withdrawV5Ctrl = {
                 pay_type: 'withdraw',
                 dns_data: dns_data,
                 decode_user: user,
-                date: trx?.created_at.substring(0, 10).replaceAll('-', ''),
+                date: returnMoment(trx?.created_at).substring(0, 10).replaceAll('-', ''),
                 tid,
                 ci: ci,
             })
