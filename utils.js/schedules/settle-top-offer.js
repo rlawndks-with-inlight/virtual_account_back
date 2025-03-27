@@ -9,20 +9,21 @@ import { insertQuery, updateQuery } from "../query-util.js";
 
 const SEND_CHAT_IDS = [
     {
-        id: '123',
+        id: '1636907498',
         level: 10,
-        user_name: 'ivi00',
-    },
-    {
-        id: '7362742274',
-        level: 40,
-        user_name: 'danial',
+        user_name: '덕혜정',
     },
     {
         id: '6672839598',
         level: 40,
         user_name: 'harry',
     },
+    {
+        id: '7362742274',
+        level: 40,
+        user_name: 'danial',
+    },
+
 ]
 const TELEBOT_DATA = {
     is_use_telegram_bot: 1,
