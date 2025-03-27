@@ -203,7 +203,7 @@ const sendSettleAlarm = async (brands = [], parent_brand) => {
             message += `출금\n`
             message += `출금횟수: ${commarNumber(chart_data.withdraw.total)}회\n`
             message += `출금금액: ${commarNumber(chart_data.withdraw.amount)}원`
-            sendTelegramBot(TELEBOT_DATA, message, SEND_CHAT_IDS.filter(el => el?.level >= 40).map(el => { return el.id }));
+            sendTelegramBot(TELEBOT_DATA, message, SEND_CHAT_IDS.filter(el => el?.level >= 10).map(el => { return el.id }));
         }
     } catch (err) {
         console.log(err);
