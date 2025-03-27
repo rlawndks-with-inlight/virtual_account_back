@@ -7,7 +7,7 @@ export const sendTelegramBot = async (dns_data = {}, message, ids = []) => {
             const telebot = new TelegramBot(token);
             for (var i = 0; i < ids.length; i++) {
                 telebot.sendMessage(ids[i], message);
-                await new Promise((r) => setTimeout(r, 1000));
+                await new Promise((r) => setTimeout(r, 2000));
             }
         }
     } catch (err) {
