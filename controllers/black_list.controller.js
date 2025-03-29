@@ -22,6 +22,7 @@ const blackListCtrl = {
                 `mchts.user_name`,
                 `mchts.nickname`,
                 `${table_name}.acct_num`,
+                `${table_name}.acct_name`,
             ]
 
             let columns = [
