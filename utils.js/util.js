@@ -635,6 +635,12 @@ export const getMotherDeposit = async (decode_dns, is_detail) => {
         data['childrens'].push(children_mother_deposit);
     }
     data['hold_amount'] = data['brand']?.hold_amount;
+    for (var i = 0; i < Object.keys(data).length; i++) {
+        let key = Object.keys(data)[i];
+        if (key.includes('_amount') && data[key]) {
+            data[key] = parseInt(data[key])
+        }
+    }
     return data;
 }
 
