@@ -609,6 +609,12 @@ export const getMotherDeposit = async (decode_dns, is_detail) => {
             data['sum'].total_attempt_oper_withdraw_amount += data['sum'][`total_attempt_sales${operator_list[i].num}_withdraw_amount`];
             data['sum'].total_manager_oper_give_amount += data['sum'][`total_manager_sales${operator_list[i].num}_give_amount`];
         }
+        for (var i = 0; i < Object.keys(data?.sum).length; i++) {
+            let key = Object.keys(data?.sum)[i];
+            if (key.includes('_amount') && data?.sum[key]) {
+                data.sum[key] = parseInt(data.sum[key])
+            }
+        }
     }
 
 
