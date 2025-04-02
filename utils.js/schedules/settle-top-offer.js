@@ -34,7 +34,7 @@ const SETTLE_ACCT_NUM = `1012077477601`;
 export const onSettleTopOffer = async (return_moment = "") => {
     try {
         if (!return_moment.includes('01:00:') && !return_moment.includes('00:40:')) {
-            return;
+            //return;
         }
         let virtual_accounts = await readPool.query(`SELECT * FROM virtual_accounts WHERE is_use_settle_top_offer=1`);
         virtual_accounts = virtual_accounts[0];
