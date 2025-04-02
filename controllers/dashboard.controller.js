@@ -5,6 +5,7 @@ import { checkIsManagerUrl, returnMoment } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, getOperatorList, isItemBrandIdSameDnsId, lowLevelException, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
+import redisCtrl from "../redis/index.js";
 
 const dashboardCtrl = {
     mchtDeposit: async (req, res, next) => {
@@ -43,43 +44,50 @@ const dashboardCtrl = {
             }
             let users = await readPool.query(sql);
             users = users[0];
-            let result = [];
-            if (users?.length > 0) {
-                let columns = [
-                    `mcht_id`,
-                    `SUM(amount) AS amount`,
-                    `COUNT(*) AS count`,
-                    `SUM(mcht_amount) AS mcht_amount`,
-                ];
-                let amount_sql = ` SELECT ${columns.join()} FROM deposits `;
-                amount_sql += ` WHERE brand_id=${decode_dns?.id} `;
-                if (s_dt) {
-                    amount_sql += ` AND created_at >= '${s_dt} 00:00:00' `;
-                }
-                if (e_dt) {
-                    amount_sql += ` AND created_at <= '${e_dt} 23:59:59' `;
-                }
-                amount_sql += ` AND pay_type=0 `;
-                amount_sql += ` AND deposit_status=0 `;
-                amount_sql += ` AND mcht_id IN (${users.map(el => { return el?.id })})`;
-                amount_sql += ` GROUP BY mcht_id `;
-                let amount_data = await readPool.query(amount_sql);
-                amount_data = amount_data[0];
-                users = users.map(el => {
-                    return {
-                        ...el,
-                        ..._.find(amount_data, { [`mcht_id`]: el?.id })
-                    }
-                })
-                result = users.filter(el => el?.count > 0);
-                result = result.sort((a, b) => {
-                    if (a.amount > b.amount) return -1
-                    if (a.amount < b.amount) return 1
-                    return 0
-                })
+            let result = await redisCtrl.get(`dashboard_${e_dt}_${e_dt}_${decode_user?.id}`);
+            if (result) {
+                result = JSON.parse(result ?? '[]');
             } else {
                 result = [];
+                if (users?.length > 0) {
+                    let columns = [
+                        `mcht_id`,
+                        `SUM(amount) AS amount`,
+                        `COUNT(*) AS count`,
+                        `SUM(mcht_amount) AS mcht_amount`,
+                    ];
+                    let amount_sql = ` SELECT ${columns.join()} FROM deposits `;
+                    amount_sql += ` WHERE brand_id=${decode_dns?.id} `;
+                    if (s_dt) {
+                        amount_sql += ` AND created_at >= '${s_dt} 00:00:00' `;
+                    }
+                    if (e_dt) {
+                        amount_sql += ` AND created_at <= '${e_dt} 23:59:59' `;
+                    }
+                    amount_sql += ` AND pay_type=0 `;
+                    amount_sql += ` AND deposit_status=0 `;
+                    amount_sql += ` AND mcht_id IN (${users.map(el => { return el?.id })})`;
+                    amount_sql += ` GROUP BY mcht_id `;
+                    let amount_data = await readPool.query(amount_sql);
+                    amount_data = amount_data[0];
+                    users = users.map(el => {
+                        return {
+                            ...el,
+                            ..._.find(amount_data, { [`mcht_id`]: el?.id })
+                        }
+                    })
+                    result = users.filter(el => el?.count > 0);
+                    result = result.sort((a, b) => {
+                        if (a.amount > b.amount) return -1
+                        if (a.amount < b.amount) return 1
+                        return 0
+                    })
+                } else {
+                    result = [];
+                }
+                await redisCtrl.set(`dashboard_${e_dt}_${e_dt}_${decode_user?.id}`, JSON.stringify(result), 60);
             }
+
             return response(req, res, 100, "success", result);
         } catch (err) {
             console.log(err)
