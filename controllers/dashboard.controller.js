@@ -44,7 +44,7 @@ const dashboardCtrl = {
             }
             let users = await readPool.query(sql);
             users = users[0];
-            let result = await redisCtrl.get(`dashboard_${e_dt}_${e_dt}_${decode_user?.id}`);
+            let result = await redisCtrl.get(`dashboard_mcht_${e_dt}_${e_dt}_${decode_user?.id}_${decode_dns?.id}`);
             if (result) {
                 result = JSON.parse(result ?? '[]');
             } else {
@@ -85,7 +85,7 @@ const dashboardCtrl = {
                 } else {
                     result = [];
                 }
-                await redisCtrl.set(`dashboard_${e_dt}_${e_dt}_${decode_user?.id}`, JSON.stringify(result), 60);
+                await redisCtrl.set(`dashboard_mcht_${e_dt}_${e_dt}_${decode_user?.id}_${decode_dns?.id}`, JSON.stringify(result), 60);
             }
 
             return response(req, res, 100, "success", result);
