@@ -113,6 +113,9 @@ const onWithdrawSettleByBrand = async (brand = {}, parent_brand = {}, operator_l
                 }
             }
         }
+        if (!(withdraw_amount > 0)) {
+            return;
+        }
         let amount = parseInt(withdraw_amount) + (brand?.withdraw_fee_type == 0 ? mcht?.withdraw_fee : 0);
         withdraw_obj['expect_amount'] = (-1) * amount;
         withdraw_obj[`mcht_amount`] = (-1) * amount;
