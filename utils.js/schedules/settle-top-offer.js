@@ -129,6 +129,7 @@ const onWithdrawSettleByBrand = async (brand = {}, parent_brand = {}, operator_l
             note: '상위사 정산 관리자 지급',
             mcht_id: virtual_account?.mcht_id,
             mcht_amount: amount,
+            is_parent_brand_settle: 1,
         });
         let manager_plus_id = manager_plus_result?.insertId;
         let result = await insertQuery(`deposits`, withdraw_obj);
