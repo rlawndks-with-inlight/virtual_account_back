@@ -671,6 +671,7 @@ export const settingMchtFee = async (decode_dns, user_id, body, is_oper_dns) => 
             mcht_fee,
         };
         let operator_list = getOperatorList(decode_dns);
+        console.log(body)
         for (var i = 0; i < operator_list.length; i++) {
             if (body[`${oper_label}${operator_list[i]?.num}_id`] > 0) {
                 down_user = operator_list[i]?.label;
