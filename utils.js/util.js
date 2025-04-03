@@ -684,7 +684,7 @@ export const settingMchtFee = async (decode_dns, user_id, body, is_oper_dns) => 
                         type: 'deposit_fee',
                     }
                 }
-                if (body[`${oper_label}${operator_list[i]?.num}_deposit_fee`] < mother_deposit_fee && decode_dns?.is_use_deposit_operator == 1) {
+                if (parseFloat(body[`${oper_label}${operator_list[i]?.num}_deposit_fee`]) < parseFloat(mother_deposit_fee) && decode_dns?.is_use_deposit_operator == 1) {
                     return {
                         data: {},
                         code: -100,
@@ -703,7 +703,7 @@ export const settingMchtFee = async (decode_dns, user_id, body, is_oper_dns) => 
                         type: 'fee',
                     }
                 }
-                if (body[`${oper_label}${operator_list[i]?.num}_fee`] < mother_fee && decode_dns?.is_use_fee_operator == 1) {
+                if (parseFloat(body[`${oper_label}${operator_list[i]?.num}_fee`]) < parseFloat(mother_fee) && decode_dns?.is_use_fee_operator == 1) {
                     return {
                         data: {},
                         code: -100,
@@ -721,7 +721,7 @@ export const settingMchtFee = async (decode_dns, user_id, body, is_oper_dns) => 
                         type: 'withdraw_fee',
                     }
                 }
-                if (body[`${oper_label}${operator_list[i]?.num}_withdraw_fee`] < mother_withdraw_fee && decode_dns?.is_use_withdraw_operator == 1) {
+                if (parseFloat(body[`${oper_label}${operator_list[i]?.num}_withdraw_fee`]) < parseFloat(mother_withdraw_fee) && decode_dns?.is_use_withdraw_operator == 1) {
                     return {
                         data: {},
                         code: -100,
