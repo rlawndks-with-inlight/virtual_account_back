@@ -17,6 +17,13 @@ export const insertQuery = async (table, obj) => {
     let result = await writePool.query(`INSERT INTO ${table} (${keys.join()}) VALUES (${question_list.join()})`, values);
     return result[0];
 }
+export const insertMultyQuery = async (table, keys, list = []) => {
+    if (keys.length == 0) {
+        return false;
+    }
+    let result = await writePool.query(`INSERT INTO ${table} (${keys.join()}) VALUES ?`, [list]);
+    return result;
+}
 export const insertQueryMultiRow = async (table, list) => {// 개발예정
     let keys = Object.keys(obj);
     if (keys.length == 0) {

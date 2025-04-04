@@ -4,6 +4,7 @@ import virtualAccountCtrl from "../../controllers/virtual_account.controller.js"
 import { returnMoment } from "../function.js";
 
 export const onDailyCleanVirtualAccountNotUseTwoWeeks = async (return_moment) => {
+    return;
     if (!return_moment.includes('02:00:')) {
         return;
     }

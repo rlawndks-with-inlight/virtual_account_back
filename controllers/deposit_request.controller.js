@@ -77,7 +77,6 @@ const depositRequestCtrl = {
                 note,
             };
 
-
             let result = await insertQuery(`${table_name}`, obj);
             let bell_data = {
                 amount,

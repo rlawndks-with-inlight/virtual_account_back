@@ -1,12 +1,12 @@
 'use strict';
 import { checkIsManagerUrl, returnMoment } from "../utils.js/function.js";
-import { deleteQuery, getMultipleQueryByWhen, getSelectQuery, insertQuery, makeSearchQuery, makeSearchQueryExact, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
+import { deleteQuery, getMultipleQueryByWhen, getSelectQuery, insertMultyQuery, insertQuery, insertQueryMultiRow, makeSearchQuery, makeSearchQueryExact, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, getNumberByPercent, isItemBrandIdSameDnsId, response, settingFiles, operatorLevelList, getOperatorList, lowLevelException, getChildrenBrands } from "../utils.js/util.js";
 import _ from 'lodash';
 import 'dotenv/config';
 import axios from "axios";
 import corpApi, { getDnsData } from "../utils.js/corp-util/index.js";
-import { readPool } from "../config/db-pool.js";
+import { readPool, writePool } from "../config/db-pool.js";
 import redisCtrl from "../redis/index.js";
 
 const table_name = 'deposits';
@@ -560,4 +560,38 @@ const depositCtrl = {
     },
 };
 
+const moveUser = async () => {
+    const BEFORE_BRAND_ID = 98;
+    const BRAND_ID = 120;
+    const conn = await writePool.getConnection();
+    try {
+        let last_mchts = await readPool.query(`SELECT * FROM users WHERE brand_id=${BEFORE_BRAND_ID} AND level=10 AND is_delete=0`);
+        last_mchts = last_mchts[0];
+        let last_opers = await readPool.query(`SELECT * FROM users WHERE brand_id=${BEFORE_BRAND_ID} AND level > 10 AND level < 40 AND is_delete=0`);
+        last_opers = last_opers[0];
+        let mchts = await readPool.query(`SELECT * FROM users WHERE brand_id=${BRAND_ID} AND level=10 AND is_delete=0`);
+        mchts = mchts[0];
+        let opers = await readPool.query(`SELECT * FROM users WHERE brand_id=${BRAND_ID} AND level > 10 AND level < 40 AND is_delete=0`);
+        opers = opers[0];
+        let connect_obj = {};
+
+        for (var i = 0; i < last_mchts.length; i++) {
+            let mcht = _.find(mchts, { user_name: last_mchts[i]?.user_name });
+            connect_obj[last_mchts[i]?.id] = mcht?.id;
+        }
+        for (var i = 0; i < last_opers.length; i++) {
+            let oper = _.find(opers, { user_name: last_opers[i]?.user_name });
+            connect_obj[last_opers[i]?.id] = oper?.id;
+        }
+
+
+        await conn.commit();
+        console.log('success');
+    } catch (err) {
+        console.log(err);
+        await conn.rollback();
+    } finally {
+        await conn.release();
+    }
+}
 export default depositCtrl;
