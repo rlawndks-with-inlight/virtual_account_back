@@ -565,6 +565,7 @@ const moveUser = async () => {
     const BRAND_ID = 120;
     const conn = await writePool.getConnection();
     try {
+
         let last_mchts = await readPool.query(`SELECT * FROM users WHERE brand_id=${BEFORE_BRAND_ID} AND level=10 AND is_delete=0`);
         last_mchts = last_mchts[0];
         let last_opers = await readPool.query(`SELECT * FROM users WHERE brand_id=${BEFORE_BRAND_ID} AND level > 10 AND level < 40 AND is_delete=0`);
@@ -583,8 +584,75 @@ const moveUser = async () => {
             let oper = _.find(opers, { user_name: last_opers[i]?.user_name });
             connect_obj[last_opers[i]?.id] = oper?.id;
         }
-
-
+        let summary_columns = [
+            `is_cancel`,
+            `pay_type`,
+            `mcht_id`,
+            `sales5_id`,
+            `sales4_id`,
+            `sales3_id`,
+            `sales2_id`,
+            `sales1_id`,
+            `sales0_id`,
+            `deposit_status`,
+            `withdraw_status`,
+            `withdraw_fee_type`,
+            `user_id`,
+            `is_hand`,
+            `'2025-04-04 11:00:00' AS created_at`,
+            `SUM(amount) AS amount`,
+            `SUM(expect_amount) AS expect_amount`,
+            `SUM(top_office_amount) AS top_office_amount`,
+            `SUM(head_office_amount) AS head_office_amount`,
+            `SUM(mcht_amount) AS mcht_amount`,
+            `SUM(sales5_amount) AS sales5_amount`,
+            `SUM(sales4_amount) AS sales4_amount`,
+            `SUM(sales3_amount) AS sales3_amount`,
+            `SUM(sales2_amount) AS sales2_amount`,
+            `SUM(sales1_amount) AS sales1_amount`,
+            `SUM(sales0_amount) AS sales0_amount`,
+            `SUM(deposit_fee) AS deposit_fee`,
+            `SUM(withdraw_fee) AS withdraw_fee`,
+        ]
+        let group_columns = [
+            `is_cancel`,
+            `pay_type`,
+            `mcht_id`,
+            `sales5_id`,
+            `sales4_id`,
+            `sales3_id`,
+            `sales2_id`,
+            `sales1_id`,
+            `sales0_id`,
+            `deposit_status`,
+            `withdraw_status`,
+            `withdraw_fee_type`,
+            `user_id`,
+            `is_hand`,
+        ]
+        let deposit_summary_sql = ` SELECT ${summary_columns.join()} FROM deposits WHERE brand_id=${BEFORE_BRAND_ID} `;
+        deposit_summary_sql += ` GROUP BY ${group_columns.join()} `;
+        console.log(returnMoment())
+        let deposit_summaries = await writePool.query(deposit_summary_sql);
+        deposit_summaries = deposit_summaries[0];
+        console.log(returnMoment())
+        let insert_list = [];
+        let columns = [];
+        for (var i = 0; i < deposit_summaries.length; i++) {
+            deposit_summaries[i].brand_id = BRAND_ID;
+            deposit_summaries[i].mcht_id = connect_obj[deposit_summaries[i].mcht_id] ?? null;
+            deposit_summaries[i].sales5_id = connect_obj[deposit_summaries[i].sales5_id] ?? null;
+            deposit_summaries[i].sales4_id = connect_obj[deposit_summaries[i].sales4_id] ?? null;
+            deposit_summaries[i].sales3_id = connect_obj[deposit_summaries[i].sales3_id] ?? null;
+            deposit_summaries[i].sales2_id = connect_obj[deposit_summaries[i].sales2_id] ?? null;
+            deposit_summaries[i].sales1_id = connect_obj[deposit_summaries[i].sales1_id] ?? null;
+            deposit_summaries[i].sales0_id = connect_obj[deposit_summaries[i].sales0_id] ?? null;
+            if (i == 0) {
+                columns = Object.keys(deposit_summaries[i]);
+            }
+            insert_list.push(columns.map(el => { return deposit_summaries[i][el] }))
+        }
+        let result = await insertMultyQuery('deposits', columns, insert_list);
         await conn.commit();
         console.log('success');
     } catch (err) {
