@@ -188,6 +188,86 @@ const dashboardCtrl = {
 
         }
     },
+    topOfferSettle: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = await checkLevel(req.cookies.token, 40, req);
+            const decode_dns = checkDns(req.cookies.dns);
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
+            if (decode_dns?.is_oper_dns != 1) {
+                return response(req, res, 100, "success", []);
+            }
+            let operator_list = getOperatorList(decode_dns);
+            const { s_dt, e_dt } = req.query;
+            let columns = [
+                `users.id`,
+                `users.user_name`,
+                `users.mid`,
+                `users.level`,
+                `users.nickname AS label`,
+            ]
+            let sql = `SELECT ${columns.join()} FROM users `;
+            sql += ` WHERE users.brand_id=${decode_dns?.id} AND users.level > 10 AND users.level < 40 `;
+
+
+            let users = await readPool.query(sql);
+            users = users[0];
+            let result = await redisCtrl.get(`dashboard_oper_${e_dt}_${e_dt}_${decode_user?.id}_${decode_dns?.id}`);
+            if (result) {
+                result = JSON.parse(result ?? '[]');
+            } else {
+                result = [];
+                if (users?.length > 0) {
+                    for (var i = 0; i < operator_list.length; i++) {
+                        if (users.filter(el => el?.level == operator_list[i]?.value).length > 0) {
+                            let columns = [
+                                `top_offer${operator_list[i]?.num}_id AS top_offer_id`,
+                                `SUM(top_offer${operator_list[i]?.num}_amount) * -1 AS amount`,
+                            ];
+                            let amount_sql = ` SELECT ${columns.join()} FROM deposits `;
+                            amount_sql += ` WHERE top_offer${operator_list[i]?.num}_id IN (${users.filter(el => el?.level == operator_list[i]?.value).map(el => { return el?.id }).join()}) `;
+                            if (s_dt) {
+                                amount_sql += ` AND created_at >= '${s_dt} 00:00:00' `;
+                            }
+                            if (e_dt) {
+                                amount_sql += ` AND created_at <= '${e_dt} 23:59:59' `;
+                            }
+                            amount_sql += ` AND pay_type=5 `;
+                            amount_sql += ` AND is_parent_brand_settle=1 `;
+                            amount_sql += ` GROUP BY top_offer${operator_list[i]?.num}_id `;
+                            let amount_data = await readPool.query(amount_sql);
+                            amount_data = amount_data[0];
+                            result = [...result, ...amount_data];
+                        }
+                    }
+                    users = users.map(el => {
+                        return {
+                            ...el,
+                            ..._.find(result, { [`top_offer_id`]: el?.id })
+                        }
+                    })
+                    result = users.filter(el => el?.amount > 0);
+                    result = result.sort((a, b) => {
+                        if (a.amount > b.amount) return -1
+                        if (a.amount < b.amount) return 1
+                        return 0
+                    })
+                } else {
+                    result = [];
+                }
+                await redisCtrl.set(`dashboard_oper_${e_dt}_${e_dt}_${decode_user?.id}_${decode_dns?.id}`, JSON.stringify(result), 60);
+            }
+
+            return response(req, res, 100, "success", result);
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
 };
 
 export default dashboardCtrl;

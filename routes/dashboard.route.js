@@ -8,5 +8,8 @@ router
 router
     .route('/amount')
     .get(dashboardCtrl.amount)
+router
+    .route('/top-offer-settle')
+    .get(dashboardCtrl.topOfferSettle)
 
 export default router;

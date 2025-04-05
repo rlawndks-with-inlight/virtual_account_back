@@ -97,6 +97,7 @@ const onWithdrawSettleByBrand = async (brand = {}, parent_brand = {}, operator_l
             withdraw_status: 5,
             note: `${brand?.name} 누적 상위사 정산금 정산`,
             withdraw_fee_type: brand?.withdraw_fee_type,
+            is_parent_brand_settle: 1,
         };
         let top_offer_obj = {};
         for (var i = 0; i < operator_list.length; i++) {
