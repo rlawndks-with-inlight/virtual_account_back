@@ -7,6 +7,7 @@ import { checkDns, checkLevel, generateRandomString, isItemBrandIdSameDnsId, low
 import 'dotenv/config';
 import when from "when";
 import { readPool } from "../config/db-pool.js";
+import redisCtrl from "../redis/index.js";
 const table_name = 'virtual_accounts';
 
 const virtualAccountCtrl = {
@@ -476,26 +477,32 @@ const virtualAccountCtrl = {
             const {
                 virtual_account_id, amount,
             } = req.body;
-
             if (!(amount > 0)) {
                 return response(req, res, -100, "입금예정액은 0원보다 커야합니다.", false)
             }
             if (amount > 2000000) {
                 return response(req, res, -100, "입금예정액이 너무 큽니다.", false)
             }
+            let is_ing_request_deposit = await redisCtrl.addNumber(`is_ing_request_deposit_${virtual_account_id}`, 1, 30);
+            if (is_ing_request_deposit > 1) {
+                return response(req, res, -100, "30초 뒤에 실행해 주세요.", false);
+            }
             let virtual_account = await readPool.query(`SELECT * FROM ${table_name} WHERE id=${virtual_account_id} AND is_delete=0 AND status=0`);
             virtual_account = virtual_account[0][0];
             if (!virtual_account) {
-                return response(req, res, -100, '입금불가 가상계좌 입니다.', false)
+                await redisCtrl.delete(`is_ing_request_deposit_${virtual_account_id}`);
+                return response(req, res, -100, '입금불가 가상계좌 입니다.', false);
             }
             let mcht = await readPool.query(`SELECT virtual_acct_link_status, is_delete FROM users WHERE id=${virtual_account?.mcht_id}`);
             mcht = mcht[0][0];
             if ((mcht?.virtual_acct_link_status ?? 0) != 0 || mcht?.is_delete == 1) {
+                await redisCtrl.delete(`is_ing_request_deposit_${virtual_account_id}`);
                 return response(req, res, -100, "입금 불가한 가맹점 입니다.", false)
             }
             let is_exist_not_confirm_deposit = await readPool.query(`SELECT id FROM deposits WHERE virtual_account_id=${virtual_account_id} AND deposit_status=5 AND is_delete=0`);
             is_exist_not_confirm_deposit = is_exist_not_confirm_deposit[0][0];
             if (is_exist_not_confirm_deposit) {
+                await redisCtrl.delete(`is_ing_request_deposit_${virtual_account_id}`);
                 return response(req, res, -100, "아직 처리되지 않은 건이 있습니다.", false)
             }
             let trx_id = `${decode_dns?.id}${decode_user?.id ?? generateRandomString(6)}${new Date().getTime()}`;
@@ -530,6 +537,7 @@ const virtualAccountCtrl = {
             }
 
             if (api_result?.code != 100) {
+                await redisCtrl.delete(`is_ing_request_deposit_${virtual_account_id}`);
                 return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
             }
             let result2 = await updateQuery(`deposits`, {
