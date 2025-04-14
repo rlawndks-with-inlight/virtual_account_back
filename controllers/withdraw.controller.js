@@ -438,6 +438,9 @@ const withdrawCtrl = {
                     return response(req, res, -100, (api_withdraw_request_result?.message || "서버 에러 발생"), api_withdraw_request_result?.data)
                 }
             } else {
+                let result2 = await updateQuery(`${table_name}`, {
+                    trx_id: trx_id,
+                }, withdraw_id);
                 api_withdraw_request_result = await corpApi.mcht.withdraw_request({
                     pay_type: 'deposit',
                     dns_data: decode_dns,
@@ -577,6 +580,7 @@ const withdrawCtrl = {
 
             let result2 = await updateQuery(`${table_name}`, {
                 is_pass_confirm: 1,
+                trx_id: trx_id,
             }, withdraw_id);
 
             let api_withdraw_request_result = await corpApi.withdraw.request({
