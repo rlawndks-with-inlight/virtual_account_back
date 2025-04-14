@@ -251,6 +251,8 @@ const withdrawV5Ctrl = {
                 return response(req, res, -100, "모계좌 출금 실패 A", false)
             }
             let withdraw_id = 0;
+            let trx_id = `${dns_data?.id}${virtual_account?.id % 1000}${new Date().getTime()}`;
+            deposit_obj['trx_id'] = trx_id;
             let result = await insertQuery(`deposits`, deposit_obj);
             withdraw_id = result?.insertId;
             //인설트후 체크
@@ -267,7 +269,6 @@ const withdrawV5Ctrl = {
                 return response(req, res, 100, "출금 요청이 완료되었습니다.", {});
             }
 
-            let trx_id = `${dns_data?.id}${virtual_account?.id % 1000}${new Date().getTime()}`;
             let api_withdraw_request_result = await corpApi.withdraw.request({
                 pay_type: 'withdraw',
                 dns_data: dns_data,
