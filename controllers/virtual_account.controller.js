@@ -499,7 +499,7 @@ const virtualAccountCtrl = {
                 await redisCtrl.delete(`is_ing_request_deposit_${virtual_account_id}`);
                 return response(req, res, -100, "입금 불가한 가맹점 입니다.", false)
             }
-            let is_exist_not_confirm_deposit = await readPool.query(`SELECT id FROM deposits WHERE virtual_account_id=${virtual_account_id} AND deposit_status=5 AND is_delete=0 AND created_at >= NOW() - INTERVAL 2 HOUR`);
+            let is_exist_not_confirm_deposit = await readPool.query(`SELECT id FROM deposits WHERE virtual_account_id=${virtual_account_id} AND deposit_status=5 AND is_delete=0 AND created_at >= NOW() - INTERVAL 70 MINUTE`);
             is_exist_not_confirm_deposit = is_exist_not_confirm_deposit[0][0];
             if (is_exist_not_confirm_deposit) {
                 await redisCtrl.delete(`is_ing_request_deposit_${virtual_account_id}`);
