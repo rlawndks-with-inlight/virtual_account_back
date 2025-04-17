@@ -663,13 +663,11 @@ export const icbApi = {
                 if (dns_data?.deposit_process_type == 1) {
                     uri = `/v2/merchant/settle/inquiry`;
                 }
-                console.log(query)
                 let { data: response } = await axios.post(`${API_URL}${uri}`, query, {
                     headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
 
                 let status = 10;
-                console.log(response?.data)
                 let result = response?.data?.result[0];
                 if (result?.trxStat == 'WT' || result?.trxStat == 'IP') {
                     status = 6;
