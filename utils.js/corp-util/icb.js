@@ -673,7 +673,7 @@ export const icbApi = {
                 let result = response?.data?.result[0];
                 if (result?.trxStat == 'WT' || result?.trxStat == 'IP') {
                     status = 6;
-                } else if (result?.trxStat == 'RF') {
+                } else if (result?.trxStat == 'RF' || !result) {
                     status = 3;
                 }
                 if (response?.code != 200) {
