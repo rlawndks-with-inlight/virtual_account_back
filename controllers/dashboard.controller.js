@@ -120,7 +120,11 @@ const dashboardCtrl = {
                 `deposits.withdraw_fee`,
             ]
             let sql = `SELECT ${columns.join()} FROM deposits `;
-            sql += ` WHERE pay_type IN ${pay_type_join} AND deposits.brand_id=${decode_dns?.id} `;
+            if (decode_dns?.is_oper_dns == 1) {
+                sql += ` WHERE pay_type IN ${pay_type_join} AND deposits.is_parent_brand_settle=0 `;
+            } else {
+                sql += ` WHERE pay_type IN ${pay_type_join} AND deposits.brand_id=${decode_dns?.id} `;
+            }
             sql += where_sql;
             let operator_list = getOperatorList(decode_dns);
             for (var i = 0; i < operator_list.length; i++) {
