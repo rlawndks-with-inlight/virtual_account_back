@@ -658,6 +658,88 @@ const virtualAccountCtrl = {
 
         }
     },
+    dailyAuthRequest: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = await checkLevel(req.cookies.token, 0, req);
+            const decode_dns = checkDns(req.cookies.dns);
+            const {
+                id,
+            } = req.body;
+            let virtual_account = await readPool.query(`SELECT * FROM ${table_name} WHERE id=? AND brand_id=? AND status=0 AND is_delete=0 `, [id, decode_dns?.id]);
+            virtual_account = virtual_account[0][0];
+            if (!virtual_account) {
+                return response(req, res, -100, "잘못된 접근입니다.", false)
+            }
+            if (virtual_account?.last_auth_date.substring(0, 10) == returnMoment().substring(0, 10)) {
+                return response(req, res, -100, "이미 금일 인증이 완료 되었습니다.", false)
+            }
+            let api_result = await corpApi.sms.push({
+                dns_data: decode_dns,
+                pay_type: 'deposit',
+                decode_user: {},
+                ci: virtual_account?.ci,
+                birth: virtual_account?.birth,
+                name: virtual_account?.deposit_acct_name,
+                gender: virtual_account?.gender,
+                ntv_frnr: virtual_account?.ntv_frnr,
+                tel_com: virtual_account?.tel_com,
+                phone_num: virtual_account?.phone_num,
+                is_new_phone: 0,
+            })
+            if (api_result?.code != 100) {
+                return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
+            }
+            let result = await updateQuery(table_name, {
+                last_auth_request_date: returnMoment(),
+            }, id);
+            return response(req, res, 100, "success", { ...api_result?.data, is_new_phone: 0 })
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
+    dailyAuthCheck: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = await checkLevel(req.cookies.token, 0, req);
+            const decode_dns = checkDns(req.cookies.dns);
+            const {
+                vrf_word,
+                tid,
+                id,
+            } = req.body;
+            let virtual_account = await readPool.query(`SELECT * FROM ${table_name} WHERE id=? AND brand_id=? AND status=0 AND is_delete=0 `, [id, decode_dns?.id]);
+            virtual_account = virtual_account[0][0];
+            if (!virtual_account) {
+                return response(req, res, -100, "잘못된 접근입니다.", false)
+            }
+            if (virtual_account?.last_auth_date.substring(0, 10) == returnMoment().substring(0, 10)) {
+                return response(req, res, -100, "이미 금일 인증이 완료 되었습니다.", false)
+            }
+            let api_result = await corpApi.sms.check({
+                dns_data: decode_dns,
+                pay_type: 'deposit',
+                decode_user: {},
+                phone_num: virtual_account?.phone_num,
+                ci: virtual_account?.ci,
+                vrf_word,
+                tid,
+                is_new_phone: 0,
+            })
+            if (api_result?.code != 100) {
+                return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
+            }
+            return response(req, res, 100, "success", {})
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
 };
 
 export default virtualAccountCtrl;

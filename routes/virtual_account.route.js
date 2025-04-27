@@ -43,5 +43,11 @@ router
 router
     .route('/change-status/:id')
     .put(virtualAccountCtrl.changeStatus)
+router
+    .route('/daily-auth-request')
+    .post(virtualAccountCtrl.dailyAuthRequest)
+router
+    .route('/daily-auth-check')
+    .post(virtualAccountCtrl.dailyAuthCheck)
 
 export default router;
