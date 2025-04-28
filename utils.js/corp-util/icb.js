@@ -244,7 +244,6 @@ export const icbApi = {
                         data: {},
                     };
                 }
-                console.log(response)
                 return {
                     code: 100,
                     message: response?.message,
@@ -514,8 +513,6 @@ export const icbApi = {
                 if (dns_data?.deposit_process_type == 1) {
                     uri = `/v2/merchant/member/payment`;
                 }
-                console.log(uri)
-                console.log(query)
                 let { data: response } = await axios.post(`${API_URL}${uri}`, query, {
                     headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
