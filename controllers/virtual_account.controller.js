@@ -1,7 +1,7 @@
 'use strict';
 import axios from "axios";
 import corpApi from "../utils.js/corp-util/index.js";
-import { checkIsManagerUrl, returnMoment } from "../utils.js/function.js";
+import { checkIsManagerUrl, differenceSecondTwoDate, returnMoment } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, makeSearchQuery, makeSearchQueryExact, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, generateRandomString, isItemBrandIdSameDnsId, lowLevelException, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
@@ -493,6 +493,12 @@ const virtualAccountCtrl = {
                 await redisCtrl.delete(`is_ing_request_deposit_${virtual_account_id}`);
                 return response(req, res, -100, '입금불가 가상계좌 입니다.', false);
             }
+            if (virtual_account?.last_auth_date.substring(0, 10) != returnMoment().substring(0, 10)) {
+                return response(req, res, -100, "데일리 인증을 완료해 주세요.", false)
+            }
+            if (!(differenceSecondTwoDate(returnMoment(), virtual_account?.last_acct_auth_date) < 300 && virtual_account?.last_acct_auth_date)) {
+                return response(req, res, -100, "5분 계좌인증을 완료해 주세요.", false)
+            }
             let mcht = await readPool.query(`SELECT virtual_acct_link_status, is_delete FROM users WHERE id=${virtual_account?.mcht_id}`);
             mcht = mcht[0][0];
             if ((mcht?.virtual_acct_link_status ?? 0) != 0 || mcht?.is_delete == 1) {
@@ -685,7 +691,7 @@ const virtualAccountCtrl = {
                 ntv_frnr: virtual_account?.ntv_frnr,
                 tel_com: virtual_account?.tel_com,
                 phone_num: virtual_account?.phone_num,
-                is_new_phone: 0,
+                recert_yn: 'Y',
             })
             if (api_result?.code != 100) {
                 return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
@@ -693,7 +699,7 @@ const virtualAccountCtrl = {
             let result = await updateQuery(table_name, {
                 last_auth_request_date: returnMoment(),
             }, id);
-            return response(req, res, 100, "success", { ...api_result?.data, is_new_phone: 0 })
+            return response(req, res, 100, "success", { ...api_result?.data })
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)
@@ -727,11 +733,117 @@ const virtualAccountCtrl = {
                 ci: virtual_account?.ci,
                 vrf_word,
                 tid,
-                is_new_phone: 0,
+                recert_yn: 'Y',
             })
             if (api_result?.code != 100) {
                 return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
             }
+            let result = await updateQuery(table_name, {
+                last_auth_date: returnMoment(),
+            }, id);
+            return response(req, res, 100, "success", {})
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
+    acctAuthRequest: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = await checkLevel(req.cookies.token, 0, req);
+            const decode_dns = checkDns(req.cookies.dns);
+            const {
+                id,
+            } = req.body;
+            let virtual_account = await readPool.query(`SELECT * FROM ${table_name} WHERE id=? AND brand_id=? AND status=0 AND is_delete=0 `, [id, decode_dns?.id]);
+            virtual_account = virtual_account[0][0];
+            if (!virtual_account) {
+                return response(req, res, -100, "잘못된 접근입니다.", false)
+            }
+            if (differenceSecondTwoDate(returnMoment(), virtual_account?.last_acct_auth_date) < 300 && virtual_account?.last_acct_auth_date) {
+                return response(req, res, -100, "이미 5분 인증이 완료 되었습니다.", false)
+            }
+
+            let is_exist_account = await corpApi.account.info({
+                pay_type: 'deposit',
+                dns_data: decode_dns,
+                ci: virtual_account?.ci,
+                bank_code: virtual_account?.deposit_bank_code,
+                acct_num: virtual_account?.deposit_acct_num,
+                name: virtual_account?.deposit_acct_name,
+                business_num: virtual_account?.business_num,
+                user_type: virtual_account?.user_type,
+                recert_yn: 'Y',
+            })
+            if (is_exist_account?.code != 100) {
+                return response(req, res, -100, (is_exist_account?.message || "서버 에러 발생"), false)
+            }
+
+            let api_result = await corpApi.user.account_({
+                dns_data: decode_dns,
+                pay_type: 'deposit',
+                decode_user: {},
+                ci: virtual_account?.ci,
+                bank_code: virtual_account?.deposit_bank_code,
+                acct_num: virtual_account?.deposit_acct_num,
+                name: virtual_account?.deposit_acct_name,
+                business_num: virtual_account?.business_num,
+                user_type: virtual_account?.user_type,
+                recert_yn: 'Y',
+            })
+            if (api_result?.code != 100) {
+                return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
+            }
+            let result = await updateQuery(table_name, {
+                last_acct_auth_request_date: returnMoment(),
+            }, id);
+            return response(req, res, 100, "success", { ...api_result?.data })
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
+    acctAuthcheck: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = await checkLevel(req.cookies.token, 0, req);
+            const decode_dns = checkDns(req.cookies.dns);
+            const {
+                vrf_word,
+                tid,
+                date,
+                id,
+            } = req.body;
+            let virtual_account = await readPool.query(`SELECT * FROM ${table_name} WHERE id=? AND brand_id=? AND status=0 AND is_delete=0 `, [id, decode_dns?.id]);
+            virtual_account = virtual_account[0][0];
+            if (!virtual_account) {
+                return response(req, res, -100, "잘못된 접근입니다.", false)
+            }
+            if (differenceSecondTwoDate(returnMoment(), virtual_account?.last_acct_auth_date) < 300 && virtual_account?.last_acct_auth_date) {
+                return response(req, res, -100, "이미 5분 인증이 완료 되었습니다.", false)
+            }
+            let api_result = await corpApi.user.account_verify({
+                dns_data: decode_dns,
+                pay_type: 'deposit',
+                decode_user: {},
+                ci: virtual_account?.ci,
+                bank_code: virtual_account?.deposit_bank_code,
+                acct_num: virtual_account?.deposit_acct_num,
+                tid: tid,
+                vrf_word: vrf_word,
+                recert_yn: 'Y',
+                date,
+            })
+            if (api_result?.code != 100) {
+                return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
+            }
+            let result = await updateQuery(table_name, {
+                last_acct_auth_date: returnMoment(),
+            }, id);
             return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)

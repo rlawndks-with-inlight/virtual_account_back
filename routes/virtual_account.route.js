@@ -49,5 +49,11 @@ router
 router
     .route('/daily-auth-check')
     .post(virtualAccountCtrl.dailyAuthCheck)
+router
+    .route('/acct-auth-request')
+    .post(virtualAccountCtrl.acctAuthRequest)
+router
+    .route('/acct-auth-check')
+    .post(virtualAccountCtrl.acctAuthcheck)
 
 export default router;

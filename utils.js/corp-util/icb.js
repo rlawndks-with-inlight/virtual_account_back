@@ -210,16 +210,31 @@ export const icbApi = {
                     bank_code,
                     acct_num,
                     name,
+                    business_num,
+                    user_type,
+                    recert_yn,
                 } = data;
                 let timestamp = await returnMoment().replaceAll(' ', '').replaceAll('-', '').replaceAll(':', '')
+
                 let query = {
                     timestamp,
                     memKey: ci,
                     bankCd: bank_code,
                     depoAcntNo: acct_num,
                     depoNm: name,
+                    recertYn: recert_yn,
                 }
-                let { data: response } = await axios.post(`${API_URL}/v3/member/acntCert/realName/request`, query, {
+                if (user_type != 0) {
+                    query['bizNo'] = business_num;
+                    query[`bizDiv`] = '02';
+                } else {
+                    query[`bizDiv`] = '01';
+                }
+                let uri = `/v3/member/deposit/acntCert/request`;
+                if (dns_data?.deposit_process_type == 1) {
+                    uri = `/v2/merchant/member/acntCert/request`;
+                }
+                let { data: response } = await axios.post(`${API_URL}${uri}`, query, {
                     headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
                 if (response?.code != 200) {
@@ -229,11 +244,13 @@ export const icbApi = {
                         data: {},
                     };
                 }
+                console.log(response)
                 return {
                     code: 100,
                     message: response?.message,
                     data: {
-                        tid: response?.data?.acntCertTrxNo,
+                        tid: response?.data?.acntCertTrxNo || `${new Date()}${bank_code}${acct_num}`,
+                        date: response?.data?.acntCertTrxDt,
                     },
                 };
 
@@ -257,10 +274,13 @@ export const icbApi = {
                     acct_num,
                     tid,
                     vrf_word,
+                    recert_yn,
+                    date,
                 } = data;
                 let return_moment = returnMoment();
-                let date = return_moment.split(' ')[0].replaceAll('-', '');
+                date = date || return_moment.split(' ')[0].replaceAll('-', '');
                 let timestamp = await returnMoment().replaceAll(' ', '').replaceAll('-', '').replaceAll(':', '')
+
                 let query = {
                     timestamp,
                     memKey: ci,
@@ -269,8 +289,15 @@ export const icbApi = {
                     acntCertCd: vrf_word,
                     acntCertTrxDt: date,
                     acntCertTrxNo: tid,
+                    recertYn: recert_yn,
                 }
-                let { data: response } = await axios.post(`${API_URL}/v1/pg/acntCert/confirm`, query, {
+                console.log(query)
+                let uri = `/v3/member/deposit/acntCert/confirm`;
+                if (dns_data?.deposit_process_type == 1) {
+                    uri = `/v2/merchant/member/acntCert/confirm`;
+                }
+
+                let { data: response } = await axios.post(`${API_URL}${uri}`, query, {
                     headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
                 if (response?.code != 200) {
@@ -309,6 +336,9 @@ export const icbApi = {
                     bank_code,
                     acct_num,
                     name,
+                    business_num,
+                    user_type,
+                    recert_yn,
                 } = data;
                 let timestamp = await returnMoment().replaceAll(' ', '').replaceAll('-', '').replaceAll(':', '')
                 let query = {
@@ -317,10 +347,20 @@ export const icbApi = {
                     bankCd: bank_code,
                     depoAcntNo: acct_num,
                     depoNm: name,
+                    recertYn: recert_yn,
                 }
-                let { data: response } = await axios.post(`${API_URL}/v3/member/getInfo`, query, {
+                if (user_type != 0) {
+                    query[`bizDiv`] = '02';
+                    query[`bizNo`] = business_num;
+                }
+                let uri = `/v3/member/acntCert/realName/request`;
+                if (dns_data?.deposit_process_type == 1) {
+                    uri = `/v2/merchant/member/acntCert/request`;
+                }
+                let { data: response } = await axios.post(`${API_URL}${uri}`, query, {
                     headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
+
                 if (response?.code != 200) {
                     return {
                         code: -100,
@@ -331,7 +371,9 @@ export const icbApi = {
                 return {
                     code: 100,
                     message: response?.message,
-                    data: {},
+                    data: {
+                        tid: response?.data?.acntCertTrxNo || `${new Date()}${bank_code}${acct_num}`,
+                    },
                 };
 
             } catch (err) {
@@ -358,7 +400,7 @@ export const icbApi = {
                     ntv_frnr,
                     tel_com,
                     phone_num,
-                    is_new_phone = 1,
+                    recert_yn,
                 } = data;
                 let timestamp = await returnMoment().replaceAll(' ', '').replaceAll('-', '').replaceAll(':', '')
 
@@ -371,7 +413,7 @@ export const icbApi = {
                     localTp: ntv_frnr,
                     telComCd: tel_com,
                     telNo: phone_num,
-                    recertYn: is_new_phone == 1 ? 'N' : 'Y',
+                    recertYn: recert_yn,
                 }
                 let { data: response } = await axios.post(`${API_URL}/v3/member/hpCert/request`, query, {
                     headers: getDefaultHeader(dns_data, pay_type, timestamp)
@@ -411,7 +453,7 @@ export const icbApi = {
                     phone_num,
                     vrf_word,
                     tid,
-                    is_new_phone = 1
+                    recert_yn,
                 } = data;
                 let timestamp = await returnMoment().replaceAll(' ', '').replaceAll('-', '').replaceAll(':', '')
 
@@ -421,7 +463,7 @@ export const icbApi = {
                     telNo: phone_num,
                     hpCertCd: vrf_word,
                     hpCertTrxNo: tid,
-                    recertYn: is_new_phone == 1 ? 'N' : 'Y',
+                    recertYn: recert_yn,
                 }
                 let { data: response } = await axios.post(`${API_URL}/v3/member/hpCert/confirm`, query, {
                     headers: getDefaultHeader(dns_data, pay_type, timestamp)
@@ -472,6 +514,8 @@ export const icbApi = {
                 if (dns_data?.deposit_process_type == 1) {
                     uri = `/v2/merchant/member/payment`;
                 }
+                console.log(uri)
+                console.log(query)
                 let { data: response } = await axios.post(`${API_URL}${uri}`, query, {
                     headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
@@ -520,6 +564,7 @@ export const icbApi = {
                 if (dns_data?.deposit_process_type == 1) {
                     uri = `/v2/merchant/member/charge`;
                 }
+
                 let { data: response } = await axios.post(`${API_URL}${uri}`, query, {
                     headers: getDefaultHeader(dns_data, pay_type, timestamp)
                 });
