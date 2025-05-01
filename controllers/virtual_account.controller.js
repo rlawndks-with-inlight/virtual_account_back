@@ -766,20 +766,23 @@ const virtualAccountCtrl = {
                 return response(req, res, -100, "이미 5분 인증이 완료 되었습니다.", false)
             }
 
-            let is_exist_account = await corpApi.account.info({
-                pay_type: 'deposit',
-                dns_data: decode_dns,
-                ci: virtual_account?.ci,
-                bank_code: virtual_account?.deposit_bank_code,
-                acct_num: virtual_account?.deposit_acct_num,
-                name: virtual_account?.deposit_acct_name,
-                business_num: virtual_account?.business_num,
-                user_type: virtual_account?.user_type,
-                recert_yn: 'Y',
-            })
-            if (is_exist_account?.code != 100) {
-                return response(req, res, -110, (is_exist_account?.message || "서버 에러 발생"), false)
+            if (virtual_account?.user_type == 0) {
+                let is_exist_account = await corpApi.account.info({
+                    pay_type: 'deposit',
+                    dns_data: decode_dns,
+                    ci: virtual_account?.ci,
+                    bank_code: virtual_account?.deposit_bank_code,
+                    acct_num: virtual_account?.deposit_acct_num,
+                    name: virtual_account?.deposit_acct_name,
+                    business_num: virtual_account?.business_num,
+                    user_type: virtual_account?.user_type,
+                    recert_yn: 'Y',
+                })
+                if (is_exist_account?.code != 100) {
+                    return response(req, res, -110, (is_exist_account?.message || "서버 에러 발생"), false)
+                }
             }
+
 
             let api_result = await corpApi.user.account_({
                 dns_data: decode_dns,
