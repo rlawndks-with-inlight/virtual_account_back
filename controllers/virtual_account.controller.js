@@ -778,7 +778,7 @@ const virtualAccountCtrl = {
                 recert_yn: 'Y',
             })
             if (is_exist_account?.code != 100) {
-                return response(req, res, -100, (is_exist_account?.message || "서버 에러 발생"), false)
+                return response(req, res, -110, (is_exist_account?.message || "서버 에러 발생"), false)
             }
 
             let api_result = await corpApi.user.account_({
@@ -794,7 +794,7 @@ const virtualAccountCtrl = {
                 recert_yn: 'Y',
             })
             if (api_result?.code != 100) {
-                return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
+                return response(req, res, -120, (api_result?.message || "서버 에러 발생"), false)
             }
             let result = await updateQuery(table_name, {
                 last_acct_auth_request_date: returnMoment(),
