@@ -738,6 +738,12 @@ const virtualAccountCtrl = {
             if (api_result?.code != 100) {
                 return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
             }
+            let auth_history = await insertQuery('auth_histories', {
+                mcht_id: virtual_account?.mcht_id,
+                acct_num: virtual_account?.phone_num,
+                brand_id: decode_dns?.id,
+                auth_type: 0,
+            });
             let result = await updateQuery(table_name, {
                 last_auth_date: returnMoment(),
             }, id);
@@ -799,6 +805,12 @@ const virtualAccountCtrl = {
             if (api_result?.code != 100) {
                 return response(req, res, -120, (api_result?.message || "서버 에러 발생"), false)
             }
+            let auth_history = await insertQuery('auth_histories', {
+                mcht_id: virtual_account?.mcht_id,
+                acct_num: virtual_account?.deposit_acct_num,
+                brand_id: decode_dns?.id,
+                auth_type: 1,
+            });
             let result = await updateQuery(table_name, {
                 last_acct_auth_request_date: returnMoment(),
             }, id);
