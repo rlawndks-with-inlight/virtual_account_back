@@ -5,7 +5,7 @@ import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuer
 import { checkDns, checkLevel, isItemBrandIdSameDnsId, response, settingFiles } from "../utils.js/util.js";
 import 'dotenv/config';
 
-const table_name = 'phone_auth_histories';
+const table_name = 'auth_histories';
 
 const phoneAuthHistoryCtrl = {
     list: async (req, res, next) => {
@@ -21,7 +21,7 @@ const phoneAuthHistoryCtrl = {
                 `mchts.user_name`,
                 `mchts.nickname`,
                 `${table_name}.phone_num`,
-                `${table_name}.name`,
+                `${table_name}.acct_num`,
             ]
             let columns = [
                 `${table_name}.*`,
@@ -39,7 +39,7 @@ const phoneAuthHistoryCtrl = {
                 sql += makeSearchQuery(search_columns, search);
             }
             let chart_columns = [
-                `SUM(${table_name}.amount) AS amount`,
+                `COUNT(*) AS total`,
             ]
             let chart_sql = sql;
             if (s_dt) {
@@ -49,11 +49,7 @@ const phoneAuthHistoryCtrl = {
                 chart_sql += ` AND ${table_name}.created_at <= '${e_dt} 23:59:59' `;
             }
             chart_sql = chart_sql.replaceAll(process.env.SELECT_COLUMN_SECRET, chart_columns.join());
-            let data = await getSelectQuery(sql, columns, req.query, [{
-                table: 'chart',
-                sql: chart_sql,
-            }], decode_user, decode_dns);
-            data.chart = data?.chart[0] ?? {};
+            let data = await getSelectQuery(sql, columns, req.query, [], decode_user, decode_dns, true);
 
             return response(req, res, 100, "success", data);
         } catch (err) {
