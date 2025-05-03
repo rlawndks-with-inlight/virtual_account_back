@@ -33,6 +33,7 @@ const SETTLE_ACCT_NUM = `1012077477601`;
 
 export const onSettleTopOffer = async (return_moment = "") => {
     try {
+        return;
         if (!return_moment.includes('01:00:') && !return_moment.includes('00:40:')) {
             //return;
         }
