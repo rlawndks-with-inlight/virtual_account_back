@@ -16,7 +16,7 @@ const phoneAuthHistoryCtrl = {
             if (!decode_user) {
                 return lowLevelException(req, res);
             }
-            const { mcht_id, status, search, s_dt, e_dt, } = req.query;
+            const { mcht_id, status, search, s_dt, e_dt, auth_type } = req.query;
             let search_columns = [
                 `mchts.user_name`,
                 `mchts.nickname`,
@@ -34,6 +34,9 @@ const phoneAuthHistoryCtrl = {
 
             if (mcht_id > 0 || decode_user?.level == 10) {
                 sql += ` AND ${table_name}.mcht_id=${mcht_id || decode_user?.id} `;
+            }
+            if (auth_type) {
+                sql += ` AND ${table_name}.auth_type=${auth_type} `;
             }
             if (search) {
                 sql += makeSearchQuery(search_columns, search);
