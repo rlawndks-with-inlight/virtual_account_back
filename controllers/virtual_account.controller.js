@@ -297,8 +297,7 @@ const virtualAccountCtrl = {
                 };
                 let result = await insertQuery(`deposits`, obj);
             }
-            if ((virtual_account?.virtual_acct_num && virtual_account?.delete_step < 1 && virtual_account?.status == 0) ||
-                (virtual_account?.delete_step < 1 && dns_data?.withdraw_corp_type == 7)) {
+            if (virtual_account?.virtual_acct_num && virtual_account?.delete_step < 1 && virtual_account?.status == 0) {
                 let api_result_vaccount_delete = await corpApi.vaccount_delete({
                     pay_type: 'deposit',
                     dns_data: decode_dns,
