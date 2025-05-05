@@ -28,6 +28,7 @@ const virtualAccountCtrl = {
                 `${table_name}.guid`,
                 `${table_name}.virtual_acct_num`,
                 `${table_name}.virtual_user_name`,
+                `${table_name}.phone_num`,
             ]
             let columns = [
                 `${table_name}.*`,
