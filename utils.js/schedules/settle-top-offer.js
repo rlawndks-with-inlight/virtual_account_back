@@ -20,7 +20,7 @@ const SEND_CHAT_IDS = [
     },
     {
         id: '7362742274',
-        level: 40,
+        level: 50,
         user_name: 'danial',
     },
 
@@ -46,7 +46,7 @@ export const onSettleTopOffer = async (return_moment = "") => {
         if (return_moment.includes('01:00:')) {
             if (brand_ids.length != brand_ids_set.length) {
                 let message = `가상계좌 등록 갯수에 이슈가 있습니다.`
-                //sendTelegramBot(TELEBOT_DATA, message, SEND_CHAT_IDS.filter(el => el?.level >= 40).map(el => { return el.id }));
+                sendTelegramBot(TELEBOT_DATA, message, SEND_CHAT_IDS.filter(el => el?.level >= 50).map(el => { return el.id }));
                 return;
 
             }
@@ -184,7 +184,7 @@ const onWithdrawSettleByBrand = async (brand = {}, parent_brand = {}, operator_l
                     logger.info(`${brand?.name} 정산 출금이 완료됨`);
                     let message = `${brand?.name} 정산 출금이 완료됨\n`;
                     message += `${commarNumber(withdraw_amount)}원`
-                    // sendTelegramBot(TELEBOT_DATA, message, SEND_CHAT_IDS.filter(el => el?.level >= 40).map(el => { return el.id }));
+                    sendTelegramBot(TELEBOT_DATA, message, SEND_CHAT_IDS.filter(el => el?.level >= 50).map(el => { return el.id }));
                 }
                 break;
             }
@@ -209,7 +209,7 @@ const sendSettleAlarm = async (brands = [], parent_brand) => {
             message += `출금\n`
             message += `출금횟수: ${commarNumber(chart_data.withdraw.total)}회\n`
             message += `출금금액: ${commarNumber(chart_data.withdraw.amount)}원`
-            //sendTelegramBot(TELEBOT_DATA, message, SEND_CHAT_IDS.filter(el => el?.level >= 10).map(el => { return el.id }));
+            sendTelegramBot(TELEBOT_DATA, message, SEND_CHAT_IDS.filter(el => el?.level >= 50).map(el => { return el.id }));
         }
     } catch (err) {
         console.log(err);
