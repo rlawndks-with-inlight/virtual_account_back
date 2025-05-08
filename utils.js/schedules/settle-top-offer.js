@@ -79,7 +79,7 @@ const onProcessSettle = async (virtual_accounts = [], parent_brand) => {
         console.log(err)
     }
 }
-const onWithdrawSettleByBrand = async (brand = {}, parent_brand = {}, operator_list = [], virtual_account) => {
+const onWithdrawSettleByBrand = async (brand = {}, parent_brand = {}, operator_list = [], virtual_account, is_more) => {
     try {
         let withdraw_amount = 0;
         let mcht = await readPool.query(`SELECT * FROM users WHERE id=?`, [virtual_account?.mcht_id]);
@@ -101,6 +101,8 @@ const onWithdrawSettleByBrand = async (brand = {}, parent_brand = {}, operator_l
             is_parent_brand_settle: 1,
         };
         let top_offer_obj = {};
+        let is_more_withdraw = false;
+
         for (var i = 0; i < operator_list.length; i++) {
             if (brand[`top_offer${operator_list[i]?.num}_id`] > 0) {
                 let top_offer_amount = await readPool.query(`SELECT SUM(top_offer${operator_list[i]?.num}_amount) AS top_offer_amount FROM deposits WHERE top_offer${operator_list[i]?.num}_id=? AND brand_id=?`, [
@@ -109,12 +111,21 @@ const onWithdrawSettleByBrand = async (brand = {}, parent_brand = {}, operator_l
                 ])
                 top_offer_amount = top_offer_amount[0][0]?.top_offer_amount ?? 0;
                 if (parseInt(top_offer_amount) > 0) {
-                    withdraw_amount += parseInt(top_offer_amount);
-                    top_offer_obj[`top_offer${operator_list[i]?.num}_id`] = brand[`top_offer${operator_list[i]?.num}_id`];
-                    top_offer_obj[`top_offer${operator_list[i]?.num}_amount`] = parseInt(top_offer_amount) * (-1);
+                    if (withdraw_amount + parseInt(top_offer_amount) >= 9000000) {
+                        withdraw_amount += 9000000 - withdraw_amount;
+                        top_offer_obj[`top_offer${operator_list[i]?.num}_id`] = brand[`top_offer${operator_list[i]?.num}_id`];
+                        top_offer_obj[`top_offer${operator_list[i]?.num}_amount`] = parseInt(9000000 - withdraw_amount) * (-1);
+                        is_more_withdraw = true;
+                        break;
+                    } else {
+                        withdraw_amount += parseInt(top_offer_amount);
+                        top_offer_obj[`top_offer${operator_list[i]?.num}_id`] = brand[`top_offer${operator_list[i]?.num}_id`];
+                        top_offer_obj[`top_offer${operator_list[i]?.num}_amount`] = parseInt(top_offer_amount) * (-1);
+                    }
                 }
             }
         }
+
         if (!(withdraw_amount > 0)) {
             return;
         }
@@ -188,6 +199,11 @@ const onWithdrawSettleByBrand = async (brand = {}, parent_brand = {}, operator_l
                 }
                 break;
             }
+        }
+        if (is_more_withdraw) {
+            setTimeout(() => {
+                onWithdrawSettleByBrand(brand, parent_brand, operator_list, virtual_account, true);
+            }, 1000);
         }
     } catch (err) {
         console.log(err);
