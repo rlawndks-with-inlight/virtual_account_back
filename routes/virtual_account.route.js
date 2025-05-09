@@ -55,5 +55,8 @@ router
 router
     .route('/acct-auth-check')
     .post(virtualAccountCtrl.acctAuthcheck)
+router
+    .route('/issuance')
+    .post(virtualAccountCtrl.issuance)
 
 export default router;
