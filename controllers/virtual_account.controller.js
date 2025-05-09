@@ -868,6 +868,59 @@ const virtualAccountCtrl = {
 
         }
     },
+    issuance: async (req, res, next) => {
+        try {
+            let is_manager = await checkIsManagerUrl(req);
+            const decode_user = await checkLevel(req.cookies.token, 40, req);
+            const decode_dns = checkDns(req.cookies.dns);
+            if (!decode_user) {
+                return lowLevelException(req, res);
+            }
+            const {
+                id,
+            } = req.body;
+            let virtual_account = await readPool.query(`SELECT * FROM ${table_name} WHERE id=? AND brand_id=? AND is_delete=0 `, [id, decode_dns?.id]);
+            virtual_account = virtual_account[0][0];
+            if (!virtual_account) {
+                return response(req, res, -100, "잘못된 접근입니다.", false)
+            }
+            if (virtual_account?.user_type == 0) {
+                if (virtual_account?.phone_check != 1) {
+                    return response(req, res, -100, "휴대폰인증을 완료해 주세요.", false)
+                }
+                if (virtual_account?.deposit_acct_check != 1) {
+                    return response(req, res, -100, "계좌인증을 완료해 주세요.", false)
+                }
+            } else if (virtual_account?.user_type == 1 || virtual_account?.user_type == 2) {
+                if (virtual_account?.deposit_acct_check != 1) {
+                    return response(req, res, -100, "계좌인증을 완료해 주세요.", false)
+                }
+            }
+            let api_result = await corpApi.vaccount({
+                pay_type: 'deposit',
+                dns_data: decode_dns,
+                decode_user: decode_user,
+                ci: virtual_account?.ci,
+            })
+            if (api_result?.code != 100) {
+                return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
+            }
+            let update_virtual_account = await updateQuery(`${table_name}`, {
+                virtual_bank_code: api_result.data?.virtual_bank_code,
+                virtual_acct_num: api_result.data?.virtual_acct_num,
+                guid: virtual_account?.ci,
+                status: 0,
+                last_auth_date: returnMoment(),
+                last_acct_auth_date: returnMoment(),
+            }, virtual_account?.id);
+            return response(req, res, 100, "success", {});
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
 };
 
 export default virtualAccountCtrl;

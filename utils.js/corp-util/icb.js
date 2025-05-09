@@ -74,15 +74,18 @@ export const icbApi = {
                 dns_data,
                 pay_type,
                 ci,
-
             } = data;
             let timestamp = await returnMoment().replaceAll(' ', '').replaceAll('-', '').replaceAll(':', '')
+
             let query = {
                 timestamp,
                 memKey: ci,
             }
-
-            let { data: response } = await axios.post(`${API_URL}/v3/member/publish/virtAcnt`, query, {
+            let uri = `/v3/member/publish/virtAcnt`;
+            if (dns_data?.deposit_process_type == 1) {
+                uri = `/v2/merchant/member/publish/virtAcnt`;
+            }
+            let { data: response } = await axios.post(`${API_URL}${uri}`, query, {
                 headers: getDefaultHeader(dns_data, pay_type, timestamp)
             });
             if (response?.code != 200) {

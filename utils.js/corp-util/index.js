@@ -512,6 +512,8 @@ const corpApi = {
         }
         if (corp_type == 1) {
             result = await banknersApi.vaccount(data);
+        } else if (corp_type == 7) {
+            result = await icbApi.vaccount(data);
         }
         return result;
     },
