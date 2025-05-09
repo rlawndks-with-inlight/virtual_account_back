@@ -494,10 +494,10 @@ const virtualAccountCtrl = {
                 await redisCtrl.delete(`is_ing_request_deposit_${virtual_account_id}`);
                 return response(req, res, -100, '입금불가 가상계좌 입니다.', false);
             }
-            if (virtual_account?.last_auth_date.substring(0, 10) != returnMoment().substring(0, 10)) {
+            if (virtual_account?.last_auth_date.substring(0, 10) != returnMoment().substring(0, 10) && virtual_account?.user_type == 0) {
                 return response(req, res, -100, "데일리 인증을 완료해 주세요.", false)
             }
-            if (!(differenceSecondTwoDate(returnMoment(), virtual_account?.last_acct_auth_date) < 300 && virtual_account?.last_acct_auth_date)) {
+            if (!(differenceSecondTwoDate(returnMoment(), virtual_account?.last_acct_auth_date) < 300 && virtual_account?.last_acct_auth_date) && virtual_account?.user_type == 0) {
                 return response(req, res, -100, "5분 계좌인증을 완료해 주세요.", false)
             }
             let mcht = await readPool.query(`SELECT virtual_acct_link_status, is_delete FROM users WHERE id=${virtual_account?.mcht_id}`);
