@@ -121,7 +121,7 @@ const dashboardCtrl = {
             ]
             let sql = `SELECT ${columns.join()} FROM deposits `;
             if (decode_dns?.is_oper_dns == 1) {
-                sql += ` WHERE pay_type IN ${pay_type_join} AND  `;
+                sql += ` WHERE pay_type IN ${pay_type_join}  `;
             } else {
                 sql += ` WHERE pay_type IN ${pay_type_join} AND deposits.brand_id=${decode_dns?.id} `;
             }
