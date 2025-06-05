@@ -1,6 +1,6 @@
 'use strict';
 import axios from "axios";
-import corpApi from "../utils.js/corp-util/index.js";
+import corpApi, { getDnsData } from "../utils.js/corp-util/index.js";
 import { checkIsManagerUrl, differenceSecondTwoDate, returnMoment } from "../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, makeSearchQuery, makeSearchQueryExact, selectQuerySimple, updateQuery } from "../utils.js/query-util.js";
 import { checkDns, checkLevel, generateRandomString, isItemBrandIdSameDnsId, lowLevelException, response, settingFiles } from "../utils.js/util.js";
@@ -681,6 +681,10 @@ const virtualAccountCtrl = {
             if (virtual_account?.last_auth_date.substring(0, 10) == returnMoment().substring(0, 10)) {
                 return response(req, res, -100, "이미 금일 인증이 완료 되었습니다.", false)
             }
+            let brand = await getDnsData(decode_dns);
+            if (brand?.setting_obj?.is_virtual_acct_inspect == 1) {
+                return response(req, res, -100, "점검중입니다. 본사에게 문의하세요", false);
+            }
             let api_result = await corpApi.sms.push({
                 dns_data: decode_dns,
                 pay_type: 'deposit',
@@ -772,7 +776,10 @@ const virtualAccountCtrl = {
             if (differenceSecondTwoDate(returnMoment(), virtual_account?.last_acct_auth_date) < 300 && virtual_account?.last_acct_auth_date) {
                 return response(req, res, -100, "이미 5분 인증이 완료 되었습니다.", false)
             }
-
+            let brand = await getDnsData(decode_dns);
+            if (brand?.setting_obj?.is_virtual_acct_inspect == 1) {
+                return response(req, res, -100, "점검중입니다. 본사에게 문의하세요", false);
+            }
             if (virtual_account?.user_type == 0) {
                 let is_exist_account = await corpApi.account.info({
                     pay_type: 'deposit',
