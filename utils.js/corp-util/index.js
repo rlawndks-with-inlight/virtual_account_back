@@ -9,6 +9,7 @@ import { koreaPaySystemApi } from "./korea-pay-system.js";
 import { paytusApi } from "./paytus.js";
 import redisCtrl from "../../redis/index.js";
 import { readPool } from "../../config/db-pool.js";
+import { wingGlobalApi } from "./wing-global.js";
 
 export const getDnsData = async (dns_data_) => {
     let dns_data = await redisCtrl.get(`dns_data_${dns_data_?.id}`);
@@ -345,6 +346,9 @@ const corpApi = {
             if (corp_type == 7) {
                 result = await icbApi.account.info(data);
             }
+            if (corp_type == 8) {
+                result = await wingGlobalApi.account.info(data);
+            }
             return result;
         },
     },
@@ -454,6 +458,9 @@ const corpApi = {
             if (corp_type == 7) {
                 result = await icbApi.balance.info(data);
             }
+            if (corp_type == 8) {
+                result = await wingGlobalApi.balance.info(data);
+            }
             return result;
         },
     },
@@ -487,6 +494,8 @@ const corpApi = {
                 result = await koreaPaySystemApi.bank.list(data);
             } else if (corp_type == 7) {
                 result = await icbApi.bank.list(data);
+            } else if (corp_type == 8) {
+                result = await wingGlobalApi.bank.list(data);
             } else {
                 result = await banknersApi.bank.list(data);
             }
@@ -514,7 +523,10 @@ const corpApi = {
             result = await banknersApi.vaccount(data);
         } else if (corp_type == 7) {
             result = await icbApi.vaccount(data);
+        } else if (corp_type == 8) {
+            result = await wingGlobalApi.vaccount(data);
         }
+
         return result;
     },
     vaccount_info: async (data_) => {//가상계좌발급
@@ -562,6 +574,9 @@ const corpApi = {
         }
         if (corp_type == 7) {
             result = await icbApi.vaccount_delete(data);
+        }
+        if (corp_type == 7) {
+            result = await wingGlobalApi.vaccount_delete(data);
         }
         return result;
     },
@@ -663,6 +678,9 @@ const corpApi = {
             if (corp_type == 7) {
                 result = await icbApi.withdraw.request(data);
             }
+            if (corp_type == 8) {
+                result = await wingGlobalApi.withdraw.request(data);
+            }
             return result;
         },
         request_check: async (data_) => {//출금요청
@@ -690,6 +708,9 @@ const corpApi = {
             }
             if (corp_type == 7) {
                 result = await icbApi.withdraw.request_check(data);
+            }
+            if (corp_type == 8) {
+                result = await wingGlobalApi.withdraw.request_check(data);
             }
             return result;
         },
