@@ -1,4 +1,8 @@
 import axios from "axios";
+import redisCtrl from "../../redis/index.js";
+import { returnMoment } from "../function.js";
+import { readPool, writePool } from "../../config/db-pool.js";
+import { insertQuery } from "../query-util.js";
 
 const API_URL = process.env.API_ENV == 'production' ? "https://na.winglobalpay.com" : "https://na.winglobalpay.com";
 
@@ -10,6 +14,40 @@ const getDefaultHeader = (dns_data, pay_type) => {
         'Content-Type': 'application/json; charset=utf-8',
     }
 }
+const getCount = async (dns_data) => {
+    let return_moment = returnMoment();
+    let date = return_moment.substring(0, 10);
+    let key = `wing_global_count:${dns_data?.id}_${date}`;
+    let count = await redisCtrl.get(key);
+    let is_use_update = true;
+    if (count) {
+        count = await redisCtrl.addNumber(key, 1, 60);
+    } else {
+        count = await readPool.query(`SELECT * FROM wing_global_counts WHERE date=? AND brand_id=?`, [
+            date,
+            dns_data?.id,
+        ]);
+        count = count[0][0];
+        if (!count) {
+            is_use_update = false;
+            let result = await insertQuery(`wing_global_counts`, {
+                date: date,
+                brand_id: dns_data?.id,
+            })
+            count = 0;
+        } else {
+            count = count?.count + 1;
+        }
+        await redisCtrl.set(key, count, 60);
+    }
+    if (is_use_update) {
+        writePool.query(`UPDATE wing_global_counts SET count=count+1 WHERE date=? AND brand_id=?`, [
+            date,
+            dns_data?.id,
+        ])
+    }
+    return String(count).padStart(6, '0');
+}
 export const wingGlobalApi = {
     balance: {
         info: async (data) => {
@@ -18,13 +56,14 @@ export const wingGlobalApi = {
                     dns_data,
                     pay_type,
                 } = data;
-
+                let count = await getCount(dns_data);
                 let query = {
-                    telegramNo: '999999',
+                    telegramNo: count,
                 }
                 let { data: response } = await axios.post(`${API_URL}/api/rt/v1/balance/check`, query, {
                     headers: getDefaultHeader(dns_data, pay_type)
                 });
+                console.log(response)
                 if (response?.status == 200) {
                     return {
                         code: 100,
@@ -211,9 +250,9 @@ export const wingGlobalApi = {
                     dns_data, pay_type, decode_user,
                     bank_code, acct_num, amount
                 } = data;
-
+                let count = await getCount(dns_data);
                 let query = {
-                    telegramNo: '999999',
+                    telegramNo: count,
                     bankCode: bank_code,
                     account: acct_num,
                 }
@@ -259,9 +298,9 @@ export const wingGlobalApi = {
                     bank_code,
                     acct_num,
                 } = data;
-
+                let count = await getCount(dns_data);
                 let query = {
-                    telegramNo: trx_id.substring(0, 6),
+                    telegramNo: count,
                     rvBankCode: bank_code,
                     rvAccount: acct_num,
                     amount: amount,
