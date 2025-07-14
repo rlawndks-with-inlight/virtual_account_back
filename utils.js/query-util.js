@@ -85,7 +85,7 @@ export const getTableNameBySelectQuery = (sql) => {// select query 가지고 불
 }
 export const getSelectQuery = async (sql_, columns, query, add_sql_list = [], decode_user, decode_dns, not_use_delete = false) => {
 
-    const { page = 1, page_size = 1000, is_asc = false, order = 'id', s_dt, e_dt, is_excel } = query;
+    const { page = 1, page_size = 2000, is_asc = false, order = 'id', s_dt, e_dt, is_excel } = query;
 
 
     let sql = sql_;
