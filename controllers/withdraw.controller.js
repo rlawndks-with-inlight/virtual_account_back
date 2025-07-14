@@ -14,6 +14,7 @@ import withdrawV4Ctrl from "./withdraw/v4.js";
 import withdrawV5Ctrl from "./withdraw/v5.js";
 import redisCtrl from "../redis/index.js";
 import { readPool } from "../config/db-pool.js";
+import withdrawV6Ctrl from "./withdraw/v6.js";
 
 const table_name = 'deposits';
 
@@ -915,6 +916,8 @@ const withdrawCtrl = {
                 result = await withdrawV4Ctrl.request(req, res);
             } else if (decode_dns?.setting_obj?.api_withdraw_version == 5) {
                 result = await withdrawV5Ctrl.request(req, res);
+            } else if (decode_dns?.setting_obj?.api_withdraw_version == 6) {
+                result = await withdrawV6Ctrl.request(req, res);
             } else {
                 return response(req, res, -100, "존재하지 않습니다.", false)
             }
@@ -964,6 +967,8 @@ const withdrawCtrl = {
 
             } else if (decode_dns?.setting_obj?.api_withdraw_version == 5) {
 
+            } else if (decode_dns?.setting_obj?.api_withdraw_version == 6) {
+                result = await withdrawV6Ctrl.check({ ...req, body: body, }, res);
             } else {
                 return response(req, res, -100, "존재하지 않습니다.", false)
             }

@@ -575,7 +575,7 @@ const corpApi = {
         if (corp_type == 7) {
             result = await icbApi.vaccount_delete(data);
         }
-        if (corp_type == 7) {
+        if (corp_type == 8) {
             result = await wingGlobalApi.vaccount_delete(data);
         }
         return result;

@@ -3,7 +3,7 @@ import axios from "axios";
 const API_URL = process.env.API_ENV == 'production' ? "https://na.winglobalpay.com" : "https://na.winglobalpay.com";
 
 const getDefaultHeader = (dns_data, pay_type) => {
-    let mid = dns_data[`${pay_type}_api_id`];
+    let mid = dns_data[`${pay_type}_sign_key`];
     // TEXT_B 생성
     return {
         'Authorization': mid,
@@ -20,7 +20,7 @@ export const wingGlobalApi = {
                 } = data;
 
                 let query = {
-                    telegram_no: '999999',
+                    telegramNo: '999999',
                 }
                 let { data: response } = await axios.post(`${API_URL}/api/rt/v1/balance/check`, query, {
                     headers: getDefaultHeader(dns_data, pay_type)
@@ -30,13 +30,13 @@ export const wingGlobalApi = {
                         code: 100,
                         message: 'success',
                         data: {
-                            amount: payable_amount,
+                            amount: response?.payable_amount,
                         },
                     };
                 }
                 return {
                     code: -100,
-                    message: response?.status,
+                    message: response?.error_message,
                     data: {},
                 };
 
@@ -61,10 +61,11 @@ export const wingGlobalApi = {
                 phone_num,
                 birth,
                 gender,
+                auth_user_name,
             } = data;
 
             let query = {
-                mchtId: 'mchtId',
+                mchtId: auth_user_name,
                 bankCd: bank_code,
                 account: acct_num,
                 payerName: acct_name,
@@ -88,7 +89,7 @@ export const wingGlobalApi = {
             }
             return {
                 code: -100,
-                message: response?.status,
+                message: response?.error_message,
                 data: {
 
                 },
@@ -119,7 +120,6 @@ export const wingGlobalApi = {
             let { data: response } = await axios.post(`${API_URL}/api/v1/deleteVactInfo`, query, {
                 headers: getDefaultHeader(dns_data, pay_type)
             });
-
             if (response?.statusCodeValue == 200) {
                 return {
                     code: 100,
@@ -130,7 +130,7 @@ export const wingGlobalApi = {
             }
             return {
                 code: -100,
-                message: response?.statusCode,
+                message: response?.error_message,
                 data: {
 
                 },
@@ -217,9 +217,10 @@ export const wingGlobalApi = {
                     bankCode: bank_code,
                     account: acct_num,
                 }
-                let { data: response } = await axios.post(`${API_URL}/????`, query, {
+                let { data: response } = await axios.post(`${API_URL}/api/rt/v1/inquireDepositor`, query, {
                     headers: getDefaultHeader(dns_data, pay_type)
                 });
+
                 if (response?.status == 200) {
                     return {
                         code: 100,
@@ -231,7 +232,7 @@ export const wingGlobalApi = {
                 } else {
                     return {
                         code: -100,
-                        message: response?.status,
+                        message: response?.error_message,
                         data: {},
                     };
                 }
@@ -260,7 +261,7 @@ export const wingGlobalApi = {
                 } = data;
 
                 let query = {
-                    telegramNo: trx_id,
+                    telegramNo: trx_id.substring(0, 6),
                     rvBankCode: bank_code,
                     rvAccount: acct_num,
                     amount: amount,
@@ -268,6 +269,7 @@ export const wingGlobalApi = {
                 let { data: response } = await axios.post(`${API_URL}/api/rt/v1/transfer`, query, {
                     headers: getDefaultHeader(dns_data, pay_type)
                 });
+
                 if (response?.status == 200) {
                     return {
                         code: 100,
@@ -279,7 +281,7 @@ export const wingGlobalApi = {
                 } else {
                     return {
                         code: -100,
-                        message: response?.status,
+                        message: response?.error_message,
                         data: {},
                     }
                 }
@@ -328,7 +330,7 @@ export const wingGlobalApi = {
                 }
                 return {
                     code: -100,
-                    message: response?.status,
+                    message: response?.error_message,
                     data: {
                         status
                     },

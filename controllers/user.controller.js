@@ -497,7 +497,7 @@ const userCtrl = {
             }
             const decode_dns = checkDns(req.cookies.dns);
             let {
-                brand_id, user_name, user_pw, name, nickname, level, phone_num, profile_img, note,
+                brand_id, user_name, auth_user_name, user_pw, name, nickname, level, phone_num, profile_img, note,
                 mcht_fee = 0,
                 guid,
                 deposit_fee = 0, withdraw_fee = 0, min_withdraw_price = 0, max_withdraw_price = 0, min_withdraw_remain_price = 0, min_withdraw_hold_price = 0, is_withdraw_hold = 0, can_return_ago_pay = 1, is_not_same_acct_withdraw_minute = 0, daily_withdraw_amount = 0,
@@ -516,7 +516,7 @@ const userCtrl = {
             let user_salt = pw_data.salt;
 
             let obj = {
-                brand_id, user_name, user_pw, user_salt, name, nickname, level, phone_num, profile_img, note,
+                brand_id, user_name, auth_user_name, user_pw, user_salt, name, nickname, level, phone_num, profile_img, note,
                 deposit_fee, withdraw_fee, min_withdraw_price, max_withdraw_price, min_withdraw_remain_price, min_withdraw_hold_price, is_withdraw_hold, can_return_ago_pay, is_not_same_acct_withdraw_minute, daily_withdraw_amount,
                 withdraw_bank_code, withdraw_acct_num, withdraw_acct_name, identity, telegram_chat_ids, otp_token, sign_key, deposit_noti_url, withdraw_noti_url,
                 can_return
@@ -591,7 +591,7 @@ const userCtrl = {
             }
             const decode_dns = checkDns(req.cookies.dns);
             const {
-                name, nickname, level, phone_num, profile_img, note,
+                auth_user_name, name, nickname, level, phone_num, profile_img, note,
                 mcht_fee = 0,
                 guid = "",
                 deposit_fee = 0, withdraw_fee = 0, min_withdraw_price = 0, max_withdraw_price = 0, min_withdraw_remain_price = 0, min_withdraw_hold_price = 0, is_withdraw_hold = 0, can_return_ago_pay = 1, is_not_same_acct_withdraw_minute = 0, daily_withdraw_amount = 0,
@@ -602,7 +602,7 @@ const userCtrl = {
                 id
             } = req.body;
             let obj = {
-                name, nickname, level, phone_num, profile_img, note,
+                auth_user_name, name, nickname, level, phone_num, profile_img, note,
                 deposit_fee, withdraw_fee, min_withdraw_price, max_withdraw_price, min_withdraw_remain_price, min_withdraw_hold_price, is_withdraw_hold, can_return_ago_pay, is_not_same_acct_withdraw_minute, daily_withdraw_amount,
                 withdraw_bank_code, withdraw_acct_num, withdraw_acct_name, identity, telegram_chat_ids, otp_token, sign_key, deposit_noti_url, withdraw_noti_url,
                 can_return,
@@ -862,7 +862,6 @@ const asdsdaasd = async () => {
                     mcht_columns.mcht_id = mcht_id;
                     mcht_columns.sales5_id = brand_list[i].oper_id;
                     let insert_mcht_columns = await insertQuery(`merchandise_columns`, mcht_columns);
-                    console.log(mcht)
                     await new Promise((r) => setTimeout(r, 100));
                 }
             }
