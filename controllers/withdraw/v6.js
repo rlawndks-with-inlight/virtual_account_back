@@ -123,9 +123,6 @@ const withdrawV6Ctrl = {
                 note = "",
                 api_sign_val,
                 otp_num,
-                withdraw_bank_code,
-                withdraw_acct_num,
-                withdraw_acct_name,
                 identity = "",
             } = req.body;
 
@@ -221,18 +218,7 @@ const withdrawV6Ctrl = {
                     return response(req, res, -100, "OTP번호가 잘못되었습니다.", false);
                 }
             }
-            if (!withdraw_bank_code) {
-                await redisCtrl.delete(`is_ing_withdraw_${mid}_${guid}`);
-                return response(req, res, -100, "은행을 선택해 주세요.", false)
-            }
-            if (!withdraw_acct_num) {
-                await redisCtrl.delete(`is_ing_withdraw_${mid}_${guid}`);
-                return response(req, res, -100, "계좌번호를 입력해 주세요.", false)
-            }
-            if (!withdraw_acct_name) {
-                await redisCtrl.delete(`is_ing_withdraw_${mid}_${guid}`);
-                return response(req, res, -100, "예금주명을 입력해 주세요.", false)
-            }
+
             if (dns_data?.is_use_sign_key == 1) {
                 let user_api_sign_val = makeSignValueSha256(`${api_key}${mid}${user?.sign_key}`);
                 if (user_api_sign_val != api_sign_val) {
@@ -299,7 +285,7 @@ const withdrawV6Ctrl = {
                     return response(req, res, -100, `일일 출금금액을 넘었습니다.\n일일 출금금액:${commarNumber(user?.daily_withdraw_amount)}`, false);
                 }
             }
-            let black_item = await findBlackList(withdraw_acct_num, 0, dns_data);
+            let black_item = await findBlackList(virtual_account?.deposit_acct_num, 0, dns_data);
             if (black_item) {
                 await redisCtrl.delete(`is_ing_withdraw_${mid}_${guid}`);
                 return response(req, res, -100, "블랙리스트 유저입니다.", false);
@@ -375,7 +361,7 @@ const withdrawV6Ctrl = {
                 return response(req, res, -100, "모계좌 출금 실패 A", false)
             }
             let last_deposit_same_acct_num = await readPool.query(`SELECT id FROM deposits WHERE brand_id=${dns_data?.id} AND created_at >= NOW() - INTERVAL 1 MINUTE AND settle_acct_num=? AND user_id=${user?.id} `, [
-                withdraw_acct_num
+                virtual_account?.deposit_acct_num
             ])
             last_deposit_same_acct_num = last_deposit_same_acct_num[0][0];
             if (last_deposit_same_acct_num && user?.is_not_same_acct_withdraw_minute == 1) {
