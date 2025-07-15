@@ -591,7 +591,7 @@ const userCtrl = {
             }
             const decode_dns = checkDns(req.cookies.dns);
             const {
-                auth_user_name, name, nickname, level, phone_num, profile_img, note,
+                auth_user_name, name, nickname, phone_num, profile_img, note,
                 mcht_fee = 0,
                 guid = "",
                 deposit_fee = 0, withdraw_fee = 0, min_withdraw_price = 0, max_withdraw_price = 0, min_withdraw_remain_price = 0, min_withdraw_hold_price = 0, is_withdraw_hold = 0, can_return_ago_pay = 1, is_not_same_acct_withdraw_minute = 0, daily_withdraw_amount = 0,
@@ -602,11 +602,14 @@ const userCtrl = {
                 id
             } = req.body;
             let obj = {
-                auth_user_name, name, nickname, level, phone_num, profile_img, note,
+                auth_user_name, name, nickname, phone_num, profile_img, note,
                 deposit_fee, withdraw_fee, min_withdraw_price, max_withdraw_price, min_withdraw_remain_price, min_withdraw_hold_price, is_withdraw_hold, can_return_ago_pay, is_not_same_acct_withdraw_minute, daily_withdraw_amount,
                 withdraw_bank_code, withdraw_acct_num, withdraw_acct_name, identity, telegram_chat_ids, otp_token, sign_key, deposit_noti_url, withdraw_noti_url,
                 can_return,
             };
+            let before_user = await readPool.query(`SELECT * FROM users WHERE id=?`, [id]);
+            before_user = before_user[0][0];
+
             let table = decode_dns?.deposit_type == 'virtual_account' ? 'virtual_account' : 'member'
             if (guid) {
                 let virtual_account = await readPool.query(`SELECT * FROM ${table}s WHERE guid=? AND brand_id=${decode_dns?.id}`, [guid]);
@@ -664,8 +667,7 @@ const userCtrl = {
             if (result_delete_ip_list.length > 0) {//기존거 삭제
                 let delete_ip_result = await writePool.query(`UPDATE permit_ips SET is_delete=1 WHERE id IN (${result_delete_ip_list.join()})`)
             }
-
-            if (level == 10) {//가맹점
+            if (before_user?.level == 10) {//가맹점
                 let mcht_obj = await settingMchtFee(decode_dns, id, req.body);
                 if (mcht_obj?.code > 0) {
                     mcht_obj = mcht_obj.data

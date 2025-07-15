@@ -109,6 +109,7 @@ const brandCtrl = {
                 is_use_telegram_bot = 0, telegram_bot_token = "", telegram_bot_id = "", is_use_otp = 0, otp_token = "", is_use_sign_key = 0,
                 is_use_fee_operator = 1, is_use_deposit_operator = 0, is_use_withdraw_operator = 0, hold_amount = 0,
                 is_use_corp_account = 0, corp_account_corp_type = 0, is_can_add_deposit = 0, is_use_asapmall_noti = 0, asapmall_dns = "", asapmall_back_dns = "", is_use_destruct_auto_virtual_acct = 0, destruct_auto_virtual_acct_minute = 0,
+                must_hold_withdraw_amount = 0,
             } = req.body;
             let obj = {
                 name, dns, og_description, company_name, business_num, pvcy_rep_name, ceo_name, addr, addr_detail, resident_num, phone_num, fax_num, pay_day, pay_amount, note, theme_css, setting_obj, level_obj, bizppurio_obj,
@@ -119,6 +120,7 @@ const brandCtrl = {
                 is_use_telegram_bot, telegram_bot_token, telegram_bot_id, is_use_otp, otp_token, is_use_sign_key,
                 is_use_fee_operator, is_use_deposit_operator, is_use_withdraw_operator, hold_amount,
                 is_use_corp_account, corp_account_corp_type, is_can_add_deposit, is_use_asapmall_noti, asapmall_dns, asapmall_back_dns, is_use_destruct_auto_virtual_acct, destruct_auto_virtual_acct_minute,
+                must_hold_withdraw_amount,
             };
             obj['theme_css'] = JSON.stringify(obj.theme_css);
             obj['setting_obj'] = JSON.stringify(obj.setting_obj);
@@ -175,6 +177,7 @@ const brandCtrl = {
                 is_use_fee_operator = 1, is_use_deposit_operator = 0, is_use_withdraw_operator = 0, hold_amount = 0,
                 is_use_corp_account = 0, corp_account_corp_type = 0, is_can_add_deposit = 0, is_use_asapmall_noti = 0, asapmall_dns = "", asapmall_back_dns = "", is_use_destruct_auto_virtual_acct = 0, destruct_auto_virtual_acct_minute = 0,
                 guid = "",
+                must_hold_withdraw_amount = 0,
             } = req.body;
             const { id } = req.params;
             if ((decode_user?.level < 45 && decode_user?.brand_id != id) || decode_user?.level < 40) {
@@ -190,6 +193,7 @@ const brandCtrl = {
                 is_use_telegram_bot, telegram_bot_token, telegram_bot_id, is_use_otp, otp_token, is_use_sign_key,
                 is_use_fee_operator, is_use_deposit_operator, is_use_withdraw_operator, hold_amount,
                 is_use_corp_account, corp_account_corp_type, is_can_add_deposit, is_use_asapmall_noti, asapmall_dns, asapmall_back_dns, is_use_destruct_auto_virtual_acct, destruct_auto_virtual_acct_minute,
+                must_hold_withdraw_amount,
             };
             obj['theme_css'] = JSON.stringify(obj.theme_css);
             obj['setting_obj'] = JSON.stringify(obj.setting_obj);

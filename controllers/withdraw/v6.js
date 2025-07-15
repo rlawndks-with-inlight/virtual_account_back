@@ -399,8 +399,7 @@ const withdrawV6Ctrl = {
                 return response(req, res, -100, `${pay_type_name} 요청금이 보유정산금보다 많습니다.`, false)
             }
             //
-            if (user?.is_withdraw_hold == 1) {
-
+            if (user?.is_withdraw_hold == 1 || (dns_data?.must_hold_withdraw_amount > 0 && withdraw_amount >= dns_data?.must_hold_withdraw_amount)) {
                 return response(req, res, 100, "출금 요청이 완료되었습니다.", {});
             }
             let date = returnMoment().substring(0, 10).replaceAll('-', '');
