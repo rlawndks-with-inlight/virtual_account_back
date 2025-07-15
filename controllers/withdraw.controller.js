@@ -1003,6 +1003,8 @@ const withdrawCtrl = {
                 result = await withdrawV4Ctrl.check_withdraw(req, res);
             } else if (decode_dns?.setting_obj?.api_withdraw_version == 5) {
                 result = await withdrawV5Ctrl.check_withdraw(req, res);
+            } else if (decode_dns?.setting_obj?.api_withdraw_version == 6) {
+                result = await withdrawV6Ctrl.check_withdraw(req, res);
             } else {
                 return response(req, res, -100, "존재하지 않습니다.", false)
             }

@@ -3,7 +3,7 @@ import _ from "lodash";
 import corpApi from "../../utils.js/corp-util/index.js";
 import { checkIsManagerUrl, getUserWithDrawFee, returnMoment } from "../../utils.js/function.js";
 import { deleteQuery, getSelectQuery, insertQuery, selectQuerySimple, updateQuery } from "../../utils.js/query-util.js";
-import { checkDns, checkLevel, commarNumber, findBlackList, getDailyWithdrawAmount, getMotherDeposit, getOperatorList, getReqIp, isItemBrandIdSameDnsId, operatorLevelList, settingFiles } from "../../utils.js/util.js";
+import { checkDns, checkLevel, commarNumber, findBlackList, getDailyWithdrawAmount, getMotherDeposit, getOperatorList, getReqIp, isItemBrandIdSameDnsId, operatorLevelList, settingFiles, setWithdrawAmountSetting } from "../../utils.js/util.js";
 import 'dotenv/config';
 import crypto from 'crypto';
 import speakeasy from 'speakeasy';
@@ -364,7 +364,7 @@ const withdrawV6Ctrl = {
 
             if (withdraw_amount > mother_account?.real_amount - (mother_account?.hold_amount ?? 0)) {
                 await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
-                //return response(req, res, -100, "모계좌 출금 실패 A", false)
+                return response(req, res, -100, "모계좌 출금 실패 A", false)
             }
             let last_deposit_same_acct_num = await readPool.query(`SELECT id FROM deposits WHERE brand_id=${dns_data?.id} AND created_at >= NOW() - INTERVAL 1 MINUTE AND settle_acct_num=? AND user_id=${user?.id} `, [
                 withdraw_acct_num
@@ -387,15 +387,13 @@ const withdrawV6Ctrl = {
             })
             if (check_account.code != 100) {
                 await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
-                //return response(req, res, -110, (check_account?.message || "서버 에러 발생"), false)
+                return response(req, res, -110, (check_account?.message || "서버 에러 발생"), false)
             }
             if (withdraw_acct_name != check_account.data?.withdraw_acct_name) {
                 await redisCtrl.delete(`is_ing_withdraw_${mid}_${withdraw_acct_num}`);
-                //return response(req, res, -100, "예금주명이 일치하지 않습니다.", false)
+                return response(req, res, -100, "예금주명이 일치하지 않습니다.", false)
             }
             let withdraw_id = 0;
-            let trx_id = `${dns_data?.id}${user?.id}${new Date().getTime()}`;
-            deposit_obj['trx_id'] = trx_id;
             let result = await insertQuery(`deposits`, deposit_obj);
             withdraw_id = result?.insertId;
             //인설트후 체크
@@ -411,7 +409,7 @@ const withdrawV6Ctrl = {
 
                 return response(req, res, 100, "출금 요청이 완료되었습니다.", {});
             }
-
+            let date = returnMoment().substring(0, 10).replaceAll('-', '');
             let api_withdraw_request_result = await corpApi.withdraw.request({
                 pay_type: 'withdraw',
                 dns_data: dns_data,
@@ -420,15 +418,48 @@ const withdrawV6Ctrl = {
                 bank_code: withdraw_bank_code,
                 acct_num: withdraw_acct_num,
                 acct_name: withdraw_acct_name,
-                trx_id: trx_id,
             })
             if (api_withdraw_request_result.code != 100) {
                 return response(req, res, -120, (api_withdraw_request_result?.message || "서버 에러 발생"), false)
             }
+            let count = api_withdraw_request_result.data?.count;
+            let trx_id = `${count}-${api_withdraw_request_result.data?.tid}`;
             let result3 = await updateQuery(`deposits`, {
-                trx_id: api_withdraw_request_result.data?.tid,
-                top_office_amount: api_withdraw_request_result.data?.top_amount,
+                trx_id: trx_id,
             }, withdraw_id);
+            for (var i = 0; i < 3; i++) {
+                let api_result2 = await corpApi.withdraw.request_check({
+                    pay_type: 'withdraw',
+                    dns_data: dns_data,
+                    decode_user: user,
+                    date,
+                    tid: count,
+                })
+
+                let status = 0;
+                if (api_result2.data?.status == 3) {
+                    status = 10;
+                } else if (api_result2.data?.status == 6) {
+                    continue;
+                }
+
+                if (api_result2.code == 100 || status == 10) {
+                    let update_obj = {
+                        withdraw_status: status,
+                        amount: (status == 0 ? ((-1) * amount) : 0),
+                    }
+                    let withdraw_obj = await setWithdrawAmountSetting(withdraw_amount, user, dns_data)
+                    if (status == 0) {
+                        update_obj = {
+                            ...update_obj,
+                            ...withdraw_obj,
+                        }
+                    }
+
+                    let result = await updateQuery(`deposits`, update_obj, withdraw_id)
+                    break;
+                }
+            }
 
             /*
             let trx_id = `${new Date().getTime()}${decode_dns?.id}${user?.id}5`;
@@ -445,6 +476,93 @@ const withdrawV6Ctrl = {
             }
             */
             return response(req, res, 100, "success", {})
+        } catch (err) {
+            console.log(err)
+            return response(req, res, -200, "서버 에러 발생", false)
+        } finally {
+
+        }
+    },
+    check_withdraw: async (req_, res, next) => {//출금요청
+        let req = req_;
+        try {
+            let {
+                api_key,
+                mid,
+                tid = '',
+            } = req.body;
+
+            if (!api_key) {
+                return response(req, res, -100, "api key를 입력해주세요.", false);
+            }
+            let dns_data = await readPool.query(`SELECT * FROM brands WHERE api_key=?`, [api_key]);
+            dns_data = dns_data[0][0];
+            let operator_list = getOperatorList(dns_data);
+            if (!dns_data) {
+                return response(req, res, -100, "api key가 잘못되었습니다.", false);
+            }
+            req.body.brand_id = dns_data?.id;
+
+            let mcht_sql = `SELECT ${process.env.SELECT_COLUMN_SECRET} FROM users `;
+            mcht_sql += ` LEFT JOIN merchandise_columns ON merchandise_columns.mcht_id=users.id `;
+            mcht_sql += ` LEFT JOIN virtual_accounts ON users.virtual_account_id=virtual_accounts.id `;
+            let mcht_columns = [
+                `users.*`,
+                `merchandise_columns.mcht_fee`,
+            ]
+            for (var i = 0; i < operator_list.length; i++) {
+                mcht_columns.push(`merchandise_columns.sales${operator_list[i]?.num}_id`);
+                mcht_columns.push(`merchandise_columns.sales${operator_list[i]?.num}_fee`);
+                mcht_columns.push(`merchandise_columns.sales${operator_list[i]?.num}_withdraw_fee`);
+                mcht_columns.push(`sales${operator_list[i]?.num}.user_name AS sales${operator_list[i]?.num}_user_name`);
+                mcht_columns.push(`sales${operator_list[i]?.num}.nickname AS sales${operator_list[i]?.num}_nickname`);
+                mcht_sql += ` LEFT JOIN users AS sales${operator_list[i]?.num} ON sales${operator_list[i]?.num}.id=merchandise_columns.sales${operator_list[i]?.num}_id `;
+            }
+            mcht_sql += ` WHERE users.id=? AND users.brand_id=? `;
+            mcht_sql = mcht_sql.replace(process.env.SELECT_COLUMN_SECRET, mcht_columns.join())
+
+
+            let trx = await readPool.query(`SELECT * FROM deposits WHERE brand_id=? AND trx_id=? `, [
+                dns_data?.id,
+                tid,
+            ])
+            trx = trx[0][0];
+
+            let user = await readPool.query(mcht_sql, [trx?.user_id, dns_data?.id]);
+            user = user[0][0];
+
+            let api_result = await corpApi.withdraw.request_check({
+                pay_type: 'withdraw',
+                dns_data: dns_data,
+                decode_user: user,
+                date: returnMoment(trx?.created_at).substring(0, 10).replaceAll('-', ''),
+                tid: trx?.trx_id.split('-')[0],
+            })
+            let status = 0;
+            if (api_result.data?.status == 3) {
+                status = 10;
+            } else if (api_result.data?.status == 6) {
+                status = 20;
+            }
+            if (api_result.code == 100 || status == 10) {
+                let update_obj = {
+                    withdraw_status: status,
+                    amount: (status == 0 ? trx?.expect_amount : 0),
+                }
+                let withdraw_obj = await setWithdrawAmountSetting(trx?.expect_amount * (-1) - user?.withdraw_fee, user, dns_data)
+                if (status == 0) {
+                    update_obj = {
+                        ...update_obj,
+                        ...withdraw_obj,
+                    }
+                }
+
+                let result = await updateQuery(`deposits`, update_obj, trx?.id)
+
+                return response(req, res, 100, "success", {})
+            } else {
+                return response(req, res, -100, (api_result?.message || "서버 에러 발생"), false)
+            }
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)

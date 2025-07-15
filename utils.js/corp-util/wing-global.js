@@ -63,13 +63,12 @@ export const wingGlobalApi = {
                 let { data: response } = await axios.post(`${API_URL}/api/rt/v1/balance/check`, query, {
                     headers: getDefaultHeader(dns_data, pay_type)
                 });
-                console.log(response)
                 if (response?.status == 200) {
                     return {
                         code: 100,
                         message: 'success',
                         data: {
-                            amount: response?.payable_amount,
+                            amount: response?.balance_amount,
                         },
                     };
                 }
@@ -293,7 +292,6 @@ export const wingGlobalApi = {
                 let {
                     dns_data,
                     pay_type,
-                    trx_id,
                     amount,
                     bank_code,
                     acct_num,
@@ -308,13 +306,13 @@ export const wingGlobalApi = {
                 let { data: response } = await axios.post(`${API_URL}/api/rt/v1/transfer`, query, {
                     headers: getDefaultHeader(dns_data, pay_type)
                 });
-
                 if (response?.status == 200) {
                     return {
                         code: 100,
                         message: 'success',
                         data: {
                             tid: response?.natv_tr_no,
+                            count,
                         },
                     };
                 } else {
