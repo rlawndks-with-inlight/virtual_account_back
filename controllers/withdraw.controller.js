@@ -583,7 +583,7 @@ const withdrawCtrl = {
                 is_pass_confirm: 1,
                 trx_id: trx_id,
             }, withdraw_id);
-
+            let date = returnMoment().substring(0, 10).replaceAll('-', '');
             let api_withdraw_request_result = await corpApi.withdraw.request({
                 pay_type: 'withdraw',
                 dns_data: decode_dns,
@@ -600,9 +600,10 @@ const withdrawCtrl = {
             }
             let virtual_acct_balance = api_withdraw_request_result?.data?.virtual_acct_balance ?? 0;
             let tid = api_withdraw_request_result.data?.tid;
+            let count = api_withdraw_request_result.data?.count;
             let result3 = await updateQuery(`${table_name}`, {
                 withdraw_status: 5,
-                trx_id: api_withdraw_request_result.data?.tid,
+                trx_id: ([8].includes(dns_data?.withdraw_corp_type) ? `${count}-` : '') + tid,
                 is_withdraw_hold: 0,
                 top_office_amount: api_withdraw_request_result.data?.top_amount ?? 0,
                 virtual_acct_balance,
@@ -614,8 +615,8 @@ const withdrawCtrl = {
                         pay_type: 'withdraw',
                         dns_data: dns_data,
                         decode_user: user,
-                        date: withdraw?.created_at.substring(0, 10).replaceAll('-', ''),
-                        tid,
+                        date: date,
+                        tid: [8].includes(dns_data?.withdraw_corp_type) ? count : tid,
                     })
                     let status = 0;
                     if (api_result2.data?.status == 3) {
