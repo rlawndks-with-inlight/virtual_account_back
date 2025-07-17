@@ -95,25 +95,43 @@ const virtualAccountCtrl = {
     create: async (req, res, next) => {
         try {
             let is_manager = await checkIsManagerUrl(req);
-            const decode_user = await checkLevel(req.cookies.token, 0, req);
+            const decode_user = await checkLevel(req.cookies.token, 40, req);
             const decode_dns = checkDns(req.cookies.dns);
-            const {
-                mid, tid, guid,
-                vrf_word
-            } = req.body;
-            let files = settingFiles(req.files);
-
-            let { data: result } = await axios.post(`${process.env.API_URL}/api/virtual-account/check`, {
-                mid,
-                tid,
-                vrf_word,
-                guid
-            })
-            if (result?.result > 0) {
-                return response(req, res, 100, "success", result?.data)
-            } else {
-                return response(req, res, result?.result, result?.message, {})
+            if (!decode_user) {
+                return lowLevelException(req, res);
             }
+            const {
+                mcht_id,
+                deposit_bank_code,
+                deposit_acct_num,
+                deposit_acct_name,
+                birth,
+                gender,
+                phone_num
+            } = req.body;
+
+            let virtual_account = await readPool.query(`SELECT * FROM ${table_name} WHERE deposit_acct_num=? AND is_delete=0 AND brand_id=${decode_dns?.id}`, [
+                deposit_acct_num,
+            ])
+            virtual_account = virtual_account[0][0];
+            if (virtual_account?.status == 0) {
+                return response(req, res, -100, "이미 발급된 건이 존재합니다.", false);
+            }
+
+            let ci = `${decode_dns?.id}${new Date().getTime()}` + deposit_acct_num + mcht_id;
+            let result = await insertQuery(table_name, {
+                brand_id: decode_dns?.id,
+                mcht_id,
+                deposit_bank_code,
+                deposit_acct_num,
+                deposit_acct_name,
+                birth,
+                gender,
+                phone_num,
+                ci,
+                guid: ci,
+            })
+            return response(req, res, 100, "success", {})
         } catch (err) {
             console.log(err)
             return response(req, res, -200, "서버 에러 발생", false)
