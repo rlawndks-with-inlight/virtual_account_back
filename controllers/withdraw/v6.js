@@ -350,7 +350,7 @@ const withdrawV6Ctrl = {
                 await redisCtrl.delete(`is_ing_withdraw_${mid}_${guid}`);
                 return response(req, res, -100, `최소 ${pay_type_name} 보류금액은 ${commarNumber(user?.min_withdraw_hold_price)}원 입니다.`, false)
             }
-            if (user?.is_withdraw_hold == 1) {
+            if (user?.is_withdraw_hold == 1 || (dns_data?.must_hold_withdraw_amount > 0 && withdraw_amount >= dns_data?.must_hold_withdraw_amount)) {
                 deposit_obj['is_withdraw_hold'] = 1;
             }
 
