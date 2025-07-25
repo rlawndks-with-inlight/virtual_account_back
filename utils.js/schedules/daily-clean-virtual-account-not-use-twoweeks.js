@@ -10,7 +10,7 @@ export const onDailyCleanVirtualAccountNotUseTwoWeeks = async (return_moment) =>
     try {
         let brands = await readPool.query(`SELECT * FROM brands WHERE is_delete=0`);
         brands = brands[0];
-        let left_2_weeks_deposit = await readPool.query(`SELECT id, created_at FROM deposits WHERE created_at >= CURDATE() - INTERVAL 6 DAY ORDER BY id ASC LIMIT 1`);
+        let left_2_weeks_deposit = await readPool.query(`SELECT id, created_at FROM deposits WHERE created_at >= CURDATE() - INTERVAL 6 DAY AND type=0 ORDER BY id ASC LIMIT 1`);
         left_2_weeks_deposit = left_2_weeks_deposit[0][0];
         for (var i = 0; i < brands.length; i++) {
             /*
