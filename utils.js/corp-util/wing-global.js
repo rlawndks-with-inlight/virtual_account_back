@@ -158,6 +158,7 @@ export const wingGlobalApi = {
             let { data: response } = await axios.post(`${API_URL}/api/v1/deleteVactInfo`, query, {
                 headers: getDefaultHeader(dns_data, pay_type)
             });
+            console.log(response)
             if (response?.statusCodeValue == 200) {
                 return {
                     code: 100,
