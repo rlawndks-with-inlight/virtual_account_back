@@ -160,12 +160,22 @@ export const wingGlobalApi = {
             });
             console.log(response)
             if (response?.statusCodeValue == 200) {
-                return {
-                    code: 100,
-                    message: 'success',
-                    data: {
-                    },
-                };
+                if (response?.body?.deleteList.length > 0) {
+                    return {
+                        code: 100,
+                        message: 'success',
+                        data: {
+                        },
+                    };
+                } else {
+                    return {
+                        code: -100,
+                        message: response?.body?.message,
+                        data: {
+
+                        },
+                    };
+                }
             }
             return {
                 code: -100,
