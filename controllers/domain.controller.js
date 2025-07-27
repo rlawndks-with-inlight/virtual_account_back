@@ -64,6 +64,7 @@ const domainCtrl = {
                     'withdraw_virtual_bank_code',
                     'withdraw_virtual_acct_num',
                     `(CASE WHEN deposit_corp_type=6 THEN deposit_sign_key ELSE NULL END) AS deposit_sign_key`,
+                    `is_use_force_delete_vaccount`,
                 ]
                 let brand_sql = ` SELECT ${columns.join()} FROM brands `;
                 brand_sql += ` WHERE (dns=? OR admin_dns=?) AND is_delete=0 `;

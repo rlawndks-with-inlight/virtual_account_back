@@ -279,6 +279,10 @@ const virtualAccountCtrl = {
                 decode_dns = req.dns_data;
             }
             const { id } = req.params;
+            const {
+                is_force,
+                delete_value,
+            } = req.query;
             let virtual_account = await readPool.query(`SELECT * FROM ${table_name} WHERE id=${id}`);
             virtual_account = virtual_account[0][0];
             let dns_data = await readPool.query(`SELECT * FROM brands WHERE id=${decode_dns?.id}`);
@@ -286,6 +290,17 @@ const virtualAccountCtrl = {
             if (virtual_account?.mcht_id != decode_user?.id && decode_user?.level < 40) {
                 return lowLevelException(req, res);
             }
+            if (is_force == 1) {
+                if (decode_user?.level >= 40) {
+                    let result = await updateQuery(table_name, {
+                        is_delete: delete_value,
+                    }, id);
+                    return response(req, res, 100, "success", {})
+                } else {
+                    return lowLevelException(req, res);
+                }
+            }
+
             let user_amount = await corpApi.balance.info({
                 pay_type: 'withdraw',
                 dns_data: decode_dns,
