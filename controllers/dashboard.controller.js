@@ -121,7 +121,10 @@ const dashboardCtrl = {
             ]
             let sql = `SELECT ${columns.join()} FROM deposits `;
             if (decode_dns?.is_oper_dns == 1) {
-                sql += ` WHERE pay_type IN ${pay_type_join}  `;
+                let children_brands = await readPool.query(`SELECT id FROM brands WHERE sales_parent_id=${decode_dns?.id}`);
+                children_brands = children_brands[0];
+                sql += ` WHERE brand_id IN (${children_brands.map(el => { return el?.id }).join()}) AND pay_type IN ${pay_type_join} `;
+                //sql += ` WHERE pay_type IN ${pay_type_join}  `;
             } else {
                 sql += ` WHERE pay_type IN ${pay_type_join} AND deposits.brand_id=${decode_dns?.id} `;
             }
