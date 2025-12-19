@@ -91,9 +91,6 @@ const withdrawV1Ctrl = {
     request: async (req_, res, next) => {//출금요청
         let req = req_;
         try {
-            let is_manager = await checkIsManagerUrl(req);
-            const decode_user = checkLevel(req.cookies.token, 0);
-            const decode_dns = checkDns(req.cookies.dns);
             let {
                 api_key,
                 mid,
@@ -325,6 +322,10 @@ const withdrawV1Ctrl = {
                     }
                 }
             }
+            if (user?.is_withdraw_hold == 1) {
+                first_obj['is_withdraw_hold'] = 1;
+                first_obj['withdraw_status'] = 5;
+            }
             let withdraw_id = 0;
             let first_result = await insertQuery(`deposits`, first_obj);
             withdraw_id = first_result?.insertId;
@@ -353,7 +354,9 @@ const withdrawV1Ctrl = {
                 acct_name: deposit_acct_name || withdraw_acct_name,
                 trx_id,
             })
-            console.log(api_result)
+            if (api_result.code != 100) {
+                return response(req, res, -120, (api_result?.message || "서버 에러 발생"), false)
+            }
             let tid = api_result.data?.tid;
 
             let virtual_acct_balance = api_result?.data?.virtual_acct_balance ?? 0;
@@ -450,7 +453,6 @@ const withdrawV1Ctrl = {
                 tid,
             ])
             trx = trx[0][0];
-
             let user = await readPool.query(mcht_sql, [trx?.user_id, dns_data?.id]);
             user = user[0][0];
 
@@ -458,7 +460,7 @@ const withdrawV1Ctrl = {
                 pay_type: 'withdraw',
                 dns_data: dns_data,
                 decode_user: user,
-                date: trx?.created_at.substring(0, 10).replaceAll('-', ''),
+                date: returnMoment(trx?.created_at).substring(0, 10).replaceAll('-', ''),
                 tid,
             })
             let status = 0;

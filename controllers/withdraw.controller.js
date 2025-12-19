@@ -608,7 +608,6 @@ const withdrawCtrl = {
                 top_office_amount: api_withdraw_request_result.data?.top_amount ?? 0,
                 virtual_acct_balance,
             }, withdraw_id);
-
             if ([2, 5, 7, 8].includes(dns_data?.withdraw_corp_type)) {
                 for (var i = 0; i < 3; i++) {
                     let api_result2 = await corpApi.withdraw.request_check({
@@ -624,19 +623,17 @@ const withdrawCtrl = {
                     } else if (api_result2.data?.status == 6) {
                         continue;
                     }
+                    console.log(status)
                     if (api_result2.code == 100 || status == 10) {
                         let update_obj = {
                             withdraw_status: status,
                             amount: (status == 0 ? withdraw?.expect_amount : 0),
                         }
                         let withdraw_obj = await setWithdrawAmountSetting(withdraw_amount, user, dns_data)
-                        if (status == 0) {
-                            update_obj = {
-                                ...update_obj,
-                                ...withdraw_obj,
-                            }
+                        update_obj = {
+                            ...update_obj,
+                            ...withdraw_obj,
                         }
-
                         let result = await updateQuery(`deposits`, update_obj, withdraw_id)
                         break;
                     }
@@ -958,6 +955,7 @@ const withdrawCtrl = {
             }
 
             let result = undefined;
+            console.log(decode_dns?.setting_obj?.api_withdraw_version)
             if (decode_dns?.setting_obj?.api_withdraw_version == 1) {
                 result = await withdrawV1Ctrl.check(req, res);
             } else if (decode_dns?.setting_obj?.api_withdraw_version == 2) {
