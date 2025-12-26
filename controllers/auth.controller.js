@@ -109,7 +109,7 @@ const authCtrl = {
                 is_fail_count_up = true;
                 err_message = '가입되지 않은 회원입니다.';
             } else if (user?.only_connect_ip) {
-                if (requestIp != user?.only_connect_ip) {
+                if (!user?.only_connect_ip.split(',').includes(requestIp)) {
                     is_fail_count_up = true;
                     err_message = '권한이 없습니다.';
                 }
@@ -217,7 +217,7 @@ const authCtrl = {
             }
             let requestIp = getReqIp(req);
             if (user?.only_connect_ip) {
-                if (requestIp != user?.only_connect_ip) {
+                if (!user?.only_connect_ip.split(',').includes(requestIp)) {
                     return response(req, res, -150, "권한이 없습니다.", {})
                 }
             }

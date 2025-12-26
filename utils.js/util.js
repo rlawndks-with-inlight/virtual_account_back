@@ -81,7 +81,7 @@ export const checkLevel = async (token, level, req, is_log = false) => { //ìœ ì 
 
             let only_connect_ip = user?.only_connect_ip ?? "";
             if (only_connect_ip) {
-                if (requestIp != only_connect_ip) {
+                if (!only_connect_ip.split(',').includes(requestIp)) {
                     return false;
                 }
             }

@@ -24,7 +24,7 @@ const logCtrl = {
             let user = await readPool.query(`SELECT only_connect_ip FROM users WHERE id=${decode_user?.id}`);
             user = user[0][0];
             if (user?.only_connect_ip) {
-                if (requestIp != user?.only_connect_ip) {
+                if (!user?.only_connect_ip.split(',').includes(requestIp)) {
                     return response(req, res, -150, "권한이 없습니다.", {})
                 }
             }
